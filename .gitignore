@@ -1,0 +1,41 @@
+# Environments and configuration
+.env
+.venv
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+*.env
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Output files
+output/audio/*
+output/scripts/*
+# Keep the output directories, but not their contents
+!output/audio/.gitkeep
+!output/scripts/.gitkeep
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Test files
+test_*.py
+test_*.mp3
+test_*.wav
+test_*.ogg
+debug_*.py
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db 
