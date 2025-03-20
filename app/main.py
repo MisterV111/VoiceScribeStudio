@@ -87,7 +87,7 @@ def create_interface():
     
     with gr.Blocks(title="VoiceScribe Studio") as app:
         gr.Markdown("# VoiceScribe Studio")
-        gr.Markdown("Create educational scripts and generate voiceovers with AI")
+        gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")
         
         with gr.Tabs():
             # Create tabs using the component functions
