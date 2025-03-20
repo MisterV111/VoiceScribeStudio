@@ -1,6 +1,10 @@
 # VoiceScribe Studio
 
-An AI-powered application for creating educational scripts and voiceovers with minimal coding experience required.
+VoiceScribe Studio is a powerful AI-driven educational content creation platform that transforms how instructors, trainers, and content creators develop professional-quality educational materials. By leveraging OpenAI's advanced language models and ElevenLabs' state-of-the-art voice synthesis technology, VoiceScribe Studio streamlines the entire content production workflow—from script generation to final voiceover production—all within an intuitive, user-friendly interface.
+
+With specialized templates for various educational domains including music instruction, corporate training, and technical tutorials, VoiceScribe Studio helps users craft perfectly tailored content for their specific audience. The application enables fine-grained control over script length, audience targeting, and tone, while providing powerful editing capabilities with AI assistance. Once your script is perfected, transform it into lifelike voiceovers using premium male and female voices, with precise control over delivery speed, style, and even custom pauses using SSML tags.
+
+VoiceScribe Studio eliminates the technical barriers to creating professional educational content, making it accessible to educators, trainers, and content creators of all technical skill levels.
 
 ## Features
 
