@@ -55,12 +55,12 @@ def create_script_generator_tab():
                 
                 prompt_input = gr.Textbox(
                     label="What is your script about?",
-                    placeholder="E.g., Explain chord progressions for beginners",
+                    placeholder="E.g., Create a script about the importance of sustainability",
                     lines=3
                 )
                 subject_input = gr.Textbox(
                     label="Subject",
-                    placeholder="E.g., Music Theory, Piano Technique, Jazz Improvisation",
+                    placeholder="E.g., Environmental Science, Sustainable Practices, Conservation",
                 )
                 
                 # Add context manager
@@ -118,43 +118,97 @@ def create_script_generator_tab():
         )
         
         # Display template-specific guidance when template is selected
-        def update_template_guidance(template):
+        def update_template_fields(template):
             if template == "Music Lesson":
-                return gr.update(
-                    placeholder="E.g., Explain chord progressions for beginners",
-                    info="Focus on educational content about music theory, instrument techniques, or practice methods"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Explain chord progressions for beginners",
+                        info="Focus on educational content about music theory, instrument techniques, or practice methods"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Music Theory, Piano Technique, Jazz Improvisation"
+                    ),
+                    gr.update(
+                        placeholder="Include specific concepts to cover, instrument references, prerequisite knowledge, or teaching techniques to incorporate",
+                        info="For music lessons, consider including: skill level assumptions, instrument specifics, related concepts, or musical examples to reference"
+                    )
+                ]
             elif template == "Corporate Training":
-                return gr.update(
-                    placeholder="E.g., Explain effective communication strategies for team leaders",
-                    info="Focus on professional development, soft skills, or company procedures"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Explain effective communication strategies for team leaders",
+                        info="Focus on professional development, soft skills, or company procedures"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Leadership, Team Management, Communication Skills"
+                    ),
+                    gr.update(
+                        placeholder="Include company-specific terminology, existing processes, skill gaps to address, or industry compliance requirements",
+                        info="For corporate training, consider including: company culture context, specific workplace scenarios, industry challenges, or required competencies"
+                    )
+                ]
             elif template == "Marketing":
-                return gr.update(
-                    placeholder="E.g., Create a script highlighting our product's key features",
-                    info="Focus on benefits, features, customer needs, and call-to-action elements"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Create a script highlighting our product's key features",
+                        info="Focus on benefits, features, customer needs, and call-to-action elements"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Product Launch, Brand Awareness, Customer Testimonial"
+                    ),
+                    gr.update(
+                        placeholder="Include product specifications, competitive advantages, target customer demographics, or brand voice guidelines",
+                        info="For marketing, consider including: unique selling points, customer pain points, competitor comparisons, or specific metrics/claims to include"
+                    )
+                ]
             elif template == "General Education":
-                return gr.update(
-                    placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
-                    info="Focus on clear explanations of educational concepts for learning purposes"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
+                        info="Focus on clear explanations of educational concepts for learning purposes"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Biology, Chemistry, Physics, History, Mathematics"
+                    ),
+                    gr.update(
+                        placeholder="Include curriculum requirements, related concepts, visual aids to reference, or misconceptions to address",
+                        info="For educational content, consider including: grade level context, specific learning objectives, key vocabulary to use, or supporting examples"
+                    )
+                ]
             elif template == "Technical Tutorial":
-                return gr.update(
-                    placeholder="E.g., Explain how to set up a development environment for Python",
-                    info="Focus on step-by-step instructions, technical details, and best practices"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Explain how to set up a development environment for Python",
+                        info="Focus on step-by-step instructions, technical details, and best practices"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Software Development, Data Analysis, System Administration"
+                    ),
+                    gr.update(
+                        placeholder="Include software versions, prerequisites, technical specifications, or common pitfalls to address",
+                        info="For technical tutorials, consider including: environment details, dependency requirements, troubleshooting tips, or expected outcomes"
+                    )
+                ]
             else:  # General
-                return gr.update(
-                    placeholder="E.g., Create a script about the importance of sustainability",
-                    info="General purpose script without industry-specific formatting"
-                )
+                return [
+                    gr.update(
+                        placeholder="E.g., Create a script about the importance of sustainability",
+                        info="General purpose script without industry-specific formatting"
+                    ),
+                    gr.update(
+                        placeholder="E.g., Environmental Science, Sustainable Practices, Conservation"
+                    ),
+                    gr.update(
+                        placeholder="Add specific details, concepts, or internal knowledge that should be incorporated into the script",
+                        info="This helps generate more accurate and relevant content"
+                    )
+                ]
         
-        # Update placeholder and info based on selected template
+        # Update all fields based on selected template
         template_selector.change(
-            fn=update_template_guidance,
+            fn=update_template_fields,
             inputs=[template_selector],
-            outputs=[prompt_input]
+            outputs=[prompt_input, subject_input, context_input]
         )
         
         return script_output, script_file_output 
