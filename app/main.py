@@ -90,9 +90,9 @@ def create_interface():
     logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.svg")
     
     with gr.Blocks(title="VoiceScribe Studio", css=css_path) as app:
-        with gr.Row(equal_height=True):
+        with gr.Row(equal_height=True, elem_classes=["header-row"]):
             with gr.Column(scale=1, min_width=40):
-                gr.HTML(f'<img src="file={logo_path}" alt="Logo" style="width:40px; height:40px; margin-top:10px;">')
+                gr.HTML(f'<img src="file={logo_path}" alt="Logo" style="width:60px; height:60px; margin-top:0px;">')
             with gr.Column(scale=20):
                 gr.Markdown("# VoiceScribe Studio")
                 gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")

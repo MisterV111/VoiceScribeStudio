@@ -12,23 +12,45 @@
   --error-color: #d32f2f;        /* Red for errors */
   --text-primary: #262730;       /* Nearly black text for high contrast */
   --text-secondary: #57606f;     /* Secondary text color */
-  --background-color: #ffffff;   /* Clean white background */
+  --background-color: #f8faff;   /* Light blue-tinted background */
   --card-bg: #ffffff;            /* Card background */
   --border-color: #e0e0e0;       /* Light gray for borders */
 }
 
+/* Apply a global background color */
+body {
+  background-color: var(--background-color) !important;
+}
+
 /* Override primary interface colors */
 .gradio-container {
-  font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
-  color: var(--text-primary);
-  background-color: var(--background-color);
+  font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
+  color: var(--text-primary) !important;
+  background-color: var(--background-color) !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 1rem !important;
+}
+
+/* Header section styling */
+.header-row {
+  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color)) !important;
+  padding: 1.5rem !important;
+  border-radius: 12px !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.header-row h1, .header-row p {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* 2. Typography & Visual Hierarchy */
 h1 {
   font-size: 2.5rem !important;
   font-weight: 700 !important;
-  color: var(--primary-color) !important;
+  color: white !important; /* Updated to white for contrast on the header gradient */
   margin-bottom: 0.5rem !important;
   letter-spacing: -0.02em !important;
 }
@@ -44,51 +66,72 @@ p {
   margin-bottom: 1.5rem;
 }
 
+/* Make tab labels more prominent */
+.tabs {
+  background-color: white !important;
+  border-radius: 8px !important;
+  padding: 0.5rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
 /* 3. Cards & Containers */
 .gradio-box, .gradio-group, .gradio-accordion {
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+  border: none !important;
   overflow: hidden;
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: white !important;
 }
 
 .gradio-box:hover, .gradio-group:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Section headings inside cards */
 .gradio-group > .gradio-markdown h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: var(--primary-color) !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 1rem !important;
+  border-left: 4px solid var(--primary-color) !important;
+  padding-left: 10px !important;
+}
+
+/* Additional padding for better spacing */
+.gradio-container > div:not(.header-row) {
+  padding: 1.5rem !important;
+  margin-bottom: 2rem !important;
 }
 
 /* 4. Button Styling */
 button.primary {
-  background-color: var(--primary-color) !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color)) !important;
   color: white !important;
   border: none !important;
-  border-radius: 6px !important;
-  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.2s ease !important;
+  font-size: 1.1rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
 }
 
 button.primary:hover {
-  background-color: var(--primary-dark) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-3px) !important;
 }
 
 button.secondary {
   background-color: transparent !important;
   color: var(--primary-color) !important;
-  border: 1px solid var(--primary-color) !important;
-  border-radius: 6px !important;
+  border: 2px solid var(--primary-color) !important;
+  border-radius: 8px !important;
   padding: 10px 16px !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
@@ -96,6 +139,8 @@ button.secondary {
 
 button.secondary:hover {
   background-color: var(--primary-light) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Generate-type buttons */
@@ -103,56 +148,90 @@ button[id*='generate'], button[id$='Generate'] {
   background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color)) !important;
   color: white !important;
   border: none !important;
-  border-radius: 6px !important;
-  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  padding: 14px 28px !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  font-size: 1.1rem !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-top: 1rem !important;
+  width: 100% !important;
 }
 
 button[id*='generate']:hover, button[id$='Generate']:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
-  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-3px) !important;
+  background: linear-gradient(135deg, var(--tertiary-color), var(--primary-color)) !important;
 }
 
 /* Tabs styling */
 .tabs > .tabitem {
-  border-bottom: 2px solid transparent !important;
+  border-bottom: none !important;
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
   margin: 0 8px !important;
-  padding: 8px 4px !important;
+  padding: 12px 16px !important;
   transition: all 0.2s ease !important;
+  border-radius: 8px !important;
 }
 
 .tabs > .tabitem.selected {
+  color: white !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color)) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tabs > .tabitem:hover:not(.selected) {
+  background-color: var(--primary-light) !important;
   color: var(--primary-color) !important;
-  border-bottom: 2px solid var(--primary-color) !important;
 }
 
 /* Input fields */
 input, textarea, select {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 6px !important;
-  padding: 10px 12px !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
   transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 input:focus, textarea:focus, select:focus {
   border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.25) !important;
+  box-shadow: 0 0 0 4px rgba(74, 107, 175, 0.2) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* Add spacing between major sections */
 .gradio-group {
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 2rem !important;
+  padding: 1.5rem !important;
 }
 
 /* Override dropdown styling */
 select {
   background-color: white !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 6px !important;
-  height: 40px !important;
-  padding: 0 12px !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+/* Labels styling */
+label {
+  font-weight: 600 !important;
+  color: var(--primary-color) !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 1rem !important;
+}
+
+/* Add styling for info text */
+.info-text {
+  color: var(--text-secondary) !important;
+  font-style: italic !important;
+  font-size: 0.9rem !important;
+  margin-top: 0.25rem !important;
 } 
