@@ -1,0 +1,158 @@
+/* VoiceScribe Studio - Professional UI Theme */
+
+/* 1. Color Scheme & Branding */
+:root {
+  --primary-color: #4a6baf;      /* Deep professional blue */
+  --primary-dark: #385089;       /* Darker shade for hover states */
+  --primary-light: #eef2fd;      /* Light shade for backgrounds */
+  --secondary-color: #3c9d9b;    /* Teal accent color */
+  --tertiary-color: #7e57c2;     /* Purple accent color for special highlights */
+  --success-color: #2e7d32;      /* Green for success messages */
+  --warning-color: #ed6c02;      /* Orange for warnings */
+  --error-color: #d32f2f;        /* Red for errors */
+  --text-primary: #262730;       /* Nearly black text for high contrast */
+  --text-secondary: #57606f;     /* Secondary text color */
+  --background-color: #ffffff;   /* Clean white background */
+  --card-bg: #ffffff;            /* Card background */
+  --border-color: #e0e0e0;       /* Light gray for borders */
+}
+
+/* Override primary interface colors */
+.gradio-container {
+  font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background-color: var(--background-color);
+}
+
+/* 2. Typography & Visual Hierarchy */
+h1 {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: var(--primary-color) !important;
+  margin-bottom: 0.5rem !important;
+  letter-spacing: -0.02em !important;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.gradio-markdown:nth-of-type(2) p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 3. Cards & Containers */
+.gradio-box, .gradio-group, .gradio-accordion {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid var(--border-color) !important;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.gradio-box:hover, .gradio-group:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Section headings inside cards */
+.gradio-group > .gradio-markdown h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 4. Button Styling */
+button.primary {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+button.primary:hover {
+  background-color: var(--primary-dark) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+button.secondary {
+  background-color: transparent !important;
+  color: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+button.secondary:hover {
+  background-color: var(--primary-light) !important;
+}
+
+/* Generate-type buttons */
+button[id*='generate'], button[id$='Generate'] {
+  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 12px 20px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s ease !important;
+}
+
+button[id*='generate']:hover, button[id$='Generate']:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Tabs styling */
+.tabs > .tabitem {
+  border-bottom: 2px solid transparent !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  margin: 0 8px !important;
+  padding: 8px 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.tabs > .tabitem.selected {
+  color: var(--primary-color) !important;
+  border-bottom: 2px solid var(--primary-color) !important;
+}
+
+/* Input fields */
+input, textarea, select {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  padding: 10px 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.25) !important;
+}
+
+/* Add spacing between major sections */
+.gradio-group {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Override dropdown styling */
+select {
+  background-color: white !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+} 

@@ -85,9 +85,17 @@ def create_interface():
     # Load voices
     preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
     
-    with gr.Blocks(title="VoiceScribe Studio") as app:
-        gr.Markdown("# VoiceScribe Studio")
-        gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")
+    # Define custom CSS path
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
+    logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.svg")
+    
+    with gr.Blocks(title="VoiceScribe Studio", css=css_path) as app:
+        with gr.Row(equal_height=True):
+            with gr.Column(scale=1, min_width=40):
+                gr.HTML(f'<img src="file={logo_path}" alt="Logo" style="width:40px; height:40px; margin-top:10px;">')
+            with gr.Column(scale=20):
+                gr.Markdown("# VoiceScribe Studio")
+                gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")
         
         with gr.Tabs():
             # Create tabs using the component functions

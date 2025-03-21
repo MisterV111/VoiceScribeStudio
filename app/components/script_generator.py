@@ -89,7 +89,7 @@ def create_script_generator_tab():
                         choices=["informative", "conversational", "professional", "friendly", "enthusiastic"],
                         value="informative"
                     )
-                generate_btn = gr.Button("Generate Script")
+                generate_btn = gr.Button("Generate Script", elem_classes=["primary"])
             
             with gr.Column():
                 script_output = gr.Textbox(

@@ -81,7 +81,7 @@ def create_voiceover_tab():
                 # Add script formatting guide at the top
                 with gr.Row():
                     gr.Markdown("### Script Formatting")
-                    format_guide_btn = gr.Button("📖 Guide", elem_id="format-guide-btn", size="sm")
+                    format_guide_btn = gr.Button("📖 Guide", elem_id="format-guide-btn", size="sm", elem_classes=["secondary"])
                 
                 # Help section for script formatting
                 with gr.Accordion("Script Formatting Guide", open=False, visible=False) as format_help:
@@ -187,7 +187,7 @@ def create_voiceover_tab():
                 
                 # Add some spacing before the button
                 gr.Markdown("")
-                voiceover_btn = gr.Button("Generate Voiceover", size="lg")
+                voiceover_btn = gr.Button("Generate Voiceover", size="lg", elem_classes=["primary"])
             
             # Right column - Output and voice settings
             with gr.Column(scale=1):
@@ -213,8 +213,7 @@ def create_voiceover_tab():
                 with gr.Group():
                     with gr.Row():
                         gr.Markdown("### Voice Settings")
-                        # Guide button in top right
-                        guide_btn = gr.Button("Guide", elem_id="guide-btn", size="sm")
+                        guide_btn = gr.Button("Guide", elem_id="guide-btn", size="sm", elem_classes=["secondary"])
                     
                     # Help popup for voice settings
                     with gr.Accordion("Voice Settings Guide", open=False, visible=False) as settings_help:
@@ -305,13 +304,8 @@ def create_voiceover_tab():
                         info="Emphasize the main speaker in a recording"
                     )
                     
-                    # Reset button at bottom right
-                    with gr.Row():
-                        with gr.Column():
-                            # Empty column for spacing
-                            gr.Markdown("")
-                        with gr.Column():
-                            reset_btn = gr.Button("Reset Voice Settings", size="sm")
+                    # Add reset button for voice settings
+                    reset_btn = gr.Button("Reset Voice Settings", size="sm", elem_classes=["secondary"])
         
         # Function definitions for interactivity
         

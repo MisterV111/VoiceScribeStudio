@@ -54,7 +54,7 @@ def create_script_editor_tab():
                         info="This helps ensure edits align with your specific requirements"
                     )
                 
-                edit_btn = gr.Button("Edit Script")
+                edit_btn = gr.Button("Edit Script", elem_classes=["primary"])
             
             with gr.Column():
                 edited_script_output = gr.Textbox(
