@@ -2,6 +2,7 @@ import gradio as gr
 import os
 import sys
 from pathlib import Path
+import base64
 
 # Add the app directory to the system path
 app_dir = Path(__file__).parent.parent.resolve()
@@ -91,11 +92,14 @@ def create_interface():
     
     # Read logo as data URI
     try:
-        with open(logo_path, "r") as f:
+        with open(logo_path, "rb") as f:
             logo_svg = f.read()
-            logo_data_uri = f"data:image/svg+xml;utf8,{logo_svg}"
-    except:
-        logo_data_uri = ""  # Fallback if file can't be read
+            logo_base64 = base64.b64encode(logo_svg).decode("utf-8")
+            logo_data_uri = f"data:image/svg+xml;base64,{logo_base64}"
+    except Exception as e:
+        print(f"Error loading logo: {str(e)}")
+        # Fallback simple logo
+        logo_data_uri = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI0IiByPSIyMCIgZmlsbD0iIzRhNmJhZiIvPjxwYXRoIGQ9Ik0xOCAxNnYxNmwxNi04eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4="
     
     # Simple CSS test string
     css_test = """
