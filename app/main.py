@@ -89,10 +89,61 @@ def create_interface():
     css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
     logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.svg")
     
-    with gr.Blocks(title="VoiceScribe Studio", css=css_path) as app:
+    # Read logo as data URI
+    try:
+        with open(logo_path, "r") as f:
+            logo_svg = f.read()
+            logo_data_uri = f"data:image/svg+xml;utf8,{logo_svg}"
+    except:
+        logo_data_uri = ""  # Fallback if file can't be read
+    
+    # Simple CSS test string
+    css_test = """
+    .gradio-container {
+        background-color: #f8faff !important;
+        font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
+    }
+    .header-row {
+        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
+        padding: 1.5rem !important;
+        border-radius: 12px !important;
+        margin-bottom: 1.5rem !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+    .header-row h1, .header-row p {
+        color: white !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+    button.primary {
+        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.3s ease !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+    button[id*='generate'], button[id$='Generate'] {
+        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 14px 28px !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        margin-top: 1rem !important;
+        width: 100% !important;
+    }
+    """
+    
+    with gr.Blocks(title="VoiceScribe Studio", css=css_test) as app:
         with gr.Row(equal_height=True, elem_classes=["header-row"]):
             with gr.Column(scale=1, min_width=40):
-                gr.HTML(f'<img src="file={logo_path}" alt="Logo" style="width:60px; height:60px; margin-top:0px;">')
+                gr.HTML(f'<img src="{logo_data_uri}" alt="Logo" style="width:60px; height:60px; margin-top:0px;">')
             with gr.Column(scale=20):
                 gr.Markdown("# VoiceScribe Studio")
                 gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")
