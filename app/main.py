@@ -85,8 +85,9 @@ def create_interface():
     # Load voices
     preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
     
-    # Define custom CSS path
+    # Define custom CSS path and asset paths
     css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
+    banner_path = os.path.join(os.path.dirname(__file__), "assets", "banner.png")
     
     # Simple CSS test string
     css_test = """
@@ -95,15 +96,27 @@ def create_interface():
         font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
     }
     .header-row {
-        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
-        padding: 1.5rem !important;
-        border-radius: 12px !important;
         margin-bottom: 1.5rem !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+        position: relative !important;
     }
-    .header-row h1, .header-row p {
+    .banner-image {
+        width: 100% !important;
+        display: block !important;
+    }
+    .header-text {
+        position: absolute !important;
+        top: 50% !important;
+        left: 20% !important;
+        transform: translateY(-50%) !important;
+        width: 80% !important;
+    }
+    .header-text h1, .header-text p {
         color: white !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+        margin: 0 !important;
     }
     button.primary {
         background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
@@ -162,19 +175,13 @@ def create_interface():
     
     with gr.Blocks(title="VoiceScribe Studio", css=css_test) as app:
         with gr.Row(equal_height=True, elem_classes=["header-row"]):
-            with gr.Column(scale=1, min_width=40):
-                # Inline SVG logo - simple version with solid colors
-                logo_html = """
-                <svg width="60" height="60" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="24" cy="24" r="21" fill="#4a6baf" />
-                  <path d="M19 16v16l14-8z" fill="white" />
-                  <circle cx="17" cy="24" r="3" fill="white" />
-                </svg>
-                """
-                gr.HTML(logo_html)
-            with gr.Column(scale=20):
+            # Banner image
+            gr.HTML(f'<img src="/gradio_api/file={banner_path}" alt="VoiceScribe Studio Banner" class="banner-image">')
+            
+            # Text overlay on banner
+            with gr.Column(elem_classes=["header-text"]):
                 gr.Markdown("# VoiceScribe Studio")
-                gr.Markdown("Transform your ideas into professional educational content with AI-powered scripts and lifelike voiceovers")
+                gr.Markdown("VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation")
         
         with gr.Tabs():
             # Create tabs using the component functions
