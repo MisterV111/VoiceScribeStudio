@@ -180,6 +180,38 @@ def create_interface():
         transition: all 0.3s ease;
         background-color: white !important;
     }
+    /* Script output container styling */
+    .script-output-container textarea {
+        min-height: 620px !important;
+        height: 100% !important;
+    }
+    .script-output-container > label {
+        margin-bottom: 10px !important;
+    }
+    /* Edited script output container styling */
+    .edited-script-output-container textarea {
+        min-height: 620px !important;
+        height: 100% !important;
+    }
+    .edited-script-output-container > label {
+        margin-bottom: 10px !important;
+    }
+    /* Button alignment fix */
+    .gradio-column {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .gradio-column > .gradio-button {
+        margin-top: auto !important;
+    }
+    .gradio-column > .gradio-row:last-child {
+        margin-top: auto !important;
+        margin-bottom: 0 !important;
+    }
+    /* Reduce space at bottom of tabs */
+    .tabitem {
+        padding-bottom: 1rem !important;
+    }
     """
     
     with gr.Blocks(title="VoiceScribe Studio", css=css_test) as app:

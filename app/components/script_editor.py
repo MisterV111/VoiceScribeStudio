@@ -32,11 +32,12 @@ def edit_script(original_script, edit_instructions, context=""):
 def create_script_editor_tab():
     with gr.TabItem("Edit Script"):
         with gr.Row():
+            # Left column for input controls
             with gr.Column():
                 edit_script_input = gr.Textbox(
                     label="Original Script",
                     placeholder="Paste your script here or generate one in the previous tab",
-                    lines=10
+                    lines=12
                 )
                 edit_instructions = gr.Textbox(
                     label="Edit Instructions",
@@ -54,13 +55,17 @@ def create_script_editor_tab():
                         info="This helps ensure edits align with your specific requirements"
                     )
                 
-                edit_btn = gr.Button("Edit Script", elem_classes=["primary"])
+                # Add spacer to push button to bottom
+                with gr.Row():
+                    edit_btn = gr.Button("Edit Script", elem_classes=["primary"])
             
+            # Right column for output
             with gr.Column():
                 edited_script_output = gr.Textbox(
                     label="Edited Script",
-                    lines=10,
-                    interactive=True
+                    lines=20,
+                    interactive=True,
+                    elem_classes=["edited-script-output-container"]
                 )
                 edited_script_file = gr.Textbox(
                     label="Edited Script File",
