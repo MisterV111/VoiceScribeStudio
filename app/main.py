@@ -1,6 +1,7 @@
 import gradio as gr
 import os
 import sys
+import base64
 from pathlib import Path
 
 # Add the app directory to the system path
@@ -88,6 +89,11 @@ def create_interface():
     # Define custom CSS path
     css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
     
+    # Load the banner image as base64 to avoid any file path issues
+    banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
+    with open(banner_path, "rb") as img_file:
+        banner_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+    
     # Simple CSS test string
     css_test = """
     .gradio-container {
@@ -95,43 +101,47 @@ def create_interface():
         font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
     }
     .header-row {
+        padding: 0 !important;
         margin-bottom: 1.5rem !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
         border-radius: 12px !important;
         overflow: hidden !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
-        position: relative !important;
+        background-color: white !important;
     }
-    .banner-image {
-        width: 100% !important;
-        display: block !important;
-    }
-    .header-text {
-        position: absolute !important;
-        top: 50% !important;
-        left: 20% !important;
-        transform: translateY(-50%) !important;
-        width: 80% !important;
-    }
-    .header-text h1, .header-text p {
-        color: white !important;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    /* Remove margin/padding from banner container */
+    .header-banner {
         margin: 0 !important;
+        padding: 0 !important;
+        line-height: 0 !important;
+    }
+    /* Remove margin from Markdown component */
+    .header-banner .prose {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    /* Make sure the image spans full width */
+    .header-banner img {
+        display: block !important;
+        width: 100% !important;
+        border-radius: 12px !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     button.primary {
-        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
+        background: #5e166a !important;
         color: white !important;
         border: none !important;
         border-radius: 8px !important;
         padding: 12px 24px !important;
         font-weight: 600 !important;
         font-size: 1.1rem !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 4px 12px rgba(94, 22, 106, 0.3) !important;
         transition: all 0.3s ease !important;
         text-transform: uppercase !important;
         letter-spacing: 0.5px !important;
     }
     button[id*='generate'], button[id$='Generate'] {
-        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
+        background: #5e166a !important;
         color: white !important;
         border: none !important;
         border-radius: 8px !important;
@@ -159,8 +169,8 @@ def create_interface():
     }
     .tabs > .tabitem.selected {
         color: white !important;
-        background: linear-gradient(135deg, #4a6baf, #7e57c2) !important;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        background: #5e166a !important;
+        box-shadow: 0 4px 8px rgba(94, 22, 106, 0.3) !important;
     }
     .gradio-box, .gradio-group, .gradio-accordion {
         border-radius: 12px !important;
@@ -173,24 +183,11 @@ def create_interface():
     """
     
     with gr.Blocks(title="VoiceScribe Studio", css=css_test) as app:
-        with gr.Row(equal_height=True, elem_classes=["header-row"]):
-            # Banner image using HTML directly instead of file path
-            gr.HTML('''
-            <div style="position: relative; width: 100%; background-color: #f0f0f0;">
-                <div style="width: 100%; height: 150px; background: linear-gradient(90deg, #4a6baf 0%, #7e57c2 100%); display: block;"></div>
-                <div class="header-text" style="position: absolute; top: 50%; left: 20%; transform: translateY(-50%); width: 80%;">
-                    <h1 style="color: white; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); margin: 0;">VoiceScribe Studio</h1>
-                    <p style="color: white; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); margin: 0;">
-                        VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation
-                    </p>
-                </div>
-            </div>
-            ''')
-            
-            # Text overlay on banner - now handled in the HTML above
-            #with gr.Column(elem_classes=["header-text"]):
-            #    gr.Markdown("# VoiceScribe Studio")
-            #    gr.Markdown("VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation")
+        # Create the banner using base64 encoding (most reliable method)
+        with gr.Row(elem_classes=["header-row"]):
+            # Use base64 data URI for the image to avoid file path issues
+            banner_html = f'<img src="data:image/png;base64,{banner_base64}" alt="VoiceScribe Studio Banner">'
+            gr.Markdown(banner_html, elem_classes=["header-banner"])
         
         with gr.Tabs():
             # Create tabs using the component functions
