@@ -67,7 +67,7 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         if output_format.lower() == "ogg":
             ogg_path = mp3_path.replace(".mp3", ".ogg")
             _, ogg_file = convert_mp3_to_ogg(mp3_path, ogg_path)
-            return "Voiceover generated successfully!", mp3_path, ogg_file
+            return "Voiceover generated successfully!", ogg_file, mp3_path
             
         return "Voiceover generated successfully!", mp3_path, None
     except Exception as e:
@@ -201,12 +201,13 @@ def create_voiceover_tab():
                     gr.Markdown("### Voiceover Output")
                     mp3_output = gr.Audio(
                         label="Voiceover (MP3)", 
-                        type="filepath"
+                        type="filepath",
+                        visible=False  # Initially hidden since OGG is default
                     )
                     ogg_output = gr.Audio(
                         label="Voiceover (OGG)", 
                         type="filepath", 
-                        visible=False
+                        visible=True  # Initially visible since OGG is default
                     )
                 
                 # Voice Settings in a group with better visual structure
@@ -358,12 +359,13 @@ def create_voiceover_tab():
                 speed_slider,
                 speaker_boost
             ],
-            outputs=[voiceover_status, mp3_output, ogg_output]
+            outputs=[voiceover_status, ogg_output, mp3_output]
         )
         
-        # Show/hide OGG output based on format selection
+        # Show/hide output based on format selection
         def update_format_visibility(fmt):
             is_ogg = fmt.lower() == "ogg"
+            # First output is OGG, second is MP3
             return gr.update(visible=is_ogg), gr.update(visible=not is_ogg)
         
         format_selector.change(
@@ -383,4 +385,4 @@ def create_voiceover_tab():
             outputs=[format_help]
         )
         
-        return voiceover_script, voiceover_status, mp3_output, ogg_output 
+        return voiceover_script, voiceover_status, ogg_output, mp3_output 

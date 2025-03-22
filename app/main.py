@@ -225,7 +225,7 @@ def create_interface():
             # Create tabs using the component functions
             script_output, script_file_output = create_script_generator_tab()
             edit_script_input, edited_script_output = create_script_editor_tab()
-            voiceover_script, voiceover_status, mp3_output, ogg_output = create_voiceover_tab()
+            voiceover_script, voiceover_status, ogg_output, mp3_output = create_voiceover_tab()
             
             # Connect script generator to script editor
             script_output.change(
