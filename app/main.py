@@ -85,9 +85,8 @@ def create_interface():
     # Load voices
     preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
     
-    # Define custom CSS path and asset paths
+    # Define custom CSS path
     css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
-    banner_path = os.path.join(os.path.dirname(__file__), "assets", "banner.png")
     
     # Simple CSS test string
     css_test = """
@@ -175,13 +174,23 @@ def create_interface():
     
     with gr.Blocks(title="VoiceScribe Studio", css=css_test) as app:
         with gr.Row(equal_height=True, elem_classes=["header-row"]):
-            # Banner image
-            gr.HTML(f'<img src="/gradio_api/file={banner_path}" alt="VoiceScribe Studio Banner" class="banner-image">')
+            # Banner image using HTML directly instead of file path
+            gr.HTML('''
+            <div style="position: relative; width: 100%; background-color: #f0f0f0;">
+                <div style="width: 100%; height: 150px; background: linear-gradient(90deg, #4a6baf 0%, #7e57c2 100%); display: block;"></div>
+                <div class="header-text" style="position: absolute; top: 50%; left: 20%; transform: translateY(-50%); width: 80%;">
+                    <h1 style="color: white; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); margin: 0;">VoiceScribe Studio</h1>
+                    <p style="color: white; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); margin: 0;">
+                        VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation
+                    </p>
+                </div>
+            </div>
+            ''')
             
-            # Text overlay on banner
-            with gr.Column(elem_classes=["header-text"]):
-                gr.Markdown("# VoiceScribe Studio")
-                gr.Markdown("VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation")
+            # Text overlay on banner - now handled in the HTML above
+            #with gr.Column(elem_classes=["header-text"]):
+            #    gr.Markdown("# VoiceScribe Studio")
+            #    gr.Markdown("VoiceScribe: Your Complete Script and Voiceover Solution for Education, Business, and Content Creation")
         
         with gr.Tabs():
             # Create tabs using the component functions
