@@ -16,7 +16,7 @@ def set_voice_data(p_names, p_ids, v_names, v_ids):
     voice_names = v_names
     voice_ids = v_ids
 
-def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voice_id="", output_format="mp3",
+def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voice_id="", output_format="ogg",
                     stability=0.5, similarity=0.75, style=0.0, speed=1.0, speaker_boost=False):
     """Generate a voiceover from the script"""
     try:
@@ -181,7 +181,7 @@ def create_voiceover_tab():
                     format_selector = gr.Dropdown(
                         label="Audio Format",
                         choices=["MP3", "OGG"],
-                        value="MP3",
+                        value="OGG",
                         info="OGG format provides better compression"
                     )
                 
