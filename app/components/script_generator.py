@@ -164,7 +164,7 @@ def create_script_generator_tab():
                         placeholder="Include specific concepts to cover, instrument references, prerequisite knowledge, or teaching techniques to incorporate",
                         info="For music lessons, consider including: skill level assumptions, instrument specifics, related concepts, or musical examples to reference"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Music Lesson Parameter Guide
                     
                     **Length**: Determines demonstration complexity
@@ -202,7 +202,7 @@ def create_script_generator_tab():
                         placeholder="Include company-specific terminology, existing processes, skill gaps to address, or industry compliance requirements",
                         info="For corporate training, consider including: company culture context, specific workplace scenarios, industry challenges, or required competencies"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Corporate Training Parameter Guide
                     
                     **Length**: Controls training session duration
@@ -241,7 +241,7 @@ def create_script_generator_tab():
                         placeholder="Include product specifications, competitive advantages, target customer demographics, or brand voice guidelines",
                         info="For marketing, consider including: unique selling points, customer pain points, competitor comparisons, or specific metrics/claims to include"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Marketing Parameter Guide
                     
                     **Length**: Adapts to marketing format
@@ -281,7 +281,7 @@ def create_script_generator_tab():
                         placeholder="Include curriculum requirements, related concepts, visual aids to reference, or misconceptions to address",
                         info="For educational content, consider including: grade level context, specific learning objectives, key vocabulary to use, or supporting examples"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Educational Content Parameter Guide
                     
                     **Length**: Adapts to lesson format
@@ -320,7 +320,7 @@ def create_script_generator_tab():
                         placeholder="Include software versions, prerequisites, technical specifications, or common pitfalls to address",
                         info="For technical tutorials, consider including: environment details, dependency requirements, troubleshooting tips, or expected outcomes"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Technical Tutorial Parameter Guide
                     
                     **Length**: Controls tutorial depth
@@ -358,7 +358,7 @@ def create_script_generator_tab():
                         placeholder="Add specific details, concepts, or internal knowledge that should be incorporated into the script",
                         info="This helps generate more accurate and relevant content"
                     ),
-                    gr.update(markdown="""
+                    gr.update(value="""
                     ### Parameter Quick Guide
                     
                     **Length**: Controls script word count
