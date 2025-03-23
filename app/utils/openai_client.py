@@ -103,15 +103,15 @@ def get_template_guidance(template):
     """
     if template == "Music Lesson":
         return """
-        Create a professional music education script that follows this exact structure:
+        Create a professional music education script following this structure, but DO NOT include any of the section markers or percentages in your output:
         
-        [INTRODUCTION - 10% of script]
+        Introduction (10% of script):
         - Begin with a concise, engaging hook about the subject
         - Use <Talking Head> marker at the beginning of this section
         - Focus on immediate practical application rather than theory
         - Use conversational "friend showing you" tone rather than formal educational language
         
-        [CONCEPT & DEMONSTRATION - 80% of script]
+        Concept & Demonstration (80% of script):
         - Begin with <Action Motion + Instrument View + VO> marker
         - Provide clear, simple instructions in layperson's terms
         - Include specific camera angle directions for key techniques: [TOP VIEW] or [SIDE VIEW]
@@ -121,7 +121,7 @@ def get_template_guidance(template):
         - Reference previous skills (what they've already learned) when introducing new concepts
         - Include detailed demonstration markers formatted as: [DEMONSTRATION: Detailed description of what is being shown, including tempo, technique focus, and visual elements]
         
-        [CALL-TO-ACTION - 10% of script]
+        Call-to-Action (10% of script):
         - Return to <Talking Head> marker
         - Include a transition phrase to the interactive element: "Let's try it out with the trainer!" or "Now it's your turn to try!"
         
@@ -131,6 +131,8 @@ def get_template_guidance(template):
         - Adjust your language accordingly to the target level selected by the user. For 'Beginner' and 'Children' use extremely simple language and avoid advanced music terminology
         - Reference specific strings/keys by both number and location (e.g., "the 6th string, the thickest one")
         - Ensure compatibility with interactive follow-up activities
+        
+        IMPORTANT: DO NOT include any section markers like [INTRODUCTION], [CONCEPT & DEMONSTRATION], or [CALL-TO-ACTION] in your final output. These are only for your reference in creating the script structure. The final script should be clean without these labels or percentage indicators.
         """
     elif template == "Corporate Training":
         return """
