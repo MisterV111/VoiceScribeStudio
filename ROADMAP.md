@@ -20,33 +20,32 @@
 
 ## Future Development Plans
 
-### Phase 1: LLM Enhancement - DeepSeek R1 Integration
-- DeepSeek R1 API integration for superior script generation
-- Claude 3.7 Sonnet as fallback and content processing system
-- Dual-model architecture for optimized performance
-- Database schema enhancements for future user management
-- Token tracking instrumentation for usage monitoring
+### Phase 1: User Management
+- User registration and login system
+- Secure profile management
+- Session handling for application state
 
-### Phase 2: Advanced Content Processing
-- Document analysis and information extraction
-- Web content processing capabilities
-- Source attribution and metadata management
-- Content structuring for optimized script generation
-- Claude-DeepSeek handoff protocol implementation
+### Phase 2: API Key Integration
+- **Dual API Key System:**
+  - During onboarding, ask users if they have an ElevenLabs account
+  - For users with accounts: Guide them to securely add their ElevenLabs API key
+  - For users without accounts: Utilize the application's default API key
+- Secure storage and encryption of user API keys
+- Clear transparency about how API keys are used
+- Option to remove API keys from the system
 
-### Phase 3: Web Search Integration
-- FireCrawl MCP server integration
-- Real-time information retrieval capabilities
-- Web content acquisition for up-to-date scripts
-- Source transparency and citation features
-- Multi-source content testing and validation
+### Phase 3: Enhanced Voice Options
+- Voice preview feature before generating full voiceovers
+- Voice customization options (speed, pitch, emphasis)
+- Batch processing for multiple scripts
+- Voice favorites and history
 
-### Phase 4: Analytics & Reporting
-- Token usage analytics dashboard
-- Cost tracking and projections
-- CSV export with Google Sheets compatibility
-- Usage pattern analysis
-- Performance monitoring
+### Phase 4: Advanced Features
+- Project management for organizing scripts and voiceovers
+- Team collaboration features
+- Export options for various platforms
+- Analytics for usage tracking
+- Advanced editing tools for both scripts and audio
 
 ### Phase 5: UI & User Experience Enhancements
 - Document upload functionality
@@ -56,6 +55,14 @@
 - Progress indicators for multi-stage processing
 - Session-based content tracking
 - Comprehensive testing and deployment
+
+### Phase 6: Audio Enhancement Tools
+- Basic waveform visualization and audio editing interface
+- Segment trimming and deletion capabilities
+- Mastering chain presets optimized for voice
+- Level normalization and audio enhancement
+- Export options for processed audio files
+- Integration with existing voiceover generation workflow
 
 ### Future Phases
 
@@ -105,6 +112,13 @@
 - Claude 3.7 Sonnet offers efficient content processing with 200K context window
 - Multi-model approach optimizes cost efficiency while maximizing quality
 - Source attribution ensures transparency and proper citation
+
+### Audio Enhancement Considerations:
+- Browser-based implementation using Web Audio API and WaveSurfer.js
+- Client-side processing reduces server load for audio manipulation
+- Audio mastering presets specifically designed for voice enhancement
+- Modular approach allows for future expansion of audio features
+- Implementation complexity balanced against significant user value
 
 ### Voice ID Compatibility:
 - The application will continue to support custom Voice IDs
