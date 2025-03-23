@@ -138,18 +138,19 @@ def get_template_guidance(template):
         
         Throughout the script:
         - Include exactly one detailed demonstration break
-        - Format all key actions in bold (not terminology)
         - Adjust your language accordingly to the target level selected by the user. For 'Beginner' and 'Children' use extremely simple language and avoid advanced music terminology
         - Reference specific strings/keys by both number and location (e.g., "the 6th string, the thickest one")
         - Ensure compatibility with interactive follow-up activities
+        - Do not use asterisks (**) or other Markdown formatting in the final text
         
         ** CRITICAL INSTRUCTION: Do not include ANY of the following in your response **
         1. Section headers like [INTRODUCTION], [MAIN CONTENT], [CONCLUSION], etc.
-        2. Percentages or notes about script structure
+        2. Percentages or notes about script structure (e.g., "CONCEPT & DEMONSTRATION - 80% of script")
         3. Organizational notes or reminders about the template format
         4. Any meta-information about how the script should be structured
+        5. DO NOT include labels like "[CONCEPT & DEMONSTRATION]" or similar structural markers
         
-        The script should be clean and ready to use without any template formatting or scaffolding visible.
+        The script should be clean and ready to use without any template formatting or scaffolding visible. The final script should appear as a cohesive narrative with no visible template structure.
         
         ** CONTEXT HANDLING INSTRUCTION **
         When additional context about student knowledge is provided:
