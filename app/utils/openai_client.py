@@ -106,34 +106,31 @@ def get_template_guidance(template):
         Create a professional music education script that follows this exact structure:
         
         [INTRODUCTION - 10% of script]
-        - Begin with an engaging hook about the subject
-        - State clear learning objectives
-        - Connect to previous knowledge
+        - Begin with a concise, engaging hook about the subject
+        - Use <Talking Head> marker at the beginning of this section
+        - Focus on immediate practical application rather than theory
+        - Use conversational "friend showing you" tone rather than formal educational language
         
-        [CONCEPT EXPLANATION - 30% of script]
-        - Define key musical terminology with precise explanations
-        - Use accessible analogies for complex musical concepts
-        - Include [DEMONSTRATION POINT] markers where instructor should demonstrate
+        [CONCEPT & DEMONSTRATION - 80% of script]
+        - Begin with <Action Motion + Instrument View + VO> marker
+        - Provide clear, simple instructions in layperson's terms
+        - Include specific camera angle directions for key techniques: [TOP VIEW] or [SIDE VIEW]
+        - Structure demonstrations as simple, sequential steps with clear visual transitions
+        - Use directive language ("Place your index finger on...") rather than abstract explanations
+        - Connect new techniques to songs students are already familiar with
+        - Reference previous skills (what they've already learned) when introducing new concepts
+        - Include detailed demonstration markers formatted as: [DEMONSTRATION: Detailed description of what is being shown, including tempo, technique focus, and visual elements]
         
-        [GUIDED PRACTICE - 30% of script]
-        - Provide step-by-step sequence for skill development
-        - Include [STUDENT PRACTICE] markers with exact timing (e.g., "Take 30 seconds to try...")
-        - Anticipate common mistakes and include correction guidance
-        
-        [APPLICATION - 20% of script]
-        - Connect the skill to real musical pieces or performances
-        - Include at least one practical exercise formatted as numbered steps
-        - Reference how this concept applies to different musical contexts
-        
-        [CONCLUSION - 10% of script]
-        - Summarize key points using bullet points
-        - Provide specific next-step practice suggestions with timing (e.g., "Practice daily for 10 minutes")
-        - End with an inspirational connection to musical performance
+        [CALL-TO-ACTION - 10% of script]
+        - Return to <Talking Head> marker
+        - Include a transition phrase to the interactive element: "Let's try it out with the trainer!" or "Now it's your turn to try!"
         
         Throughout the script:
-        - Mark visual aid opportunities with [VISUAL CUE: description]
-        - Format all musical terms in bold
-        - Use encouraging, supportive language appropriate for the specified audience level
+        - Include exactly one detailed demonstration break
+        - Format all key actions in bold (not terminology)
+        - Adjust your language accordingly to the target level selected by the user. For 'Beginner' and 'Children' use extremely simple language and avoid advanced music terminology
+        - Reference specific strings/keys by both number and location (e.g., "the 6th string, the thickest one")
+        - Ensure compatibility with interactive follow-up activities
         """
     elif template == "Corporate Training":
         return """
