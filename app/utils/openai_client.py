@@ -103,70 +103,244 @@ def get_template_guidance(template):
     """
     if template == "Music Lesson":
         return """
-        Create a music education script that:
-        - Uses clear terminology for musical concepts
-        - Includes appropriate places for demonstrations or examples
-        - Builds knowledge progressively
-        - Incorporates practical applications of the theory
-        - Suggests places where visual aids would be helpful
-        - Maintains an engaging and encouraging tone
-        - References how the concept relates to actual music performance
-        - Includes practice suggestions or exercises
+        Create a professional music education script that follows this exact structure:
+        
+        [INTRODUCTION - 10% of script]
+        - Begin with an engaging hook about the subject
+        - State clear learning objectives
+        - Connect to previous knowledge
+        
+        [CONCEPT EXPLANATION - 30% of script]
+        - Define key musical terminology with precise explanations
+        - Use accessible analogies for complex musical concepts
+        - Include [DEMONSTRATION POINT] markers where instructor should demonstrate
+        
+        [GUIDED PRACTICE - 30% of script]
+        - Provide step-by-step sequence for skill development
+        - Include [STUDENT PRACTICE] markers with exact timing (e.g., "Take 30 seconds to try...")
+        - Anticipate common mistakes and include correction guidance
+        
+        [APPLICATION - 20% of script]
+        - Connect the skill to real musical pieces or performances
+        - Include at least one practical exercise formatted as numbered steps
+        - Reference how this concept applies to different musical contexts
+        
+        [CONCLUSION - 10% of script]
+        - Summarize key points using bullet points
+        - Provide specific next-step practice suggestions with timing (e.g., "Practice daily for 10 minutes")
+        - End with an inspirational connection to musical performance
+        
+        Throughout the script:
+        - Mark visual aid opportunities with [VISUAL CUE: description]
+        - Format all musical terms in bold
+        - Use encouraging, supportive language appropriate for the specified audience level
         """
     elif template == "Corporate Training":
         return """
-        Create a corporate training script that:
-        - Focuses on practical workplace applications
-        - Uses professional language appropriate for a business setting
-        - Includes relevant workplace scenarios or case studies
-        - Emphasizes measurable skills or outcomes
-        - Maintains a clear structure with key takeaways
-        - Balances theory with actionable advice
-        - Incorporates opportunities for participant reflection or discussion
+        Create a corporate training script that follows this professional structure:
+        
+        [OPENING - 10% of script]
+        - Begin with an attention-grabbing statistic or business scenario related to the subject
+        - Clearly state the business value and measurable outcomes of this training
+        - Include a quick participant engagement question marked as [ENGAGEMENT POINT]
+        
+        [KEY CONCEPTS - 25% of script]
+        - Present 3-5 main concepts using clear business terminology
+        - For each concept, include a specific workplace application example
+        - Format each key concept as a concise, memorable statement in bold
+        
+        [CASE STUDIES/SCENARIOS - 30% of script]
+        - Develop 2-3 detailed workplace scenarios that illustrate the concepts
+        - Format each scenario with:
+          * The situation description
+          * Critical decision points or challenges
+          * [GROUP DISCUSSION PROMPT] with specific questions
+          * Best practice resolution with business rationale
+        
+        [SKILL PRACTICE - 25% of script]
+        - Create structured role-play or application exercises with:
+          * Clear time allocations (e.g., "Allow 10 minutes for this activity")
+          * Step-by-step instructions formatted as a numbered list
+          * [FACILITATOR NOTE] with implementation guidance
+          * Assessment criteria for successful completion
+        
+        [CONCLUSION & ACTION PLANNING - 10% of script]
+        - Summarize key takeaways as bullet points
+        - Include a personal action plan template with 3 specific questions
+        - Add a concrete follow-up commitment mechanism
+        
+        Throughout the script:
+        - Include [SLIDE CONTENT] markers for presentation slide suggestions
+        - Mark handout opportunities as [HANDOUT: description]
+        - Maintain professional language with concrete metrics and business terminology
+        - Include at least 3 [KNOWLEDGE CHECK] questions at strategic points
         """
     elif template == "Marketing":
         return """
-        Create a marketing script that:
-        - Emphasizes benefits over features
-        - Uses persuasive and engaging language
-        - Incorporates a clear call-to-action
-        - Addresses potential customer pain points
-        - Maintains a consistent brand voice
-        - Creates emotional connection with the audience
-        - Uses concise messaging without unnecessary jargon
-        - Follows a problem-solution structure when appropriate
+        Create a high-conversion marketing script using this proven structure:
+        
+        [HOOK - 10% of script]
+        - Open with a compelling question or statement targeting the audience's primary pain point
+        - Include timing marker [0:00-0:XX] for audio/video production
+        - Use second-person perspective ("you") to create immediate connection
+        
+        [PROBLEM AMPLIFICATION - 20% of script]
+        - Vividly describe the problem/need using emotionally resonant language
+        - Include specific examples of how this problem affects the target audience daily
+        - Reference key audience demographics and psychographics in scenarios
+        - Add [VISUAL: description] markers for key emotional moments
+        
+        [SOLUTION INTRODUCTION - 15% of script]
+        - Introduce the solution with emphasis on transformation, not features
+        - Format the main value proposition in bold as a standalone statement
+        - Include [TONE SHIFT] marker with specific direction (e.g., "Music becomes uplifting")
+        
+        [BENEFIT ELABORATION - 25% of script]
+        - Present 3-5 key benefits (not features), each formatted as:
+          * Benefit statement focused on audience outcome
+          * Emotional reinforcement of the benefit
+          * Concrete example or mini-story illustrating the benefit
+          * [PROOF POINT] with specific evidence (testimonial, statistic, demonstration)
+        
+        [OBJECTION HANDLING - 15% of script]
+        - Subtly address 2-3 common objections before they arise
+        - Format each as a question/concern followed by reassuring resolution
+        - Include risk-reversal elements (guarantees, social proof)
+        
+        [CALL TO ACTION - 15% of script]
+        - Clear, specific action direction with urgency element
+        - Repeat the primary benefit as motivation for action
+        - Include specific instructions formatted as steps if needed
+        - End with reinforcement of positive outcome after taking action
+        
+        Throughout the script:
+        - Maintain consistent brand voice appropriate for the target audience
+        - Use short, punchy sentences for emphasis at key points
+        - Incorporate power words and emotional triggers relevant to the offering
+        - Include [CUT TO] or [TRANSITION] markers for scene/visual changes
         """
     elif template == "General Education":
         return """
-        Create an educational script that:
-        - Explains concepts clearly without assuming prior knowledge
-        - Uses analogies or examples to illustrate complex ideas
-        - Builds knowledge progressively from simple to complex
-        - Incorporates opportunities for reflection or questions
-        - Emphasizes key points for retention
-        - Uses appropriate terminology with explanations
-        - Connects the topic to real-world applications
+        Create an educational script following this proven teaching structure:
+        
+        [ENGAGE - 10% of script]
+        - Begin with a thought-provoking question, surprising fact, or relevant scenario about the subject
+        - Create a "need to know" moment that sparks curiosity
+        - Include a clear learning objective statement: "By the end of this lesson, you will be able to..."
+        
+        [ACTIVATE PRIOR KNOWLEDGE - 15% of script]
+        - Reference what the audience likely already knows about the topic
+        - Provide a bridge between existing knowledge and new concepts
+        - Include an [ENGAGEMENT QUESTION] that prompts reflection on prior experience
+        
+        [DIRECT INSTRUCTION - 30% of script]
+        - Present new concepts in a logical sequence with clear transitions
+        - For each key concept:
+          * Provide a clear definition in bold
+          * Include a concrete, relatable example
+          * Add a helpful analogy marked as [ANALOGY: description]
+          * Connect to visual aids with [VISUAL REFERENCE: description]
+          * Emphasize key points with deliberate repetition
+        
+        [GUIDED PRACTICE - 20% of script]
+        - Create structured application opportunities with:
+          * Clear instructions formatted as numbered steps
+          * [PAUSE POINT: XX seconds] for audience processing
+          * Sample responses or examples of correct application
+          * Common misconceptions and corrections
+        
+        [INDEPENDENT APPLICATION - 15% of script]
+        - Provide more complex application scenarios or problems
+        - Include [ACTIVITY] markers with specific instructions and timing
+        - Offer hints or scaffolding for different ability levels
+        
+        [SYNTHESIS & ASSESSMENT - 10% of script]
+        - Summarize key points as a bulleted list
+        - Include 3-5 [ASSESSMENT QUESTION] items of varying difficulty
+        - Provide real-world relevance and future application examples
+        
+        Throughout the script:
+        - Use clear transitions between sections
+        - Include specific [ENGAGEMENT TECHNIQUE] markers (e.g., Think-Pair-Share, Quick Poll)
+        - Format examples in italics to distinguish from instructional content
+        - Adjust language complexity precisely to the specified audience level
         """
     elif template == "Technical Tutorial":
         return """
-        Create a technical tutorial script that:
-        - Provides step-by-step instructions in a logical sequence
-        - Uses precise technical terminology correctly
-        - Explains the purpose behind each step
-        - Anticipates common issues or questions
-        - Includes prerequisites or assumptions
-        - Balances conceptual understanding with practical instructions
-        - Uses consistent formatting for commands, code, or technical elements
-        - References best practices in the field
+        Create a technical tutorial script using this comprehensive structure:
+        
+        [OVERVIEW - 10% of script]
+        - Begin with a clear statement of what will be accomplished
+        - List specific prerequisites as bullet points, including versions/equipment
+        - Include a difficulty level indicator and time estimate
+        - Explain the real-world application and value of this technical skill
+        
+        [ENVIRONMENT SETUP - 15% of script]
+        - Provide detailed setup instructions formatted as numbered steps
+        - Format all commands, code, or terminal input as code blocks
+        - Include expected output/results after each command
+        - Add [VERIFICATION STEP] markers to confirm correct setup
+        
+        [CORE PROCEDURE - 50% of script]
+        - Break the process into clearly numbered main steps
+        - For each step:
+          * Begin with the purpose/goal of this specific step
+          * Provide exact commands/code needed
+          * Explain what each command/parameter does
+          * Include expected output or success indicators
+          * Add [IMPORTANT] tags for critical warnings or notes
+          * Include screenshots or visual cues with [VISUAL: description]
+        
+        [TROUBLESHOOTING SECTION - 15% of script]
+        - Address 3-5 common issues or errors with:
+          * Exact error message or symptom
+          * Cause explanation
+          * Step-by-step resolution instructions
+          * Preventative advice
+        
+        [EXTENSION & APPLICATION - 10% of script]
+        - Provide 2-3 variations or advanced applications
+        - Reference related tutorials or documentation for further learning
+        - Include a practical example of real-world implementation
+        
+        Throughout the script:
+        - Use consistent formatting for filenames, variables, and code elements
+        - Include [NOTE] blocks for important contextual information
+        - Add [TIP] blocks for efficiency or best practices
+        - Maintain precise technical language appropriate for the audience level
+        - Include progress validation points after each major section
         """
     else:  # General template
         return """
-        Create a well-structured script that:
-        - Provides clear information about the topic
-        - Has a logical beginning, middle, and end
-        - Uses appropriate language for the intended audience
-        - Balances information with engagement
-        - Maintains a consistent voice throughout
+        Create a professionally structured script that follows this effective framework:
+        
+        [INTRODUCTION - 15% of script]
+        - Begin with an engaging hook related to the subject
+        - Establish relevance to the audience with a clear "why this matters" statement
+        - Preview the main points that will be covered (3-5 points)
+        
+        [MAIN CONTENT - 70% of script]
+        - Organize content into 3-5 distinct sections with clear subheadings
+        - For each section:
+          * Begin with a clear topic statement
+          * Develop the concept with explanations and examples
+          * Include at least one engaging element (question, story, surprising fact)
+          * End with a mini-summary or transition
+        - Use a logical progression that builds knowledge sequentially
+        - Format key points or definitions in bold for emphasis
+        - Include [VISUAL ELEMENT] markers where visuals would enhance understanding
+        
+        [CONCLUSION - 15% of script]
+        - Summarize the main points concisely
+        - Reinforce the core message or takeaway
+        - End with a thought-provoking statement or call to action
+        
+        Throughout the script:
+        - Maintain consistent voice and tone appropriate for the specified audience
+        - Use varied sentence structures to maintain engagement
+        - Include periodic audience engagement elements marked as [ENGAGEMENT POINT]
+        - Adjust technical language and complexity to match the specified audience level
+        - Format examples or stories in italics to distinguish from main content
         """
 
 def edit_script(script, instructions, context=""):
