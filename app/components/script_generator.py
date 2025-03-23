@@ -89,13 +89,45 @@ def create_script_generator_tab():
                         choices=["informative", "conversational", "professional", "friendly", "enthusiastic"],
                         value="informative"
                     )
+                
+                # Add collapsible guide section
+                with gr.Accordion("Additional Context Guide", open=False):
+                    gr.Markdown("""
+                    ### Parameter Quick Guide
+                    
+                    **Length**: Controls script word count
+                    - **Short**: 150-250 words, brief overview
+                    - **Medium**: 300-500 words, balanced detail
+                    - **Long**: 600-900 words, comprehensive coverage
+                    
+                    **Target Audience**: Adapts complexity and examples
+                    - **General**: Universal approach
+                    - **Beginner/Children**: Simplified concepts, more explanation
+                    - **Intermediate**: More detailed techniques
+                    - **Advanced**: Specialized terminology and complex concepts
+                    
+                    **Tone**: Sets the voice and style
+                    - **Informative**: Clear, fact-focused delivery
+                    - **Conversational**: Casual, friendly dialogue
+                    - **Professional**: Formal, authoritative approach
+                    - **Friendly**: Warm, encouraging language
+                    - **Enthusiastic**: Energetic, motivational style
+                    
+                    **Additional Context**: Provide background information that informs the script generation without being directly referenced. Include:
+                    - Student's existing knowledge and skills
+                    - Specific concepts to emphasize
+                    - Learning goals or outcomes
+                    - Time constraints or format requirements
+                    """)
+                    
                 generate_btn = gr.Button("Generate Script", elem_classes=["primary"])
             
             with gr.Column():
                 script_output = gr.Textbox(
                     label="Generated Script",
-                    lines=12,
-                    interactive=True
+                    lines=20,
+                    interactive=True,
+                    elem_classes=["script-output-container"]
                 )
                 script_file_output = gr.Textbox(
                     label="Script File",
