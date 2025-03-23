@@ -173,6 +173,7 @@ def create_script_generator_tab():
                     - **Long**: 5-8 minute lesson, includes theory, practice and application
                     
                     **Target Audience**: Adjusts terminology and pace
+                    - **General**: Balanced approach suitable for mixed skill levels
                     - **Beginner/Children**: Very simple terms, more hand position guidance
                     - **Intermediate**: Introduces music theory concepts
                     - **Advanced**: Uses proper musical terminology, complex techniques
@@ -180,6 +181,8 @@ def create_script_generator_tab():
                     **Tone**: Sets instructional approach
                     - **Informative**: Clear, methodical explanation of technique
                     - **Conversational**: Friendly, casual teaching style
+                    - **Professional**: Structured, authoritative instruction style
+                    - **Friendly**: Encouraging, supportive guidance with positive reinforcement
                     - **Enthusiastic**: Motivational, energetic instruction
                     
                     **Additional Context**: For music lessons, include:
