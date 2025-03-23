@@ -51,7 +51,18 @@ def generate_script(prompt,
     # Add context if provided
     user_message = prompt
     if context:
-        user_message = f"{prompt}\n\nAdditional context to incorporate:\n{context}"
+        if template == "Music Lesson":
+            user_message = f"""
+{prompt}
+
+BACKGROUND KNOWLEDGE (Do not reference this directly in your script):
+The student has the following background and capabilities. Use this information to tailor the content appropriately without explicitly mentioning what they already know or have learned:
+{context}
+
+Remember to build naturally on this background without phrases like "as you've learned before" or "now that you know X". Simply assume this knowledge is present and create a natural progression.
+"""
+        else:
+            user_message = f"{prompt}\n\nAdditional context to incorporate:\n{context}"
     
     try:
         # Try the primary model first
@@ -103,15 +114,15 @@ def get_template_guidance(template):
     """
     if template == "Music Lesson":
         return """
-        Create a professional music education script following this structure, but DO NOT include any of the section markers or percentages in your output:
-        
-        Introduction (10% of script):
+        Create a professional music education script WITHOUT any section markers, headers, labels, or structural notes in the final output. Follow this structure for organizing your content, but do not include any of these headings or organization notes in your response:
+
+        Introduction:
         - Begin with a concise, engaging hook about the subject
         - Use <Talking Head> marker at the beginning of this section
         - Focus on immediate practical application rather than theory
         - Use conversational "friend showing you" tone rather than formal educational language
         
-        Concept & Demonstration (80% of script):
+        Concept & Demonstration:
         - Begin with <Action Motion + Instrument View + VO> marker
         - Provide clear, simple instructions in layperson's terms
         - Include specific camera angle directions for key techniques: [TOP VIEW] or [SIDE VIEW]
@@ -121,7 +132,7 @@ def get_template_guidance(template):
         - Reference previous skills (what they've already learned) when introducing new concepts
         - Include detailed demonstration markers formatted as: [DEMONSTRATION: Detailed description of what is being shown, including tempo, technique focus, and visual elements]
         
-        Call-to-Action (10% of script):
+        Call-to-Action:
         - Return to <Talking Head> marker
         - Include a transition phrase to the interactive element: "Let's try it out with the trainer!" or "Now it's your turn to try!"
         
@@ -132,7 +143,26 @@ def get_template_guidance(template):
         - Reference specific strings/keys by both number and location (e.g., "the 6th string, the thickest one")
         - Ensure compatibility with interactive follow-up activities
         
-        IMPORTANT: DO NOT include any section markers like [INTRODUCTION], [CONCEPT & DEMONSTRATION], or [CALL-TO-ACTION] in your final output. These are only for your reference in creating the script structure. The final script should be clean without these labels or percentage indicators.
+        ** CRITICAL INSTRUCTION: Do not include ANY of the following in your response **
+        1. Section headers like [INTRODUCTION], [MAIN CONTENT], [CONCLUSION], etc.
+        2. Percentages or notes about script structure
+        3. Organizational notes or reminders about the template format
+        4. Any meta-information about how the script should be structured
+        
+        The script should be clean and ready to use without any template formatting or scaffolding visible.
+        
+        ** CONTEXT HANDLING INSTRUCTION **
+        When additional context about student knowledge is provided:
+        - Use this to inform the difficulty level and examples
+        - DO NOT explicitly mention the student's prior knowledge with phrases like "as you learned previously" or "now that you know X"
+        - DO NOT directly refer to context information in your script
+        - Instead, naturally build upon this assumed knowledge baseline
+        - Tailor your examples and applications to be relevant based on this context
+        
+        Example of good context usage:
+        Context: "Student knows basic open chords (G, C, D, Em) and can switch between them"
+        BAD: "Since you already know your basic open chords like G, C, D, and Em, let's move to barre chords."
+        GOOD: "Today we're moving up the neck to explore barre chords, which will expand your playing beyond the first position."
         """
     elif template == "Corporate Training":
         return """
