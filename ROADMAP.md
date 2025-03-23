@@ -20,12 +20,52 @@
 
 ## Future Development Plans
 
-### Phase 1: User Management
+### Phase 1: LLM Enhancement - DeepSeek R1 Integration
+- DeepSeek R1 API integration for superior script generation
+- Claude 3.7 Sonnet as fallback and content processing system
+- Dual-model architecture for optimized performance
+- Database schema enhancements for future user management
+- Token tracking instrumentation for usage monitoring
+
+### Phase 2: Advanced Content Processing
+- Document analysis and information extraction
+- Web content processing capabilities
+- Source attribution and metadata management
+- Content structuring for optimized script generation
+- Claude-DeepSeek handoff protocol implementation
+
+### Phase 3: Web Search Integration
+- FireCrawl MCP server integration
+- Real-time information retrieval capabilities
+- Web content acquisition for up-to-date scripts
+- Source transparency and citation features
+- Multi-source content testing and validation
+
+### Phase 4: Analytics & Reporting
+- Token usage analytics dashboard
+- Cost tracking and projections
+- CSV export with Google Sheets compatibility
+- Usage pattern analysis
+- Performance monitoring
+
+### Phase 5: UI & User Experience Enhancements
+- Document upload functionality
+- URL input interface
+- Search interface for information retrieval
+- Source citation display
+- Progress indicators for multi-stage processing
+- Session-based content tracking
+- Comprehensive testing and deployment
+
+### Future Phases
+
+#### User Management
 - User registration and login system
 - Secure profile management
 - Session handling for application state
+- Personal history panel for past scripts
 
-### Phase 2: API Key Integration
+#### API Key Integration
 - **Dual API Key System:**
   - During onboarding, ask users if they have an ElevenLabs account
   - For users with accounts: Guide them to securely add their ElevenLabs API key
@@ -34,20 +74,19 @@
 - Clear transparency about how API keys are used
 - Option to remove API keys from the system
 
-### Phase 3: Enhanced Voice Options
+#### Enhanced Voice Options
 - Voice preview feature before generating full voiceovers
 - Voice customization options (speed, pitch, emphasis)
 - Batch processing for multiple scripts
 - Voice favorites and history
 
-### Phase 4: Advanced Features
+#### Advanced Features
 - Project management for organizing scripts and voiceovers
 - Team collaboration features
 - Export options for various platforms
-- Analytics for usage tracking
 - Advanced editing tools for both scripts and audio
 
-### Phase 5: Monetization and Scaling
+#### Monetization and Scaling
 - Subscription tiers for different usage levels
 - Enterprise features for high-volume users
 - API for integration with other systems
@@ -60,6 +99,12 @@
 - Keys will only be used for the specific operations requested by the user
 - Users will maintain full control over their keys with ability to remove at any time
 - Clear usage reporting to help users monitor their ElevenLabs consumption
+
+### LLM Architecture Considerations:
+- DeepSeek R1 provides superior script quality with 32K token output capacity
+- Claude 3.7 Sonnet offers efficient content processing with 200K context window
+- Multi-model approach optimizes cost efficiency while maximizing quality
+- Source attribution ensures transparency and proper citation
 
 ### Voice ID Compatibility:
 - The application will continue to support custom Voice IDs
