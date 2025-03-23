@@ -168,8 +168,8 @@ def create_script_generator_tab():
                     ### Music Lesson Parameter Guide
                     
                     **Length**: Determines demonstration complexity
-                    - **Short**: 1-2 minute lesson, focus on a single technique
-                    - **Medium**: 3-5 minute lesson, covers technique with examples
+                    - **Short**: 30 seconds to 1 minute demonstration, focus on a single technique
+                    - **Medium**: 2-5 minute lesson, covers technique with examples
                     - **Long**: 5-8 minute lesson, includes theory, practice and application
                     
                     **Target Audience**: Adjusts terminology and pace
