@@ -92,7 +92,7 @@ def create_script_generator_tab():
                 
                 # Add collapsible guide section
                 with gr.Accordion("Additional Context Guide", open=False):
-                    gr.Markdown("""
+                    guide_markdown = gr.Markdown("""
                     ### Parameter Quick Guide
                     
                     **Length**: Controls script word count
@@ -114,9 +114,9 @@ def create_script_generator_tab():
                     - **Enthusiastic**: Energetic, motivational style
                     
                     **Additional Context**: Provide background information that informs the script generation without being directly referenced. Include:
-                    - Student's existing knowledge and skills
+                    - Relevant background knowledge
                     - Specific concepts to emphasize
-                    - Learning goals or outcomes
+                    - Goals or outcomes
                     - Time constraints or format requirements
                     """)
                     
@@ -163,7 +163,31 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Include specific concepts to cover, instrument references, prerequisite knowledge, or teaching techniques to incorporate",
                         info="For music lessons, consider including: skill level assumptions, instrument specifics, related concepts, or musical examples to reference"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Music Lesson Parameter Guide
+                    
+                    **Length**: Determines demonstration complexity
+                    - **Short**: 1-2 minute lesson, focus on a single technique
+                    - **Medium**: 3-5 minute lesson, covers technique with examples
+                    - **Long**: 5-8 minute lesson, includes theory, practice and application
+                    
+                    **Target Audience**: Adjusts terminology and pace
+                    - **Beginner/Children**: Very simple terms, more hand position guidance
+                    - **Intermediate**: Introduces music theory concepts
+                    - **Advanced**: Uses proper musical terminology, complex techniques
+                    
+                    **Tone**: Sets instructional approach
+                    - **Informative**: Clear, methodical explanation of technique
+                    - **Conversational**: Friendly, casual teaching style
+                    - **Enthusiastic**: Motivational, energetic instruction
+                    
+                    **Additional Context**: For music lessons, include:
+                    - Student's existing skills (chords, scales they know)
+                    - Specific instruments and equipment available
+                    - Related songs/repertoire to reference
+                    - Prior lessons or techniques to build upon
+                    """)
                 ]
             elif template == "Corporate Training":
                 return [
@@ -177,7 +201,32 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Include company-specific terminology, existing processes, skill gaps to address, or industry compliance requirements",
                         info="For corporate training, consider including: company culture context, specific workplace scenarios, industry challenges, or required competencies"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Corporate Training Parameter Guide
+                    
+                    **Length**: Controls training session duration
+                    - **Short**: 5-10 minute briefing or quick update
+                    - **Medium**: 15-25 minute focused training module
+                    - **Long**: 30-45 minute comprehensive training session
+                    
+                    **Target Audience**: Adapts content to organizational roles
+                    - **General**: All-staff appropriate material
+                    - **Beginner**: New employee onboarding content
+                    - **Intermediate**: Department-specific training
+                    - **Advanced**: Management or specialist-level material
+                    
+                    **Tone**: Sets professional environment
+                    - **Informative**: Direct, data-driven approach
+                    - **Professional**: Formal, authoritative instruction
+                    - **Conversational**: Collaborative, workshop-style approach
+                    
+                    **Additional Context**: For corporate training, include:
+                    - Company policies or procedures relevant to the topic
+                    - Industry regulations or compliance requirements
+                    - Specific workplace scenarios to address
+                    - Organizational hierarchy considerations
+                    """)
                 ]
             elif template == "Marketing":
                 return [
@@ -191,7 +240,33 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Include product specifications, competitive advantages, target customer demographics, or brand voice guidelines",
                         info="For marketing, consider including: unique selling points, customer pain points, competitor comparisons, or specific metrics/claims to include"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Marketing Parameter Guide
+                    
+                    **Length**: Adapts to marketing format
+                    - **Short**: 30-second ad or social media post
+                    - **Medium**: 1-2 minute promotional video
+                    - **Long**: 3-5 minute detailed product presentation
+                    
+                    **Target Audience**: Tailors to customer segments
+                    - **General**: Broad market appeal
+                    - **Beginner**: New customers, simple explanations
+                    - **Intermediate**: Returning customers, more features
+                    - **Advanced**: Industry professionals, technical details
+                    
+                    **Tone**: Sets brand personality
+                    - **Conversational**: Relatable, customer-focused approach
+                    - **Professional**: Industry authority positioning
+                    - **Enthusiastic**: High-energy, promotional style
+                    - **Friendly**: Approachable, solution-oriented
+                    
+                    **Additional Context**: For marketing, include:
+                    - Key product specifications and pricing
+                    - Unique selling propositions vs competitors
+                    - Target demographics and customer pain points
+                    - Campaign goals and desired call-to-action
+                    """)
                 ]
             elif template == "General Education":
                 return [
@@ -205,7 +280,32 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Include curriculum requirements, related concepts, visual aids to reference, or misconceptions to address",
                         info="For educational content, consider including: grade level context, specific learning objectives, key vocabulary to use, or supporting examples"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Educational Content Parameter Guide
+                    
+                    **Length**: Adapts to lesson format
+                    - **Short**: 3-5 minute concept introduction
+                    - **Medium**: 8-12 minute lesson segment
+                    - **Long**: 15-20 minute complete lesson
+                    
+                    **Target Audience**: Adjusts to educational level
+                    - **Children**: Elementary/primary school level
+                    - **Beginner**: Secondary/high school basics
+                    - **Intermediate**: Advanced high school/early college
+                    - **Advanced**: College/university level content
+                    
+                    **Tone**: Sets instructional approach
+                    - **Informative**: Clear, factual presentation
+                    - **Conversational**: Engaging, dialogue-style teaching
+                    - **Enthusiastic**: Dynamic, curiosity-building approach
+                    
+                    **Additional Context**: For educational content, include:
+                    - Curriculum standards or learning objectives
+                    - Prior knowledge students should have
+                    - Common misconceptions to address
+                    - Visual aids or demonstrations available
+                    """)
                 ]
             elif template == "Technical Tutorial":
                 return [
@@ -219,7 +319,31 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Include software versions, prerequisites, technical specifications, or common pitfalls to address",
                         info="For technical tutorials, consider including: environment details, dependency requirements, troubleshooting tips, or expected outcomes"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Technical Tutorial Parameter Guide
+                    
+                    **Length**: Controls tutorial depth
+                    - **Short**: Quick tip or single feature overview
+                    - **Medium**: Focused walkthrough of one concept
+                    - **Long**: Comprehensive implementation guide
+                    
+                    **Target Audience**: Adjusts technical complexity
+                    - **Beginner**: New to the technology, needs basics
+                    - **Intermediate**: Familiar but needs detailed steps
+                    - **Advanced**: Experienced users needing optimization
+                    
+                    **Tone**: Sets instructional style
+                    - **Informative**: Clear, precise technical instructions
+                    - **Professional**: Industry standard approaches
+                    - **Conversational**: Accessible technical guidance
+                    
+                    **Additional Context**: For technical tutorials, include:
+                    - Software versions and dependencies
+                    - System requirements or constraints
+                    - Prerequisites or required knowledge
+                    - Common errors and troubleshooting tips
+                    """)
                 ]
             else:  # General
                 return [
@@ -233,14 +357,41 @@ def create_script_generator_tab():
                     gr.update(
                         placeholder="Add specific details, concepts, or internal knowledge that should be incorporated into the script",
                         info="This helps generate more accurate and relevant content"
-                    )
+                    ),
+                    gr.update(markdown="""
+                    ### Parameter Quick Guide
+                    
+                    **Length**: Controls script word count
+                    - **Short**: 150-250 words, brief overview
+                    - **Medium**: 300-500 words, balanced detail
+                    - **Long**: 600-900 words, comprehensive coverage
+                    
+                    **Target Audience**: Adapts complexity and examples
+                    - **General**: Universal approach
+                    - **Beginner/Children**: Simplified concepts, more explanation
+                    - **Intermediate**: More detailed techniques
+                    - **Advanced**: Specialized terminology and complex concepts
+                    
+                    **Tone**: Sets the voice and style
+                    - **Informative**: Clear, fact-focused delivery
+                    - **Conversational**: Casual, friendly dialogue
+                    - **Professional**: Formal, authoritative approach
+                    - **Friendly**: Warm, encouraging language
+                    - **Enthusiastic**: Energetic, motivational style
+                    
+                    **Additional Context**: Provide background information that informs the script generation without being directly referenced. Include:
+                    - Relevant background knowledge
+                    - Specific concepts to emphasize
+                    - Goals or outcomes
+                    - Time constraints or format requirements
+                    """)
                 ]
         
         # Update all fields based on selected template
         template_selector.change(
             fn=update_template_fields,
             inputs=[template_selector],
-            outputs=[prompt_input, subject_input, context_input]
+            outputs=[prompt_input, subject_input, context_input, guide_markdown]
         )
         
         return script_output, script_file_output 
