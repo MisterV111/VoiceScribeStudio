@@ -1,124 +1,99 @@
 # VoiceScribe Studio
 
-VoiceScribe Studio is a powerful AI-driven educational content creation platform that transforms how instructors, trainers, and content creators develop professional-quality educational materials. By leveraging OpenAI's advanced language models and ElevenLabs' state-of-the-art voice synthesis technology, VoiceScribe Studio streamlines the entire content production workflow—from script generation to final voiceover production—all within an intuitive, user-friendly interface.
+AI-powered script generation and voiceover production studio for educational and marketing content.
 
-With specialized templates for various educational domains including music instruction, corporate training, and technical tutorials, VoiceScribe Studio helps users craft perfectly tailored content for their specific audience. The application enables fine-grained control over script length, audience targeting, and tone, while providing powerful editing capabilities with AI assistance. Once your script is perfected, transform it into lifelike voiceovers using premium male and female voices, with precise control over delivery speed, style, and even custom pauses using SSML tags.
+<div align="center">
+  <img src="app/assets/VoiceScribe Studio Banner.png" alt="VoiceScribe Studio Banner" width="800">
+</div>
 
-VoiceScribe Studio eliminates the technical barriers to creating professional educational content, making it accessible to educators, trainers, and content creators of all technical skill levels.
+## About
 
-## Features
+VoiceScribe Studio is a comprehensive application that combines advanced AI technologies to streamline content creation from script to voiceover. Designed for educators, marketers, and content creators, this application simplifies the process of creating professional, engaging content with minimal effort.
 
-- Generate educational scripts using OpenAI's API
-- Edit and refine scripts with AI assistance
-- Generate high-quality voiceovers with ElevenLabs' API
-- Convert audio between MP3 and OGG formats
-- User-friendly Gradio web interface
+### Features
 
-## Getting Started
+- 📝 **Script Generation**: Create customized scripts for various content types including educational materials, marketing campaigns, business training, and more
+- 🗣️ **Voice Synthesis**: Transform scripts into natural-sounding voiceovers using ElevenLabs' advanced TTS technology
+- 🔧 **Voice Customization**: Adjust voice parameters including stability, clarity, style, and speed to achieve the perfect sound
+- ✏️ **Script Editing**: Integrated editor for refining AI-generated scripts before voiceover creation
+- 🔀 **Multiple Templates**: Specialized script templates for different content types and audiences
+- 📊 **Audience Targeting**: Customize content for different audience levels from beginner to expert
+- 🔍 **Content Adaptation**: Adjust tone, length, and style based on your specific needs
+- 💾 **Local Storage**: Save generated scripts and audio files locally
+
+## Development Branches
+
+The repository is organized with the following branch structure:
+
+- **main**: Stable, production-ready version of VoiceScribe Studio
+- **voicescribe-v2**: Development branch for the next major version (currently in active development)
+
+All new feature development happens on the **voicescribe-v2** branch and is merged to main when ready for release.
+
+## Installation
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.9+
 - OpenAI API key
 - ElevenLabs API key
 
-### Installation
+### Setup
 
-1. Clone this repository:
+1. Clone the repository:
    ```
-   git clone https://github.com/MisterV111/VoiceScribeStudio.git
+   git clone https://github.com/yourusername/VoiceScribeStudio.git
    cd VoiceScribeStudio
    ```
-   
-2. Create a virtual environment:
+
+2. Create and activate a virtual environment:
    ```
-   python3 -m venv venv
+   python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-   
-3. Install the required dependencies:
+
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
-   
-4. Configure your API keys:
+
+4. Create a `.env` file in the root directory with your API keys:
    ```
-   cp .env.example .env
+   OPENAI_API_KEY=your_openai_api_key_here
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
    ```
-   Then edit the `.env` file to add your OpenAI and ElevenLabs API keys.
 
-### Running the Application
-
-To run the application, you can use either:
-
-```
-python3 run.py
-```
-
-Or use the start script:
-
-```
-bash start.sh
-```
-
-This will start the Gradio web interface. You can access it at http://127.0.0.1:7860 in your web browser.
+5. Run the application:
+   ```
+   python run.py
+   ```
 
 ## Usage
 
-### Generating a Script
+1. **Script Generation**: Select a template type, adjust parameters, and provide a subject or prompt
+2. **Script Editing**: Review and refine the generated script
+3. **Voiceover Creation**: Select a voice and adjust parameters to generate the perfect voiceover
+4. **Export**: Save both script and audio files for use in your projects
 
-1. Navigate to the "Generate Script" tab
-2. Enter your script topic and details
-3. Click "Generate Script"
-4. Your script will be saved in the `output/scripts` directory
+## Templates
 
-### Editing a Script
+VoiceScribe Studio offers several specialized templates:
 
-1. Navigate to the "Edit Script" tab
-2. Paste your script or use one generated in the previous step
-3. Enter your editing instructions
-4. Click "Edit Script"
-5. Your edited script will be saved in the `output/scripts` directory
+- **General Education**: For traditional educational content
+- **Technical Tutorial**: For software, coding, and technical instruction
+- **Marketing**: For promotional and advertising content
+- **Business Training**: For corporate training and professional development
+- **Music Lesson**: For music instruction and demonstration
 
-### Creating a Voiceover
+## Contributing
 
-1. Navigate to the "Generate Voiceover" tab
-2. Paste your script
-3. Select a voice and output format
-4. Adjust voice settings as needed
-5. Click "Generate Voiceover"
-6. Play the audio or download it
-7. Your audio will be saved in the `output/audio` directory
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Advanced Script Formatting
-
-When creating voiceovers, you can control pauses and timing using SSML tags:
-
-```
-<break time="0.5s" />   - Add a half-second pause
-<break time="1s" />     - Add a 1-second pause
-<break time="1.5s" />   - Add a 1.5-second pause
-<break time="2s" />     - Add a 2-second pause
-<break time="3s" />     - Add a 3-second pause
-```
-
-See the Script Formatting Guide in the app for more details.
-
-## Project Structure
-
-- `app/` - Main application code
-  - `config.py` - Configuration handling
-  - `main.py` - Gradio interface setup
-  - `components/` - UI components for each tab
-  - `utils/` - Utility functions for API interactions
-  - `templates/` - Template prompts and documents
-- `output/` - Generated scripts and audio files
-  - `scripts/` - Generated and edited scripts
-  - `audio/` - Generated voiceovers
-- `run.py` - Application entry point
-- `start.sh` - Shell script to start the application
-- `.env.example` - Example environment file for API keys
-- `requirements.txt` - Python dependencies
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
@@ -126,6 +101,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- [OpenAI](https://openai.com/) for providing the language model API
-- [ElevenLabs](https://elevenlabs.io/) for the voice synthesis API
-- [Gradio](https://gradio.app/) for the web interface framework 
+- [OpenAI](https://openai.com/) for the language model API
+- [ElevenLabs](https://elevenlabs.io/) for the text-to-speech technology
+- [Gradio](https://gradio.app/) for the web interface 
