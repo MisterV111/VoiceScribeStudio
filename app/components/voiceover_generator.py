@@ -67,9 +67,10 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         if output_format.lower() == "ogg":
             ogg_path = mp3_path.replace(".mp3", ".ogg")
             _, ogg_file = convert_mp3_to_ogg(mp3_path, ogg_path)
-            return "Voiceover generated successfully!", ogg_file, mp3_path
-            
-        return "Voiceover generated successfully!", mp3_path, None
+            return "Voiceover generated successfully!", ogg_file, None
+        else:
+            # Return mp3_path as the third parameter for mp3_output
+            return "Voiceover generated successfully!", None, mp3_path
     except Exception as e:
         return f"Error generating voiceover: {str(e)}", None, None
 
