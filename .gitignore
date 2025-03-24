@@ -18,17 +18,28 @@ output/scripts/*
 !output/audio/.gitkeep
 !output/scripts/.gitkeep
 
+# Temporary output files
+temp_output/
+!temp_output/.gitkeep
+
 # Distribution / packaging
 dist/
 build/
 *.egg-info/
 
-# Test files
-test_*.py
-test_*.mp3
-test_*.wav
-test_*.ogg
-debug_*.py
+# Test files in root directory (legacy)
+/test_*.py
+/test_*.mp3
+/test_*.wav
+/test_*.ogg
+/debug_*.py
+
+# Tests directory (allow all files in tests directory)
+tests/*
+!tests/.gitkeep
+!tests/*.py
+!tests/*.md
+!tests/test_*.mp3
 
 # IDE specific files
 .idea/

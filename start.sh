@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# Activate virtual environment
-source venv/bin/activate
+# This is a compatibility script that calls the main script in the scripts directory
+echo "Starting VoiceScribe Studio..."
+bash ./scripts/start.sh
 
-# Run the application
-python run.py
-
-# Keep terminal open on error
-if [ $? -ne 0 ]; then
-    echo -e "\nApplication exited with an error. Press any key to close this window..."
-    read -n 1
-fi 
+# Exit with the same code as the main script
+exit $? 
