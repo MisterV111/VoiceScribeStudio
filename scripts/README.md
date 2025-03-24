@@ -17,3 +17,4 @@ bash ./scripts/start.sh
 # OR use the compatibility script in the root directory
 bash ./start.sh
 ```
+
