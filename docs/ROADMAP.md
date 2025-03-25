@@ -4,19 +4,35 @@
 
 ### Voice Generation
 - Single API key approach: The application uses one ElevenLabs API key stored in `.env`
-- Preset voices: Adam, Antoni, Bella, Rachel are available by default
+- 8 preset voices:
+  - **Male voices**: Dan Teacher (Natural, Neutral, Upbeat), Mark - Natural Conversations
+  - **Female voices**: Cassidy, Jessica Anne - Conversational, Lori - Happy, Rachel
 - Custom Voice ID: Users can enter any ElevenLabs voice ID from their personal collection
 - MP3 and OGG output formats supported
+- Advanced voice settings: Control for stability, similarity, style exaggeration, speed, and speaker boost
 
 ### Script Generation
-- OpenAI integration for script generation and editing
-- Customizable parameters for script length, tone, and audience
+- OpenAI integration for script generation using GPT-4o (with fallbacks to other models)
+- 6 specialized templates: Music Lesson, Corporate Training, Marketing, General Education, Technical Tutorial, and General
+- Customizable parameters:
+  - Length: short, medium, long
+  - Audience: general, beginner, intermediate, advanced, children
+  - Tone: informative, conversational, professional, friendly, enthusiastic
+- Additional context input for more tailored content
 - Script saving and management
+
+### Script Editing
+- AI-powered script editing with customizable instructions
+- Context input for targeted revisions
+- Automatic saving of edited scripts
 
 ### Technical Implementation
 - Environment variables for API key management
 - Error handling for invalid API keys or voice IDs
-- Unified interface for all features
+- Comprehensive UI with tabbed interface
+- Detailed documentation and guidance for all features
+- Fallback mechanisms for API availability
+- Output file management in organized directories
 
 ## Enhanced Architecture Implementation Plan
 
