@@ -1,32 +1,41 @@
-# VoiceScribe Studio - LLM Enhancement Implementation Plan
+# VoiceScribe Studio - Enhanced Implementation Plan
 
 **Project Start Date:** March 23, 2025  
-**Estimated Completion:** June 29, 2025  
+**Estimated Completion:** July 15, 2025  
 **Current Status:** Planning Phase
 
 ## Project Overview
 
-This implementation plan outlines the process of enhancing VoiceScribe Studio with a multi-LLM architecture to improve script generation quality and expand capabilities. The system will utilize DeepSeek R1 for high-quality script generation combined with Claude 3.7 Sonnet for content processing and FireCrawl for web data acquisition.
+This implementation plan outlines the process of enhancing VoiceScribe Studio with a multi-LLM architecture and Model Context Protocol (MCP) server integrations to improve script generation quality, accuracy, and media production capabilities. The system will utilize DeepSeek R1 for high-quality script generation combined with Claude 3.7 Sonnet for content processing, various MCP servers for specialized functions, and direct API integrations for media enhancement.
 
 ## Architecture Summary
 
-### Three-Tier System
+### Multi-Tier Enhanced System
 
-1. **Data Acquisition Layer (FireCrawl)**
-   - Web content retrieval and extraction
-   - Real-time information access
-   - Source metadata preservation
+1. **Data Acquisition Layer**
+   - **FireCrawl**: Web content retrieval and extraction
+   - **Perplexity MCP**: Fact-checking and knowledge enhancement
+   - **Browser Tools MCP**: Direct URL content processing
+   - **YouTube API**: Style and content reference extraction
 
-2. **Content Processing Layer (Claude 3.7 Sonnet)**
-   - Document and web content analysis
-   - Context structuring and summarization
-   - Source attribution management
-   - Fallback script generation
+2. **Content Processing Layer**
+   - **Claude 3.7 Sonnet**: Document and web content analysis
+   - **Memory MCP**: User preference and context retention
+   - **Content verification system**: Cross-referencing and fact validation
 
-3. **Script Generation Layer (DeepSeek R1)**
-   - High-quality script creation across all templates
-   - Template-specific formatting and guidance
-   - Professional output generation
+3. **Script Generation Layer**
+   - **DeepSeek R1**: High-quality script creation across all templates
+   - **Template-specific formatting**: Professional output generation
+
+4. **Media Enhancement Layer** (Premium Features)
+   - **EverArt MCP**: Visual content generation
+   - **Suno AI**: Background music generation
+   - **Document Conversion MCP**: Professional export formats
+
+5. **File Management Layer**
+   - **File System MCP**: Content organization and metadata
+   - **Version control**: Script iteration management
+   - **Export system**: Multi-format document generation
 
 ## Implementation Phases & Milestones
 
@@ -39,11 +48,12 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Database schema update for user-ready fields
 - [ ] Token tracking instrumentation
 - [ ] Cross-template testing suite
+- [ ] MCP server management framework setup
 
-**Milestone:** Basic DeepSeek script generation functional
+**Milestone:** Basic DeepSeek script generation functional with MCP framework
 
-### Phase 2: Claude Integration for Content Processing
-**Timeline: 2-3 weeks**
+### Phase 2: Content Processing Enhancement
+**Timeline: 3-4 weeks**
 
 - [ ] Content processing module creation
 - [ ] Document analysis implementation
@@ -51,42 +61,54 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Claude-DeepSeek handoff protocol
 - [ ] Source tracking system development
 - [ ] Token usage storage implementation
-- [ ] Testing with varied document inputs
+- [ ] Memory MCP integration for context retention
+- [ ] Direct YouTube API integration for style reference
+- [ ] Style reference processing module
+- [ ] Testing with varied content sources
 
-**Milestone:** Content processing pipeline functional
+**Milestone:** Enhanced content processing pipeline functional
 
-### Phase 3: FireCrawl Integration
+### Phase 3: Multi-Source Data Acquisition
 **Timeline: 3-4 weeks**
 
-- [ ] FireCrawl MCP server forking
-- [ ] Configuration for VoiceScribe requirements
-- [ ] Web processing pipeline development
-- [ ] FireCrawl-Claude connection
+- [ ] FireCrawl MCP server integration
+- [ ] Perplexity MCP integration for fact verification
+- [ ] Browser Tools MCP for URL processing
+- [ ] Source selection logic implementation
+- [ ] Unified data pipeline development
+- [ ] FireCrawl-Claude-Perplexity workflow
 - [ ] Source metadata collection implementation
 - [ ] Analytics framework development
+- [ ] Premium feature access control system
 - [ ] Multi-source testing
 
-**Milestone:** Web content incorporation functional
+**Milestone:** Comprehensive data acquisition system functional
 
-### Phase 4: Analytics & Reporting System
-**Timeline: 2 weeks**
+### Phase 4: Media Enhancement & Output Management
+**Timeline: 3 weeks**
+
+- [ ] File System MCP integration
+- [ ] Document Conversion MCP implementation
+- [ ] EverArt MCP for visual content generation
+- [ ] Suno AI integration for background music
+- [ ] Content organization system
+- [ ] Export format configuration
+- [ ] Media asset management system
+- [ ] Premium feature tier implementation
+- [ ] Output testing across formats
+
+**Milestone:** Media enhancement and output management functional
+
+### Phase 5: Analytics, UI Enhancement & Deployment
+**Timeline: 3-4 weeks**
 
 - [ ] Token usage dashboard creation
-- [ ] CSV export functionality
-- [ ] Google Sheets compatible formatting
-- [ ] Scheduled exports setup
-- [ ] Cost projection reports
-- [ ] Usage alert system
-- [ ] Report verification testing
-
-**Milestone:** Analytics system operational
-
-### Phase 5: UI Enhancements & Deployment
-**Timeline: 2-3 weeks**
-
+- [ ] API cost monitoring across services
+- [ ] Premium feature usage tracking
 - [ ] Document upload functionality
-- [ ] URL input interface
-- [ ] Search interface development
+- [ ] URL and YouTube reference input interface
+- [ ] Audio preview for generated music
+- [ ] Visual content gallery
 - [ ] Source citation UI component
 - [ ] Session tracking implementation
 - [ ] Progress indicators for multi-stage processing
@@ -119,32 +141,56 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Access mechanism: [TBD]
 - Configuration parameters: [TBD]
 
+**Perplexity API:**
+- Base URL: https://api.perplexity.ai
+- Authentication method: API key
+- Model options: sonar-deep-research, sonar-reasoning-pro
+- Timeout settings: 60s
+
+**YouTube Data API:**
+- Base URL: https://www.googleapis.com/youtube/v3
+- Authentication method: API key
+- Rate limits: 10,000 units/day (free tier)
+- Key endpoints: videos, captions, search
+
+**Suno AI:**
+- Base URL: https://api.suno.ai
+- Authentication method: API key
+- Response format: JSON
+- Rate limits: [TBD]
+- Generation parameters: mood, style, duration
+
+### MCP Server Management
+
+**Server Configurations:**
+- File System MCP
+- Browser Tools MCP
+- Memory MCP
+- Document Conversion MCP
+- EverArt MCP
+
+**Framework Components:**
+- Server lifecycle management
+- Request routing
+- Error handling
+- Authentication flow
+- Premium feature gating
+
 ### Token Management System
 
 **Tracking Components:**
 - Input token counters by source
 - Output token counters by template
 - Model usage distribution tracking
+- API call tracking by service
 - Cost calculation formulas
 - Usage pattern analysis
 
 **Storage Schema:**
 - Token metrics database table structure
+- API usage metrics structure
 - Aggregation methodology
 - Retention policies
-
-### CSV Export System
-
-**Export Categories:**
-- Usage Reports
-- Cost Reports
-- Performance Reports
-
-**Format Specifications:**
-- Header standardization
-- Date/time formatting: ISO 8601
-- Numeric precision: 2 decimal places
-- Character encoding: UTF-8
 
 ## Testing Strategy
 
@@ -153,18 +199,21 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Token counter validation
 - Content processing verification
 - Source attribution accuracy
+- MCP server communication
 
 ### Integration Testing
 - End-to-end script generation
 - Multi-model pipeline testing
 - Error handling verification
 - Fallback mechanism validation
+- MCP service coordination
 
 ### Performance Testing
 - Response time benchmarking
 - Token efficiency analysis
 - Memory usage profiling
 - Load testing parameters
+- Multi-service latency
 
 ## Risk Management
 
@@ -174,16 +223,18 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 | Token costs exceed projections | Medium | Medium | Usage caps, monitoring alerts, optimization reviews |
 | Content processing quality issues | Low | High | Extensive prompt engineering, quality review cycles |
 | Integration complexity delays | Medium | Medium | Modular approach, clear interfaces, parallel workstreams |
+| MCP server compatibility issues | Medium | Medium | Testing framework, fallback capabilities, direct API alternatives |
+| API rate limiting | High | Medium | Intelligent caching, queue management, premium tier controls |
 
 ## Progress Tracking
 
 | Phase | Status | Start Date | Target End Date | Actual End Date | Notes |
 |-------|--------|------------|----------------|----------------|-------|
 | 1     | Not Started | March 25, 2025 | April 15, 2025 |  |  |
-| 2     | Not Started | April 16, 2025 | May 7, 2025 |  |  |
-| 3     | Not Started | May 8, 2025 | June 4, 2025 |  |  |
-| 4     | Not Started | June 5, 2025 | June 19, 2025 |  |  |
-| 5     | Not Started | June 20, 2025 | July 11, 2025 |  |  |
+| 2     | Not Started | April 16, 2025 | May 14, 2025 |  |  |
+| 3     | Not Started | May 15, 2025 | June 12, 2025 |  |  |
+| 4     | Not Started | June 13, 2025 | July 3, 2025 |  |  |
+| 5     | Not Started | July 4, 2025 | July 28, 2025 |  |  |
 
 ## Cost Projections
 
@@ -191,21 +242,42 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - DeepSeek R1: ~$10-20 per 1M output tokens
 - Claude 3.7 Sonnet: $3 per 1M input tokens, $15 per 1M output tokens
 - FireCrawl: Underlying search API costs only
+- Perplexity: ~$0.15-0.20 per query (deep research)
+- YouTube API: Free tier with 10,000 units/day
+- Suno AI: ~$0.10-0.30 per music generation (depends on length)
 
 ### Monthly Projections (1,000 scripts)
 - Content Processing: ~$50-100
 - Script Generation: ~$100-200
-- Web Search: ~$30-50
-- Total: ~$180-350/month
+- Web Search & Verification: ~$50-80
+- YouTube References: ~$0-20
+- Music Generation (Premium): ~$50-100
+- Total: ~$250-500/month
+
+## Premium Feature Tiers
+
+### Basic Tier
+- Standard script generation
+- Basic voice synthesis
+- Simple document exports
+
+### Premium Tier
+- Enhanced accuracy with Perplexity verification
+- YouTube style reference processing
+- Professional document exports
+- Background music generation
+- Visual content generation
 
 ## Success Metrics
 
 - [ ] Script quality improvement measured through user edits reduction
 - [ ] Successful handling of real-time information in scripts
+- [ ] Factual accuracy improvement with verification services
 - [ ] System reliability with 99.5%+ uptime
 - [ ] Source attribution accuracy > 95%
 - [ ] Token usage optimization achieving <5% waste
 - [ ] Cost projections accurate within 10% of actual costs
+- [ ] Premium feature adoption rate > 15%
 
 ## Appendix
 
@@ -223,10 +295,18 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Efficient content processing
 - Cost-effective for large input processing
 
+**Suno AI:**
+- AI music generation from text descriptions
+- Multiple style and genre options
+- Commercial-use licensing available
+- Length and structure customization
+
 ### Future Considerations
 
 - User account system integration
 - Personal history panel
 - Advanced analytics dashboard
 - Usage-based pricing tiers
-- Additional LLM options 
+- Additional LLM options
+- Mobile application development
+- Enterprise deployment options 
