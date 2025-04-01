@@ -1,7 +1,7 @@
 # VoiceScribe Studio - Enhanced Implementation Plan
 
 **Project Start Date:** March 23, 2025  
-**Estimated Completion:** July 15, 2025  
+**Estimated Completion:** August 26, 2025 (Updated for Translation Feature)
 **Current Status:** Planning Phase
 
 ## Project Overview
@@ -19,7 +19,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
    - **YouTube API**: Style and content reference extraction
 
 2. **Content Processing Layer**
-   - **Claude 3.7 Sonnet**: Document and web content analysis
+   - **Claude 3.7 Sonnet**: Document/web content analysis, **Translation Service**
    - **Memory MCP**: User preference and context retention
    - **Content verification system**: Cross-referencing and fact validation
 
@@ -66,9 +66,25 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Style reference processing module
 - [ ] Testing with varied content sources
 
-**Milestone:** Enhanced content processing pipeline functional
+**Milestone:** Enhanced content processing pipeline functional (Foundation for Translation)
 
-### Phase 3: Multi-Source Data Acquisition
+### Phase 3: Translation Feature Implementation
+**Timeline: 4-5 weeks** (New Phase)
+
+- [ ] Design `TranslationService` backend module
+- [ ] Implement Claude 3.7 prompt templates for translation (context-aware)
+- [ ] Develop template-specific glossary structure (JSON) & management system
+- [ ] Build translation UI components (dropdown, button, display area) in Editing Tab
+- [ ] Integrate `TranslationService` with Claude 3.7 Sonnet API
+- [ ] Develop initial glossaries for core templates (e.g., Music, Science)
+- [ ] Implement end-to-end translation workflow (frontend to backend)
+- [ ] Add translation operations to token usage tracking
+- [ ] Unit, integration, and specialized character set testing for translation
+- [ ] Optimize translation performance (caching, prompt efficiency)
+
+**Milestone:** Core translation functionality operational with initial glossaries
+
+### Phase 4: Multi-Source Data Acquisition
 **Timeline: 3-4 weeks**
 
 - [ ] FireCrawl MCP server integration
@@ -84,7 +100,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 **Milestone:** Comprehensive data acquisition system functional
 
-### Phase 4: Media Enhancement & Output Management
+### Phase 5: Media Enhancement & Output Management
 **Timeline: 3 weeks**
 
 - [ ] File System MCP integration
@@ -99,7 +115,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 **Milestone:** Media enhancement and output management functional
 
-### Phase 5: Analytics, UI Enhancement & Deployment
+### Phase 6: Analytics, UI Enhancement & Deployment
 **Timeline: 3-4 weeks**
 
 - [ ] Token usage dashboard creation
@@ -116,7 +132,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Comprehensive testing
 - [ ] Production deployment
 
-**Milestone:** Enhanced system fully deployed
+**Milestone:** Enhanced system fully deployed with Translation Feature
 
 ## Technical Specifications
 
@@ -160,6 +176,12 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Rate limits: [TBD]
 - Generation parameters: mood, style, duration
 
+### Translation Service Details (New Section)
+- **Primary LLM:** Claude 3.7 Sonnet
+- **Target Languages:** French, Spanish, German, Italian, Portuguese, Russian, Japanese, Korean, Chinese
+- **Glossary Format:** JSON, structured by template and target language
+- **Prompt Strategy:** Contextual prompts including role definition, task specification, template context, glossary terms, and format instructions.
+
 ### MCP Server Management
 
 **Server Configurations:**
@@ -185,6 +207,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - API call tracking by service
 - Cost calculation formulas
 - Usage pattern analysis
+- **Translation operation tracking** (New)
 
 **Storage Schema:**
 - Token metrics database table structure
@@ -200,6 +223,8 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Content processing verification
 - Source attribution accuracy
 - MCP server communication
+- **Translation prompt construction** (New)
+- **Glossary injection validation** (New)
 
 ### Integration Testing
 - End-to-end script generation
@@ -207,6 +232,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Error handling verification
 - Fallback mechanism validation
 - MCP service coordination
+- **Translation workflow testing** (New)
 
 ### Performance Testing
 - Response time benchmarking
@@ -214,6 +240,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Memory usage profiling
 - Load testing parameters
 - Multi-service latency
+- **Translation response time benchmarking** (New)
 
 ## Risk Management
 
@@ -225,16 +252,19 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 | Integration complexity delays | Medium | Medium | Modular approach, clear interfaces, parallel workstreams |
 | MCP server compatibility issues | Medium | Medium | Testing framework, fallback capabilities, direct API alternatives |
 | API rate limiting | High | Medium | Intelligent caching, queue management, premium tier controls |
+| **Translation Quality/Accuracy** | Medium | High | Contextual prompts, glossary system, quality review cycles, potential fallback (manual edit) |
+| **Glossary Maintenance Overhead** | Medium | Medium | Start with core templates, community contribution model?, automated suggestions? |
 
 ## Progress Tracking
 
 | Phase | Status | Start Date | Target End Date | Actual End Date | Notes |
 |-------|--------|------------|----------------|----------------|-------|
-| 1     | Not Started | March 25, 2025 | April 15, 2025 |  |  |
-| 2     | Not Started | April 16, 2025 | May 14, 2025 |  |  |
-| 3     | Not Started | May 15, 2025 | June 12, 2025 |  |  |
-| 4     | Not Started | June 13, 2025 | July 3, 2025 |  |  |
-| 5     | Not Started | July 4, 2025 | July 28, 2025 |  |  |
+| 1     | Not Started | March 25, 2025 | April 15, 2025 |  | Foundation |
+| 2     | Not Started | April 16, 2025 | May 14, 2025 |  | Content Processing Core |
+| 3     | Not Started | May 15, 2025 | June 19, 2025 |  | **Translation Feature** (New) |
+| 4     | Not Started | June 20, 2025 | July 18, 2025 |  | Multi-Source Data (Shifted) |
+| 5     | Not Started | July 19, 2025 | August 8, 2025 |  | Media/Output (Shifted) |
+| 6     | Not Started | August 9, 2025 | Sept 6, 2025 |  | UI/Deployment (Shifted) |
 
 ## Cost Projections
 
@@ -245,14 +275,16 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Perplexity: ~$0.15-0.20 per query (deep research)
 - YouTube API: Free tier with 10,000 units/day
 - Suno AI: ~$0.10-0.30 per music generation (depends on length)
+- **Claude 3.7 Translation (Est.):** ~$0.045 per average translation (2.5k input + 2.5k output tokens) (New)
 
-### Monthly Projections (1,000 scripts)
+### Monthly Projections (1,000 scripts, **assuming 500 translations**)
 - Content Processing: ~$50-100
 - Script Generation: ~$100-200
 - Web Search & Verification: ~$50-80
 - YouTube References: ~$0-20
 - Music Generation (Premium): ~$50-100
-- Total: ~$250-500/month
+- **Translation Feature:** ~$20-25 (500 * $0.045) (New)
+- **Updated Total:** ~$270-525/month (Adjusted)
 
 ## Premium Feature Tiers
 
@@ -267,6 +299,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Professional document exports
 - Background music generation
 - Visual content generation
+- **Advanced Translation Features (Potential):** (e.g., more languages, dialect control, translation memory - TBD if premium) (New)
 
 ## Success Metrics
 
@@ -278,6 +311,9 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Token usage optimization achieving <5% waste
 - [ ] Cost projections accurate within 10% of actual costs
 - [ ] Premium feature adoption rate > 15%
+- [ ] **Translation Quality:** Manual review scores > 4.0/5.0 (New)
+- [ ] **Translation Performance:** <5s completion for average scripts (New)
+- [ ] **Translation User Satisfaction:** >85% positive feedback (New)
 
 ## Appendix
 
