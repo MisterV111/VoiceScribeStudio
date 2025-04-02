@@ -14,10 +14,15 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Local imports
-from app.tests.test_matrix import get_test_matrix, get_filtered_test_cases
+from app.tests.test_matrix import get_test_matrix, get_filtered_test_cases, get_sample_test_cases
 from app.tests.validators import validate_script
+from app.tests.filter_presets import (
+    APPROACHES, get_approach_description, apply_approach_filters, 
+    filter_test_cases_by_approach, get_interactive_filters,
+    estimate_test_count, estimate_time_and_tokens
+)
 from app.utils.llm_clients import generate_script, edit_script
-from app.utils.test_logging import setup_test_logger, log_test_result
+from app.utils.test_logging import setup_test_logger, log_test_result, log_test_summary
 
 # Configure logging
 logger = logging.getLogger("cross_template_testing")
@@ -63,6 +68,7 @@ class TestRunner:
             'timestamp': datetime.now().isoformat(),
             'success': False,
             'errors': [],
+            'warnings': [],
             'token_usage': {},
             'timing': {}
         }
@@ -93,6 +99,10 @@ class TestRunner:
             else:
                 result['success'] = False
                 result['errors'].extend(validation_result['errors'])
+            
+            # Include warnings
+            if validation_result.get('warnings', []):
+                result['warnings'].extend(validation_result['warnings'])
                 
             # Include validation details
             result['validation'] = validation_result
@@ -113,26 +123,46 @@ class TestRunner:
         
         return result
     
-    def run_tests(self, filters=None):
-        """Run all test cases or a filtered subset.
+    def run_tests(self, test_cases=None, filters=None, approach=None, **kwargs):
+        """Run tests based on provided test cases, filters, or approach.
         
         Args:
-            filters: Dictionary of filters to apply to test cases
+            test_cases: List of test cases to run (highest priority)
+            filters: Dictionary of filters to apply to test cases (medium priority)
+            approach: Testing approach to use (lowest priority)
+            **kwargs: Additional parameters for the approach
             
         Returns:
             Dictionary with summary of test results
         """
-        # Get test cases based on filters
-        if filters:
-            test_cases = get_filtered_test_cases(filters)
+        # Determine which test cases to run
+        if test_cases is not None:
+            # Use explicitly provided test cases
+            cases_to_run = test_cases
+            source = "explicitly provided test cases"
+        elif filters is not None:
+            # Apply filters to get test cases
+            cases_to_run = get_filtered_test_cases(filters)
+            source = "filtered test cases"
+        elif approach is not None:
+            # Use a predefined testing approach
+            cases_to_run = filter_test_cases_by_approach(approach, **kwargs)
+            source = f"'{approach}' approach"
         else:
-            test_cases = get_test_matrix()
+            # Default to sample test cases for safety
+            cases_to_run = get_sample_test_cases(5)
+            source = "default sample test cases"
             
-        logger.info(f"Running {len(test_cases)} test cases")
+        logger.info(f"Running {len(cases_to_run)} test cases from {source}")
+        
+        # Estimate time and token usage
+        estimates = estimate_time_and_tokens(len(cases_to_run))
+        logger.info(f"Estimated execution time: {estimates['time']['formatted']}")
+        logger.info(f"Estimated token usage: {estimates['tokens']['total']:,} tokens")
         
         # Run tests in parallel
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_test = {executor.submit(self.run_single_test, test_case): test_case for test_case in test_cases}
+            future_to_test = {executor.submit(self.run_single_test, test_case): test_case for test_case in cases_to_run}
             for future in as_completed(future_to_test):
                 test_case = future_to_test[future]
                 try:
@@ -143,9 +173,14 @@ class TestRunner:
         
         # Generate summary
         summary = self._generate_summary()
+        summary['source'] = source
+        summary['output_dir'] = self.output_dir
         
         # Save summary
         self._save_summary(summary)
+        
+        # Log summary
+        log_test_summary(summary)
         
         return summary
     
@@ -174,6 +209,7 @@ class TestRunner:
                     'total': 0,
                     'success': 0,
                     'failure': 0,
+                    'warnings': 0,
                     'avg_generation_time': 0,
                     'token_usage': {}
                 }
@@ -184,6 +220,9 @@ class TestRunner:
             else:
                 template_stats[template]['failure'] += 1
                 
+            if result.get('warnings', []):
+                template_stats[template]['warnings'] += 1
+                
             # Accumulate timing data for averaging later
             if 'timing' in result and 'generation' in result['timing']:
                 template_stats[template]['avg_generation_time'] += result['timing']['generation']
@@ -192,39 +231,119 @@ class TestRunner:
         for template, stats in template_stats.items():
             if stats['total'] > 0:
                 stats['avg_generation_time'] /= stats['total']
+                stats['success_rate'] = stats['success'] / stats['total']
         
         return {
             'timestamp': datetime.now().isoformat(),
             'total_tests': total_tests,
             'successful_tests': successful_tests,
             'success_rate': successful_tests / total_tests if total_tests > 0 else 0,
-            'template_stats': template_stats
+            'template_stats': template_stats,
+            'warnings_count': sum(1 for r in self.results if r.get('warnings', []))
         }
 
 
 def main():
     """Main entry point for running the test suite from the command line."""
     parser = argparse.ArgumentParser(description='Cross-Template Testing Suite')
-    parser.add_argument('--templates', help='Comma-separated list of templates to test')
-    parser.add_argument('--audience', help='Filter by audience level')
-    parser.add_argument('--length', help='Filter by script length')
-    parser.add_argument('--tone', help='Filter by tone')
-    parser.add_argument('--force-fallback', action='store_true', help='Force fallback to secondary model')
-    parser.add_argument('--max-workers', type=int, default=4, help='Maximum number of parallel test executions')
-    parser.add_argument('--output-dir', help='Directory to store test results')
+    
+    # Basic filtering options
+    filter_group = parser.add_argument_group('Basic Filtering Options')
+    filter_group.add_argument('--templates', help='Comma-separated list of templates to test')
+    filter_group.add_argument('--audience', help='Filter by audience level')
+    filter_group.add_argument('--length', help='Filter by script length')
+    filter_group.add_argument('--tone', help='Filter by tone')
+    
+    # Advanced options
+    advanced_group = parser.add_argument_group('Advanced Options')
+    advanced_group.add_argument('--force-fallback', action='store_true', help='Force fallback to Claude model')
+    advanced_group.add_argument('--max-workers', type=int, default=4, help='Maximum number of parallel test executions')
+    advanced_group.add_argument('--output-dir', help='Directory to store test results')
+    advanced_group.add_argument('--estimate-only', action='store_true', help='Only estimate test count and resources, no execution')
+    
+    # Testing approach options
+    approach_group = parser.add_argument_group('Testing Approach Options')
+    approach_group.add_argument('--approach', choices=APPROACHES.keys(), help='Testing approach to use')
+    approach_group.add_argument('--approach-param', action='append', nargs=2, metavar=('KEY', 'VALUE'), 
+                             help='Parameters for the testing approach (can be specified multiple times)')
+    approach_group.add_argument('--interactive', action='store_true', help='Use interactive mode for selecting filters')
+    approach_group.add_argument('--sample-size', type=int, help='Number of test cases to sample (for sample-based approach)')
+    approach_group.add_argument('--sample-strategy', choices=['balanced', 'random'], default='balanced', 
+                             help='Sampling strategy (for sample-based approach)')
     
     args = parser.parse_args()
     
-    # Prepare filters from command line arguments
-    filters = {}
-    if args.templates:
-        filters['templates'] = args.templates.split(',')
-    if args.audience:
-        filters['audience'] = args.audience
-    if args.length:
-        filters['length'] = args.length
-    if args.tone:
-        filters['tone'] = args.tone
+    # Handle interactive mode
+    if args.interactive:
+        filter_selection = get_interactive_filters()
+        if not filter_selection:
+            return 1
+        
+        approach = filter_selection['approach']
+        kwargs = filter_selection['kwargs']
+    else:
+        # Prepare filters based on command line arguments
+        filters = {}
+        if args.templates:
+            filters['templates'] = args.templates.split(',')
+        if args.audience:
+            filters['audience'] = args.audience
+        if args.length:
+            filters['length'] = args.length
+        if args.tone:
+            filters['tone'] = args.tone
+        
+        # Prepare approach parameters
+        approach = args.approach
+        kwargs = {}
+        
+        if args.approach_param:
+            for key, value in args.approach_param:
+                # Try to convert numeric values
+                try:
+                    if '.' in value:
+                        kwargs[key] = float(value)
+                    else:
+                        kwargs[key] = int(value)
+                except ValueError:
+                    kwargs[key] = value
+        
+        # Special handling for sample-based approach
+        if approach == 'sample-based' or (not approach and args.sample_size):
+            approach = 'sample-based'
+            kwargs['sample_size'] = args.sample_size or 5
+            kwargs['strategy'] = args.sample_strategy
+    
+    # Determine what test cases to run
+    if approach:
+        test_filters = apply_approach_filters(approach, **kwargs)
+        test_source = f"'{approach}' approach"
+    else:
+        test_filters = filters
+        test_source = "command-line filters"
+    
+    # Estimate test count and resources
+    test_count = estimate_test_count(test_filters)
+    estimates = estimate_time_and_tokens(test_count)
+    
+    print("\n=== Test Execution Estimates ===")
+    print(f"Source: {test_source}")
+    print(f"Number of test cases: {test_count}")
+    print(f"Estimated time: {estimates['time']['formatted']}")
+    print(f"Estimated token usage: {estimates['tokens']['total']:,}")
+    print(f"Estimated cost (DeepSeek): ${estimates['tokens']['estimated_cost_deepseek']:.2f}")
+    print(f"Estimated cost (Claude): ${estimates['tokens']['estimated_cost_claude']:.2f}")
+    
+    # If only estimating, exit here
+    if args.estimate_only:
+        print("\nEstimate-only mode. Exiting without running tests.")
+        return 0
+    
+    if test_count > 100:
+        proceed = input(f"\nWarning: You are about to run {test_count} tests, which may take a long time and consume significant resources. Proceed? (y/n): ").lower()
+        if proceed != 'y':
+            print("Test execution cancelled.")
+            return 1
     
     # Create and run test runner
     runner = TestRunner(
@@ -233,7 +352,10 @@ def main():
         force_fallback=args.force_fallback
     )
     
-    summary = runner.run_tests(filters if filters else None)
+    if approach:
+        summary = runner.run_tests(approach=approach, **kwargs)
+    else:
+        summary = runner.run_tests(filters=filters)
     
     # Print summary to console
     print("\n=== Test Summary ===")
@@ -244,10 +366,13 @@ def main():
     print("\nTemplate Performance:")
     for template, stats in summary['template_stats'].items():
         print(f"  {template}:")
-        print(f"    Success Rate: {stats['success'] / stats['total'] * 100:.2f}% ({stats['success']}/{stats['total']})")
+        print(f"    Success Rate: {stats['success_rate'] * 100:.2f}% ({stats['success']}/{stats['total']})")
         print(f"    Avg Generation Time: {stats['avg_generation_time']:.2f}s")
     
     print(f"\nFull results saved to: {runner.output_dir}")
+    
+    # Return success if all tests passed
+    return 0 if summary['success_rate'] == 1.0 else 1
 
 
 if __name__ == "__main__":
