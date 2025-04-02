@@ -60,22 +60,19 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
 
 ## Installation
 
-### Prerequisites (MVP)
+### Prerequisites
 
 - Python 3.9+
-- OpenAI API key
-- ElevenLabs API key
+- DeepSeek API key (primary model)
+- Anthropic API key (for Claude 3.7 Sonnet fallback)
+- ElevenLabs API key (for voice synthesis)
 
-### Additional Prerequisites (v2 Features - Under Development)
+### Additional Prerequisites (Optional Features)
 
-*(Note: These will be required for features currently being developed on the `voicescribe-v2` branch)*
-
-- Anthropic API Key (for Claude 3.7 Sonnet)
-- DeepSeek API Key (potentially, TBD)
-- YouTube Data API Key (optional, for YouTube features)
-- Perplexity API Key (optional, for verification features)
-- Suno AI API Key (optional, for music generation)
-- EverArt API Key (optional, for image generation)
+- YouTube Data API Key (for YouTube features)
+- Perplexity API Key (for verification features)
+- Suno AI API Key (for music generation)
+- EverArt API Key (for image generation)
 - Configuration for self-hosted MCP servers (e.g., FireCrawl) where applicable.
 
 ### Setup
@@ -97,15 +94,15 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the root directory with your API keys (add keys as needed based on the features you intend to use):
+4. Create a `.env` file in the root directory with your API keys:
    ```dotenv
-   # --- MVP Keys ---
-   OPENAI_API_KEY=your_openai_api_key_here
+   # --- Required Keys ---
+   DEEPSEEK_API_KEY=your_deepseek_api_key_here
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
    ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 
-   # --- v2 Feature Keys (Add as needed) ---
-   # ANTHROPIC_API_KEY=your_anthropic_api_key_here
-   # DEEPSEEK_API_KEY=your_deepseek_api_key_here
+   # --- Optional Feature Keys ---
+   # OPENAI_API_KEY=your_openai_api_key_here  # For legacy support if needed
    # YOUTUBE_DATA_API_KEY=your_youtube_data_api_key_here
    # PERPLEXITY_API_KEY=your_perplexity_api_key_here
    # SUNO_API_KEY=your_suno_api_key_here
