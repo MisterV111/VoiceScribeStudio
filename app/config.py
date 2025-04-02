@@ -14,9 +14,11 @@ def clean_id(value):
 # API Keys
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 # Model Configuration
 OPENAI_MODEL = clean_id(os.getenv("OPENAI_MODEL", "gpt-4o"))
+DEEPSEEK_MODEL = clean_id(os.getenv("DEEPSEEK_MODEL", "deepseek-chat")) # Default DeepSeek model
 
 # ElevenLabs Voice Configuration
 VOICE_ID = clean_id(os.getenv("VOICE_ID", "default"))
@@ -40,7 +42,8 @@ PRESET_VOICES = {
 print(f"Cleaned voice IDs:")
 for name, voice_id in PRESET_VOICES.items():
     print(f"  {name}: '{voice_id}'")
-print(f"Cleaned model: '{OPENAI_MODEL}'")
+print(f"Cleaned OpenAI model: '{OPENAI_MODEL}'")
+print(f"Cleaned DeepSeek model: '{DEEPSEEK_MODEL}'")
 
 # Check if required API keys are present
 def validate_config():
@@ -52,6 +55,9 @@ def validate_config():
     
     if not ELEVENLABS_API_KEY:
         missing_keys.append("ELEVENLABS_API_KEY")
+        
+    if not DEEPSEEK_API_KEY:
+        missing_keys.append("DEEPSEEK_API_KEY")
     
     if missing_keys:
         raise ValueError(f"Missing required environment variables: {', '.join(missing_keys)}")
