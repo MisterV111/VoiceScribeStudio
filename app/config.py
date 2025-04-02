@@ -24,7 +24,7 @@ DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"
 # Model Configuration
 # OPENAI_MODEL = clean_id(os.getenv("OPENAI_MODEL", "gpt-4o")) # Removed
 DEEPSEEK_MODEL = clean_id(os.getenv("DEEPSEEK_MODEL", "deepseek-chat"))
-CLAUDE_MODEL = clean_id(os.getenv("CLAUDE_MODEL", "claude-3-7-sonnet")) 
+CLAUDE_MODEL = clean_id(os.getenv("CLAUDE_MODEL", "claude-3-7-sonnet-20250219")) 
 
 # ElevenLabs Voice Configuration
 VOICE_ID = clean_id(os.getenv("VOICE_ID", "default"))
