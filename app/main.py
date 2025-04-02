@@ -14,9 +14,9 @@ from app.components.script_generator import create_script_generator_tab
 from app.components.script_editor import create_script_editor_tab
 from app.components.voiceover_generator import create_voiceover_tab, set_voice_data
 
-# Import utilities
+# Import utilities and config
 from app.utils.elevenlabs_client import get_voices
-from app.config import validate_config, OPENAI_MODEL, OPENAI_API_KEY
+from app.config import validate_config, DEEPSEEK_MODEL, CLAUDE_MODEL
 
 def setup_directories():
     """Create necessary output directories"""
@@ -246,9 +246,10 @@ def create_interface():
 def main():
     """Main function to run the application"""
     try:
-        # Print diagnostic information
-        print(f"Starting application with OpenAI model: {OPENAI_MODEL}")
-        print(f"OpenAI API key: {OPENAI_API_KEY[:5]}...{OPENAI_API_KEY[-4:] if OPENAI_API_KEY else 'None'}")
+        # Print diagnostic information - removed OpenAI specific prints
+        print(f"Starting application...")
+        print(f"Using DeepSeek model: {DEEPSEEK_MODEL}")
+        print(f"Using Claude model: {CLAUDE_MODEL}")
         
         # Validate configuration
         validate_config()

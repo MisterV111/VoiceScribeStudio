@@ -1,9 +1,9 @@
 import gradio as gr
 import os
-from app.utils.llm_clients import edit_script_with_openai
+from app.utils.llm_clients import edit_script_with_claude
 
 def edit_script(original_script, edit_instructions, context=""):
-    """Edit a script using OpenAI"""
+    """Edit a script using Claude"""
     try:
         if not original_script or not original_script.strip():
             return "Please provide a script to edit.", None
@@ -11,11 +11,11 @@ def edit_script(original_script, edit_instructions, context=""):
         if not edit_instructions or not edit_instructions.strip():
             return "Please provide instructions for editing.", None
         
-        # Edit the script
-        edited_script = edit_script_with_openai(original_script, edit_instructions, context)
+        # Edit the script using Claude
+        edited_script = edit_script_with_claude(original_script, edit_instructions, context)
         
         if not edited_script:
-            return "Failed to edit script. Please try with different instructions.", None
+            return "Failed to edit script with Claude. Please check API key and try again.", None
         
         # Save the edited script to a file
         os.makedirs("output/scripts", exist_ok=True)

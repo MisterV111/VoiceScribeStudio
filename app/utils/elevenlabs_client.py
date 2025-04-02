@@ -7,7 +7,11 @@ from pydub import AudioSegment
 from ..config import ELEVENLABS_API_KEY, VOICE_ID
 
 # Initialize the ElevenLabs client
-client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+if ELEVENLABS_API_KEY:
+    client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+else:
+    client = None
+    print("Warning: ELEVENLABS_API_KEY not found. ElevenLabs functionality disabled.")
 
 def list_available_voices():
     """
@@ -16,6 +20,16 @@ def list_available_voices():
     Returns:
         list: List of voice objects with name and ID
     """
+    if not client:
+        print("ElevenLabs client not initialized. Returning default voices.")
+        # Return default voices as fallback if client isn't initialized
+        return [
+            {"name": "Male Voice 1", "id": "pNInz6obpgDQGcFmaJgB"},  # Adam
+            {"name": "Male Voice 2", "id": "ErXwobaYiN019PkySvjV"},  # Antoni
+            {"name": "Female Voice 1", "id": "EXAVITQu4vr4xnSDxMaL"},  # Bella
+            {"name": "Female Voice 2", "id": "21m00Tcm4TlvDq8ikWAM"},  # Rachel
+        ]
+        
     try:
         all_voices = client.voices.get_all()
         
@@ -41,12 +55,12 @@ def list_available_voices():
         return voice_list
     except Exception as e:
         print(f"Error fetching voices: {str(e)}")
-        # Return default voices as fallback
+        # Return default voices as fallback on error
         return [
-            {"name": "Male Voice 1", "id": "pNInz6obpgDQGcFmaJgB"},  # Adam
-            {"name": "Male Voice 2", "id": "ErXwobaYiN019PkySvjV"},  # Antoni
-            {"name": "Female Voice 1", "id": "EXAVITQu4vr4xnSDxMaL"},  # Bella
-            {"name": "Female Voice 2", "id": "21m00Tcm4TlvDq8ikWAM"},  # Rachel
+            {"name": "Male Voice 1", "id": "pNInz6obpgDQGcFmaJgB"},
+            {"name": "Male Voice 2", "id": "ErXwobaYiN019PkySvjV"},
+            {"name": "Female Voice 1", "id": "EXAVITQu4vr4xnSDxMaL"},
+            {"name": "Female Voice 2", "id": "21m00Tcm4TlvDq8ikWAM"},
         ]
 
 def get_voices():
@@ -86,7 +100,15 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
     Returns:
         tuple: (audio_bytes, file_path) if successful, (None, None) if failed
     """
+    if not client:
+        print("ElevenLabs client not initialized. Skipping voiceover generation.")
+        return None, None
+        
     try:
+        # Calculate character count for tracking
+        character_count = len(script)
+        print(f"Submitting {character_count} characters to ElevenLabs TTS.")
+        
         # Validate speed parameter to ensure it's within allowed range
         speed = max(0.7, min(1.2, speed))
         
@@ -113,10 +135,8 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
         
         # Handle the response based on its type
         if isinstance(audio_response, bytes):
-            # Direct bytes response
             audio = audio_response
         elif hasattr(audio_response, '__iter__') or hasattr(audio_response, '__next__'):
-            # It's a generator or iterator, collect all chunks
             print("Received generator response, collecting chunks...")
             audio_chunks = bytearray()
             for chunk in audio_response:
@@ -126,25 +146,26 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
                     print(f"Warning: Non-bytes chunk received: {type(chunk)}")
             audio = bytes(audio_chunks)
         else:
-            # Unexpected type
             print(f"Unexpected response type: {type(audio_response)}")
             return None, None
         
         print(f"Successfully generated audio: {len(audio)} bytes")
-        
+        # --- Character Count Logging --- 
+        print(f"Character Usage (ElevenLabs): Submitted={character_count}")
+        # TODO: Store character_count here later
+        # --- End Character Count Logging ---
+            
         # If output path is provided, save the audio file
         if output_path:
             timestamp = int(time.time())
             if not os.path.exists(os.path.dirname(output_path)):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
-            # Add timestamp to filename to prevent overwriting
             filename, ext = os.path.splitext(output_path)
-            if not ext:  # If no extension provided
+            if not ext: 
                 ext = ".mp3"
             file_path = f"{filename}_{timestamp}{ext}"
             
-            # Save the audio
             with open(file_path, "wb") as f:
                 f.write(audio)
             

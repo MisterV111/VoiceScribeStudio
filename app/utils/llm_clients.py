@@ -1,56 +1,126 @@
 from openai import OpenAI
-from .deepseek_client import generate_script_with_deepseek # Import DeepSeek generator
-from ..config import OPENAI_API_KEY, OPENAI_MODEL, DEEPSEEK_MODEL # Add DEEPSEEK_MODEL
+from anthropic import Anthropic
+from ..config import (
+    DEEPSEEK_API_KEY, DEEPSEEK_MODEL,
+    DEEPSEEK_BASE_URL,
+    ANTHROPIC_API_KEY, CLAUDE_MODEL
+)
 
-# Initialize OpenAI client
-if OPENAI_API_KEY:
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+# --- Client Initialization --- 
+
+# DeepSeek Client (using OpenAI SDK)
+if DEEPSEEK_API_KEY and DEEPSEEK_BASE_URL:
+    # This client instance is specifically for DeepSeek
+    deepseek_client_via_openai_sdk = OpenAI(
+        api_key=DEEPSEEK_API_KEY,
+        base_url=DEEPSEEK_BASE_URL
+    )
 else:
-    openai_client = None
-    print("Warning: OPENAI_API_KEY not found. OpenAI functionality will be limited.")
+    deepseek_client_via_openai_sdk = None
+    if not DEEPSEEK_API_KEY:
+        print("Warning: DEEPSEEK_API_KEY not found. DeepSeek functionality disabled.")
+    if not DEEPSEEK_BASE_URL:
+        print("Warning: DEEPSEEK_BASE_URL not found or invalid. DeepSeek functionality disabled.")
 
-# OpenAI Fallback models
-OPENAI_FALLBACK_MODELS = ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"]
+# Anthropic Client
+if ANTHROPIC_API_KEY:
+    anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
+else:
+    anthropic_client = None
+    print("Warning: ANTHROPIC_API_KEY not found. Claude functionality disabled.")
 
-def generate_script_with_openai(system_message, user_message, model=OPENAI_MODEL):
-    """
-    Generate a script using the OpenAI API.
-    
-    Args:
-        system_message (str): The system prompt guiding the model.
-        user_message (str): The user's prompt and context.
-        model (str): The OpenAI model to use.
-        
-    Returns:
-        str: The generated script, or None if an error occurs.
-    """
-    if not openai_client:
-        print("OpenAI client not initialized. Skipping OpenAI generation.")
+# --- Generation Helper Functions --- 
+
+def _generate_with_openai_sdk(client_instance, system_message, user_message, model):
+    """Helper to generate script using an OpenAI-compatible SDK client instance (like DeepSeek)."""
+    if not client_instance:
+        print(f"Client instance for model {model} not available. Skipping.")
         return None
         
     try:
-        print(f"Attempting script generation with OpenAI model: {model}")
-        completion = openai_client.chat.completions.create(
+        print(f"Attempting script generation with model: {model} via client: {getattr(client_instance, 'base_url', 'Unknown Base URL')}")
+        completion = client_instance.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ],
             temperature=0.7,
-            max_tokens=1500 # Keep OpenAI max tokens as before
+            max_tokens=3000 
         )
         
+        # --- Token Tracking --- 
+        prompt_tokens = 0
+        completion_tokens = 0
+        if completion.usage:
+            prompt_tokens = completion.usage.prompt_tokens
+            completion_tokens = completion.usage.completion_tokens
+            print(f"Token Usage ({model}): Prompt={prompt_tokens}, Completion={completion_tokens}, Total={completion.usage.total_tokens}")
+        else:
+            print(f"Token usage data not available for {model}.")
+        # --- End Token Tracking ---
+            
         if completion.choices and completion.choices[0].message:
             generated_content = completion.choices[0].message.content
-            print(f"OpenAI ({model}) generated {len(generated_content.split())} words.")
+            print(f"Model {model} generated {len(generated_content.split())} words.")
+            # TODO: Store token usage data (prompt_tokens, completion_tokens) here later
             return generated_content
         else:
-            print(f"OpenAI ({model}) response did not contain expected content.")
+            print(f"Model {model} response did not contain expected content.")
             return None
             
     except Exception as e:
-        print(f"Error generating script with OpenAI model {model}: {str(e)}")
-        return None # Return None on error, fallback handled in main generator
+        print(f"Error generating script with OpenAI-SDK compatible model {model}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL):
+    """Helper to generate script using the Anthropic Claude API."""
+    if not anthropic_client:
+        print(f"Anthropic client not available. Skipping Claude generation.")
+        return None
+        
+    try:
+        print(f"Attempting script generation with Claude model: {model}")
+        message = anthropic_client.messages.create(
+            model=model,
+            system=system_message, 
+            messages=[
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_tokens=3000 
+        )
+        
+        # --- Token Tracking --- 
+        input_tokens = 0
+        output_tokens = 0
+        if message.usage:
+            input_tokens = message.usage.input_tokens
+            output_tokens = message.usage.output_tokens
+            total_tokens = input_tokens + output_tokens # Claude API might not provide total directly
+            print(f"Token Usage ({model}): Input={input_tokens}, Output={output_tokens}, Total={total_tokens}")
+        else:
+            print(f"Token usage data not available for {model}.")
+        # --- End Token Tracking ---
+            
+        if message.content and isinstance(message.content, list) and message.content[0].text:
+            generated_content = message.content[0].text
+            print(f"Claude model {model} generated {len(generated_content.split())} words.")
+            # TODO: Store token usage data (input_tokens, output_tokens) here later
+            return generated_content
+        else:
+            print(f"Claude model {model} response did not contain expected content structure.")
+            return None
+            
+    except Exception as e:
+        print(f"Error generating script with Claude model {model}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+# --- Main Generation Function --- 
 
 def generate_script(prompt, 
                    subject="", 
@@ -60,7 +130,8 @@ def generate_script(prompt,
                    template="General",
                    context=""):
     """
-    Generate an educational script using the best available LLM (DeepSeek primary, OpenAI fallback).
+    Generate an educational script using the best available LLM 
+    (DeepSeek primary via OpenAI SDK, Claude fallback).
     
     Args:
         prompt (str): The main script generation prompt
@@ -77,7 +148,7 @@ def generate_script(prompt,
     # Get template-specific guidance
     template_guidance = get_template_guidance(template)
     
-    # Prepare a system message with script generation guidelines
+    # Prepare a system message
     system_message = f"""
     You are an expert educational script writer. Create a well-structured {length} script 
     about {subject} for a {audience} audience with a {tone} tone.
@@ -93,7 +164,7 @@ def generate_script(prompt,
     - Long: 600-900 words
     """
     
-    # Add context if provided
+    # Prepare user message
     user_message = prompt
     if context:
         if template == "Music Lesson":
@@ -109,42 +180,39 @@ Remember to build naturally on this background without phrases like "as you've l
         else:
             user_message = f"{prompt}\n\nAdditional context to incorporate:\n{context}"
     
-    # --- Generation Logic --- 
-    
-    # 1. Try DeepSeek Primary Model
+    # --- Simplified Generation Logic --- 
     print("--- Starting Script Generation --- ")
-    script = generate_script_with_deepseek(system_message, user_message, model=DEEPSEEK_MODEL)
-    if script:
-        print("--- Script generated successfully with DeepSeek --- ")
-        return script
-        
-    print("--- DeepSeek failed, attempting OpenAI fallback --- ")
     
-    # 2. Try OpenAI Primary Model (configured in .env)
-    script = generate_script_with_openai(system_message, user_message, model=OPENAI_MODEL)
-    if script:
-        print(f"--- Script generated successfully with OpenAI ({OPENAI_MODEL}) --- ")
-        return script
-        
-    # 3. Try OpenAI Fallback Models
-    print(f"--- OpenAI ({OPENAI_MODEL}) failed, attempting other OpenAI fallbacks --- ")
-    for fallback_model in OPENAI_FALLBACK_MODELS:
-        # Skip if it's the same as the primary OpenAI model we already tried
-        if fallback_model == OPENAI_MODEL:
-            continue 
-            
-        script = generate_script_with_openai(system_message, user_message, model=fallback_model)
+    # 1. Try DeepSeek (via OpenAI SDK)
+    if deepseek_client_via_openai_sdk:
+        script = _generate_with_openai_sdk(deepseek_client_via_openai_sdk, system_message, user_message, model=DEEPSEEK_MODEL)
         if script:
-            print(f"--- Script generated successfully with OpenAI ({fallback_model}) --- ")
+            print("--- Script generated successfully with DeepSeek (via OpenAI SDK) --- ")
             return script
+        else:
+             print("--- DeepSeek (via OpenAI SDK) failed, attempting Claude fallback --- ")
+    else:
+        print("--- DeepSeek client not configured, attempting Claude fallback --- ")
+
+    # 2. Try Claude Model
+    if anthropic_client:
+        script = _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL)
+        if script:
+             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}) --- ")
+             return script
+        else:
+            print(f"--- Claude ({CLAUDE_MODEL}) also failed. --- ")
+    else:
+        print("--- Anthropic client not configured. Cannot fallback to Claude. --- ")
             
-    # 4. If all models fail
-    print("--- All models failed to generate the script. --- ")
+    # 3. If all configured models fail
+    print("--- All configured models failed to generate the script. --- ")
     return None
 
-def edit_script_with_openai(original_script, edit_instructions, context=""):
+# --- Editing Function (Now using Claude) --- 
+def edit_script_with_claude(original_script, edit_instructions, context=""):
     """
-    Edit a script using the OpenAI API.
+    Edit a script using the Anthropic Claude API.
     
     Args:
         original_script (str): The script to be edited.
@@ -154,41 +222,58 @@ def edit_script_with_openai(original_script, edit_instructions, context=""):
     Returns:
         str: The edited script, or None if an error occurs.
     """
-    if not openai_client:
-        print("OpenAI client not initialized. Skipping OpenAI editing.")
+    if not anthropic_client:
+        print("Anthropic client not initialized. Skipping Claude editing.")
         return None
 
-    system_message = "You are an expert script editor. Modify the provided script based on the user's instructions. Maintain the original tone and style unless asked otherwise. Apply the edits precisely."    
-    user_message = f"Original Script:\n{original_script}\n\nEdit Instructions:\n{edit_instructions}"
+    # Use a system prompt appropriate for Claude editing
+    system_message = "You are an expert script editor. Your task is to modify the provided script based *only* on the user's specific instructions. Maintain the original tone, style, and length unless explicitly asked to change them. Apply the edits precisely and return only the complete, edited script without any commentary or explanation before or after it." 
+       
+    user_message = f"Original Script:\n<original_script>{original_script}</original_script>\n\nEdit Instructions:\n<edit_instructions>{edit_instructions}</edit_instructions>"
     if context:
-        user_message += f"\n\nAdditional Context for Editing:\n{context}"
+        user_message += f"\n\nAdditional Context for Editing:\n<context>{context}</context>"
         
     try:
-        # Use the primary OpenAI model for editing
-        print(f"Attempting script editing with OpenAI model: {OPENAI_MODEL}")
-        completion = openai_client.chat.completions.create(
-            model=OPENAI_MODEL, 
+        # Use the primary Claude model for editing
+        print(f"Attempting script editing with Claude model: {CLAUDE_MODEL}")
+        message = anthropic_client.messages.create(
+            model=CLAUDE_MODEL, 
+            system=system_message, # System prompt for Claude
             messages=[
-                {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.5, # Lower temperature for more precise editing
-            max_tokens=2000 # Allow ample tokens for potentially longer edited scripts
+            temperature=0.3, # Lower temperature for precise editing
+            max_tokens=3500 # Allow ample tokens for editing
         )
         
-        if completion.choices and completion.choices[0].message:
-            edited_content = completion.choices[0].message.content
-            print("Script edited successfully with OpenAI.")
+        # --- Token Tracking --- 
+        input_tokens = 0
+        output_tokens = 0
+        if message.usage:
+            input_tokens = message.usage.input_tokens
+            output_tokens = message.usage.output_tokens
+            total_tokens = input_tokens + output_tokens
+            print(f"Token Usage (Editing - {CLAUDE_MODEL}): Input={input_tokens}, Output={output_tokens}, Total={total_tokens}")
+        else:
+             print(f"Token usage data not available for editing with {CLAUDE_MODEL}.")
+        # --- End Token Tracking ---
+             
+        if message.content and isinstance(message.content, list) and message.content[0].text:
+            edited_content = message.content[0].text
+            print("Script edited successfully with Claude.")
+            # TODO: Store token usage data (input_tokens, output_tokens) here later
             return edited_content
         else:
-            print(f"OpenAI ({OPENAI_MODEL}) editing response did not contain expected content.")
+            print(f"Claude ({CLAUDE_MODEL}) editing response did not contain expected content structure.")
             return None
             
     except Exception as e:
-        print(f"Error editing script with OpenAI model {OPENAI_MODEL}: {str(e)}")
-        # Consider adding fallback for editing if critical
+        print(f"Error editing script with Claude model {CLAUDE_MODEL}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
+# --- get_template_guidance function --- 
 def get_template_guidance(template):
     """
     Get template-specific guidance for script generation
