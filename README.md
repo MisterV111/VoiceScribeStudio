@@ -22,6 +22,11 @@ VoiceScribe Studio is a comprehensive application that combines advanced AI tech
 - 📊 **Audience Targeting**: Customize content for different audience levels from beginner to expert.
 - 🔍 **Content Adaptation**: Adjust tone, length, and style based on your specific needs.
 - 💾 **Local Storage**: Save generated scripts and audio files locally.
+- 🧪 **Testing Dashboard**: Comprehensive cross-template testing suite with user-friendly result visualization for quality assurance.
+  - Password-protected interface accessible via a dedicated button
+  - Formatted test configuration visualization with clear parameters
+  - Enhanced validation results with color-coded pass/fail indicators
+  - Interactive data visualization and filtering capabilities
 
 ### Planned Enhancements (v2 - Under Development)
 
@@ -109,6 +114,22 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
    ```
    python run.py
    ```
+   
+   This will start two server applications:
+   - Main application: http://localhost:7860/
+   - Testing dashboard: http://localhost:7861/ (protected with authentication)
+
+## Application Structure
+
+VoiceScribe Studio now runs as two separate Gradio applications:
+
+1. **Main Application (Port 7860)**: The primary user interface for script generation, editing, and voiceover production.
+2. **Testing Dashboard (Port 7861)**: A dedicated interface for cross-template testing and quality assurance, accessible via:
+   - A "Test Suite" button in the main application
+   - Direct access at http://localhost:7861/
+   - Authentication required (username: `admin`, password: `testingsuite`)
+
+This separation ensures a clean user experience while maintaining robust testing capabilities for development and quality control.
 
 ## Usage
 
