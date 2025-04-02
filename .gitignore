@@ -40,6 +40,9 @@ tests/*
 !tests/*.py
 !tests/*.md
 !tests/test_*.mp3
+!tests/archived_tests/
+!tests/archived_tests/*.py
+!tests/archived_tests/*.md
 
 # IDE specific files
 .idea/

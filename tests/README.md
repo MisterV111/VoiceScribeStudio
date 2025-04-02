@@ -9,6 +9,10 @@ This directory contains test scripts and files for VoiceScribe Studio.
 - `test_elevenlabs.py` - Tests for ElevenLabs API connectivity and voice synthesis
 - `debug_elevenlabs.py` - Debugging script for ElevenLabs API issues
 
+## Archived Tests
+
+Legacy tests that are no longer part of the active testing suite are stored in the `archived_tests/` directory. These tests are preserved for reference and potential future use. See the [archived_tests README](./archived_tests/README.md) for details.
+
 ## Cross-Template Testing Suite
 
 VoiceScribe Studio includes a comprehensive cross-template testing suite for validating script generation across all templates and models. This testing system is accessible through:
