@@ -262,13 +262,19 @@ def main():
         app = create_interface()
         app.launch(
             server_name="0.0.0.0",
-            share=False
+            server_port=7860,
+            share=False,
+            # Enable auto-reload for development
+            # This will watch for .py file changes and restart the server
+            reload=True 
         )
     except ValueError as e:
         print(f"Configuration error: {str(e)}")
         print("Please update your .env file with the required API keys.")
     except Exception as e:
         print(f"Application error: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 # Main application entry point
 if __name__ == "__main__":
