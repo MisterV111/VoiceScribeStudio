@@ -1,9 +1,9 @@
-from deepseek import DeepSeekAPI
+from deepseek import DeepSeekClient
 from ..config import DEEPSEEK_API_KEY, DEEPSEEK_MODEL
 
 # Initialize DeepSeek client
 if DEEPSEEK_API_KEY:
-    client = DeepSeekAPI(api_key=DEEPSEEK_API_KEY)
+    client = DeepSeekClient(api_key=DEEPSEEK_API_KEY)
 else:
     client = None
     print("Warning: DEEPSEEK_API_KEY not found. DeepSeek functionality will be disabled.")
