@@ -13,6 +13,7 @@ if str(app_dir) not in sys.path:
 from app.components.script_generator import create_script_generator_tab
 from app.components.script_editor import create_script_editor_tab
 from app.components.voiceover_generator import create_voiceover_tab, set_voice_data
+from app.components.testing_dashboard import mount_testing_dashboard
 
 # Import utilities and config
 from app.utils.elevenlabs_client import get_voices
@@ -240,6 +241,9 @@ def create_interface():
                 inputs=[edited_script_output],
                 outputs=[voiceover_script]
             )
+    
+    # Mount testing dashboard
+    app = mount_testing_dashboard(app)
     
     return app
 
