@@ -1,6 +1,6 @@
 import gradio as gr
 import os
-from app.utils.openai_client import edit_script_with_openai
+from app.utils.llm_clients import edit_script_with_openai
 
 def edit_script(original_script, edit_instructions, context=""):
     """Edit a script using OpenAI"""

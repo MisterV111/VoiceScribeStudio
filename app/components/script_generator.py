@@ -1,15 +1,15 @@
 import gradio as gr
 import os
-from app.utils.openai_client import generate_script_with_openai
+from app.utils.llm_clients import generate_script
 
 def create_script(prompt, subject, length, audience, tone, template="General", context=""):
-    """Generate a script using OpenAI"""
+    """Generate a script using the best available LLM"""
     try:
         if not prompt or not prompt.strip():
             return "Please provide a prompt for script generation.", None
         
-        # Generate the script
-        script = generate_script_with_openai(
+        # Generate the script using the primary function (which handles fallbacks)
+        script = generate_script(
             prompt=prompt, 
             subject=subject, 
             length=length, 
@@ -20,7 +20,7 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
         )
         
         if not script:
-            return "Failed to generate script. Please try again with a different prompt.", None
+            return "Failed to generate script with all available models. Please check API keys and try again.", None
         
         # Save the script to a file
         os.makedirs("output/scripts", exist_ok=True)
