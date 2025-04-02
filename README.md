@@ -14,7 +14,9 @@ VoiceScribe Studio is a comprehensive application that combines advanced AI tech
 
 **Current MVP Features:**
 
-- 📝 **Script Generation**: Create customized scripts using OpenAI models for various content types.
+- 📝 **Script Generation**: Create customized scripts using our multi-model architecture:
+  - **DeepSeek R1 as primary model** for superior creative script generation 
+  - **Claude 3.7 Sonnet as fallback** for reliable content processing
 - 🗣️ **Voice Synthesis**: Transform scripts into natural-sounding voiceovers using ElevenLabs' advanced TTS technology.
 - 🔧 **Voice Customization**: Adjust voice parameters including stability, clarity, style, and speed to achieve the perfect sound.
 - ✏️ **Script Editing**: Integrated editor for refining AI-generated scripts before voiceover creation.
@@ -32,7 +34,6 @@ VoiceScribe Studio is a comprehensive application that combines advanced AI tech
 
 VoiceScribe Studio is undergoing a major enhancement. Future versions (developed on the `voicescribe-v2` branch) will include:
 
-- **🧠 Advanced LLM Integration**: Utilizing **DeepSeek R1** for superior creative script generation and **Claude 3.7 Sonnet** for advanced content processing and analysis.
 - **🌐 Multi-Source Content Integration**: Ability to process content from various sources:
     - **Web Content Retrieval** (via FireCrawl)
     - **Direct URL Processing** (via Browser Tools MCP)
@@ -46,6 +47,7 @@ VoiceScribe Studio is undergoing a major enhancement. Future versions (developed
 - **<0xF0><0x9F><0x93><0x84> Professional Exports**: Advanced document export formats using **Document Conversion MCP**.
 - **📂 Enhanced File Management**: Improved content organization via **File System MCP**.
 - **📊 Advanced Analytics**: Detailed token usage dashboard and API cost monitoring.
+- 📊 **Analytics Dashboard**: Track project metrics, token usage, and generation trends
 
 ## Development Branches
 

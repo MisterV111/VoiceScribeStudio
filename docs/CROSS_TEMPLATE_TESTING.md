@@ -193,6 +193,8 @@ python -m app.tests.run_tests --force-fallback
 - ✅ Color-coded validation checks organized by status (passed/failed)
 - ✅ Password-protected interface for secure access
 - ✅ Dedicated "Test Suite" button for clean separation from user features
+- ✅ Integration with DeepSeek R1 and Claude 3.7 Sonnet models
+- ✅ Forced fallback testing scenarios
 
 ### Pending Implementation
 - ⏳ Complete test coverage across all templates and parameter combinations
