@@ -17,6 +17,10 @@ from app.components.voiceover_generator import create_voiceover_tab, set_voice_d
 from app.components.testing_dashboard import create_testing_dashboard
 from app.components.token_dashboard import create_token_dashboard
 
+# Constants for authentication
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin123"  # You should change this to a more secure password in production
+
 def setup_directories():
     """Create necessary output directories"""
     os.makedirs("output/scripts", exist_ok=True)
@@ -113,25 +117,9 @@ def load_voices():
         
         return preset_voice_names, preset_voice_ids, [], []
 
-def create_main_interface():
-    """Create the main Gradio interface"""
-    # Setup necessary directories
-    setup_directories()
-    
-    # Load voices
-    preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
-    set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
-    
-    # Define custom CSS path
-    css_path = os.path.join(os.path.dirname(__file__), "assets", "custom.css")
-    
-    # Load the banner image as base64 to avoid any file path issues
-    banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
-    with open(banner_path, "rb") as img_file:
-        banner_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-    
-    # CSS for main interface
-    css_main = """
+def get_css():
+    """Get shared CSS for the application"""
+    return """
     .gradio-container {
         background-color: #f8faff !important;
         font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
@@ -167,6 +155,28 @@ def create_main_interface():
     .nav-container {
         margin-bottom: 1.5rem !important;
         align-items: flex-end !important;
+    }
+    /* Style buttons that should look like links */
+    button.link-button {
+        background: none !important;
+        color: #0066cc !important;
+        border: none !important;
+        padding: 0 !important;
+        font: inherit !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
+        text-align: right !important;
+        box-shadow: none !important;
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+    }
+    button.link-button:hover {
+        text-decoration: underline !important;
+        background: none !important;
+    }
+    #admin-link-btn {
+        margin-left: auto !important;
+        display: block !important;
     }
     /* Remove test suite button styling as it's defined inline now */
     button.primary {
@@ -254,86 +264,7 @@ def create_main_interface():
     .tabitem {
         padding-bottom: 1rem !important;
     }
-    """
-    
-    with gr.Blocks(title="VoiceScribe Studio", css=css_main) as app:
-        # Create the banner using base64 encoding (most reliable method)
-        with gr.Row(elem_classes=["header-row"]):
-            # Use base64 data URI for the image to avoid file path issues
-            banner_html = f'<img src="data:image/png;base64,{banner_base64}" alt="VoiceScribe Studio Banner">'
-            gr.Markdown(banner_html, elem_classes=["header-banner"])
-        
-        # Create the main tabs
-        with gr.Tabs():
-            # Create tabs using the component functions
-            script_output, script_file_output = create_script_generator_tab()
-            edit_script_input, edited_script_output = create_script_editor_tab()
-            voiceover_script, voiceover_status, ogg_output, mp3_output = create_voiceover_tab()
-            
-            # Add analytics tab for token usage tracking
-            with gr.TabItem("Analytics"):
-                gr.Markdown("## Token Usage Analytics")
-                gr.Markdown("Track API usage and costs for DeepSeek and Claude models.")
-                create_token_dashboard()
-            
-            # Connect script generator to script editor
-            script_output.change(
-                fn=lambda x: x,
-                inputs=[script_output],
-                outputs=[edit_script_input]
-            )
-            
-            # Connect script editor to voiceover generator
-            edited_script_output.change(
-                fn=lambda x: x,
-                inputs=[edited_script_output],
-                outputs=[voiceover_script]
-            )
-        
-        # Add the Test Suite button using HTML for precise positioning and styling
-        test_suite_html = """
-        <div id="test-suite-container">
-            <button id="test-suite-btn" onclick="window.open('http://' + window.location.hostname + ':7861', '_blank')">
-                Test Suite
-            </button>
-        </div>
-        <style>
-            #test-suite-container {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1000;
-            }
-            #test-suite-btn {
-                background-color: white;
-                color: #57606f;
-                border: 1px solid #e1e4e8;
-                border-radius: 8px;
-                padding: 12px 20px;
-                font-weight: 600;
-                font-size: 0.9rem;
-                cursor: pointer;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                transition: all 0.2s ease;
-            }
-            #test-suite-btn:hover {
-                background-color: #f5f7fa;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-        </style>
-        """
-        gr.HTML(test_suite_html)
-    
-    return app
-
-def create_testing_interface():
-    """Create the testing dashboard interface with authentication"""
-    # CSS for the testing dashboard login page
-    css_testing = """
-    .gradio-container {
-        background-color: #f8faff !important;
-        font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, system-ui, BlinkMacSystemFont, sans-serif !important;
-    }
+    /* Login container styling */
     .login-container {
         max-width: 500px !important;
         margin: 80px auto 0 auto !important;
@@ -359,69 +290,23 @@ def create_testing_interface():
         text-align: center !important;
         margin-top: 10px !important;
     }
+    /* Admin bar styling */
+    .admin-bar {
+        background-color: #3a0647 !important;
+        color: white !important;
+        padding: 10px 20px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+        border-radius: 8px !important;
+    }
     """
-    
-    # Set up authentication variables
-    AUTH_USERNAME = "admin"
-    AUTH_PASSWORD = "testingsuite"
-    
-    # Create the login interface
-    with gr.Blocks(title="Testing Dashboard - Login", css=css_testing) as login_interface:
-        # Initialize state for tracking authentication
-        is_authenticated = gr.State(False)
-        
-        # Login form (shown when not authenticated)
-        with gr.Column(visible=True, elem_classes=["login-container"]) as login_form:
-            gr.Markdown("# 🔒 Testing Suite Authentication", elem_classes=["login-title"])
-            gr.Markdown("Please enter your credentials to access the testing dashboard.")
-            username = gr.Textbox(label="Username", placeholder="Enter your username")
-            password = gr.Textbox(label="Password", placeholder="Enter your password", type="password")
-            error_message = gr.Markdown(visible=False, value="⚠️ Incorrect username or password", elem_classes=["error-message"])
-            
-            with gr.Row():
-                login_button = gr.Button("Login", variant="primary", elem_classes=["login-button"])
-                back_button = gr.Button("Back to Main App")
-        
-        # Testing dashboard (shown when authenticated)
-        with gr.Column(visible=False) as dashboard_container:
-            testing_dashboard = create_testing_dashboard()
-        
-        # Function to check login credentials
-        def check_login(username_value, password_value):
-            print(f"Checking login for username: {username_value}")
-            if username_value == AUTH_USERNAME and password_value == AUTH_PASSWORD:
-                print("Authentication successful")
-                return {
-                    login_form: gr.update(visible=False),
-                    dashboard_container: gr.update(visible=True),
-                    error_message: gr.update(visible=False),
-                    is_authenticated: True
-                }
-            else:
-                print("Authentication failed")
-                return {
-                    error_message: gr.update(visible=True),
-                    is_authenticated: False
-                }
-        
-        # Function to go back to the main app
-        def go_back_to_main():
-            return gr.Blocks.update(redirect_to="/")
-        
-        # Connect button actions
-        login_button.click(
-            fn=check_login,
-            inputs=[username, password],
-            outputs=[login_form, dashboard_container, error_message, is_authenticated]
-        )
-        
-        back_button.click(
-            fn=go_back_to_main,
-            inputs=[],
-            outputs=[login_interface]
-        )
-    
-    return login_interface
+
+def create_banner(base64_banner):
+    """Create the banner component with the given base64 encoded image"""
+    with gr.Row(elem_classes=["header-row"]):
+        banner_html = f'<img src="data:image/png;base64,{base64_banner}" alt="VoiceScribe Studio Banner">'
+        gr.Markdown(banner_html, elem_classes=["header-banner"])
 
 def main():
     """Main function to run the application with multiple interfaces"""
@@ -434,24 +319,180 @@ def main():
         # Validate configuration
         validate_config()
         
-        # Create the main and testing interfaces
-        main_app = create_main_interface()
-        testing_app = create_testing_interface()
+        # Setup necessary directories
+        setup_directories()
         
-        # Launch the main interface on port 7860
-        print("Starting main application on http://0.0.0.0:7860")
-        main_app.launch(
+        # Load voices
+        preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
+        set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
+        
+        # Load the banner image as base64 to avoid any file path issues
+        banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
+        with open(banner_path, "rb") as img_file:
+            banner_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+        
+        # Create a single Gradio app with interface switching
+        with gr.Blocks(title="VoiceScribe Studio", css=get_css()) as app:
+            # Create a state variable to track the current interface
+            current_interface = gr.State("public")
+            is_authenticated = gr.State(False)
+            
+            # Public interface components
+            with gr.Column(visible=True) as public_interface:
+                # Create the banner
+                create_banner(banner_base64)
+                
+                # Add admin login link
+                with gr.Row():
+                    admin_link = gr.Button(
+                        "Admin Login", 
+                        elem_id="admin-link-btn",
+                        elem_classes=["link-button"],
+                        scale=0,
+                        size="sm"
+                    )
+                
+                # Create the main tabs
+                with gr.Tabs():
+                    # Create tabs using the component functions
+                    script_output, script_file_output = create_script_generator_tab()
+                    edit_script_input, edited_script_output = create_script_editor_tab()
+                    voiceover_script, voiceover_status, ogg_output, mp3_output = create_voiceover_tab()
+                    
+                    # Connect script generator to script editor
+                    script_output.change(
+                        fn=lambda x: x,
+                        inputs=[script_output],
+                        outputs=[edit_script_input]
+                    )
+                    
+                    # Connect script editor to voiceover generator
+                    edited_script_output.change(
+                        fn=lambda x: x,
+                        inputs=[edited_script_output],
+                        outputs=[voiceover_script]
+                    )
+            
+            # Admin login form
+            with gr.Column(visible=False) as login_form:
+                # Create the banner
+                create_banner(banner_base64)
+                
+                with gr.Column(elem_classes=["login-container"]):
+                    gr.Markdown("# 🔒 Admin Authentication", elem_classes=["login-title"])
+                    gr.Markdown("Please enter your credentials to access the admin dashboard.")
+                    username = gr.Textbox(label="Username", placeholder="Enter your username")
+                    password = gr.Textbox(label="Password", placeholder="Enter your password", type="password")
+                    error_message = gr.Markdown(visible=False, value="⚠️ Incorrect username or password", elem_classes=["error-message"])
+                    
+                    with gr.Row():
+                        login_button = gr.Button("Login", variant="primary", elem_classes=["login-button"])
+                        back_button = gr.Button("Back to Main App")
+            
+            # Admin dashboard
+            with gr.Column(visible=False) as admin_dashboard:
+                # Create the banner
+                create_banner(banner_base64)
+                
+                gr.Markdown("# VoiceScribe Studio - Admin Dashboard", elem_classes=["admin-bar"])
+                
+                with gr.Row():
+                    with gr.Column(scale=10):
+                        gr.Markdown("")  # Spacer
+                    with gr.Column(scale=1):
+                        return_btn = gr.Button("Return to Public Interface", size="sm", elem_classes=["link-button"])
+                    with gr.Column(scale=1):
+                        logout_btn = gr.Button("Logout", size="sm", elem_classes=["link-button"])
+                
+                # Create the admin tabs
+                with gr.Tabs():
+                    # Add analytics tab for token usage tracking
+                    with gr.TabItem("Token Analytics"):
+                        gr.Markdown("## Token Usage Analytics")
+                        gr.Markdown("Track API usage and costs for DeepSeek and Claude models.")
+                        create_token_dashboard()
+                    
+                    # Add testing dashboard
+                    with gr.TabItem("Testing Suite"):
+                        create_testing_dashboard()
+            
+            # Function to switch to login form
+            def switch_to_login():
+                return {
+                    public_interface: gr.update(visible=False),
+                    login_form: gr.update(visible=True),
+                    admin_dashboard: gr.update(visible=False),
+                    current_interface: "login"
+                }
+            
+            # Function to switch to public interface
+            def switch_to_public():
+                return {
+                    public_interface: gr.update(visible=True),
+                    login_form: gr.update(visible=False),
+                    admin_dashboard: gr.update(visible=False),
+                    current_interface: "public",
+                    is_authenticated: False
+                }
+            
+            # Function to check login credentials
+            def check_login(username_value, password_value):
+                print(f"Checking login for username: {username_value}")
+                if username_value == ADMIN_USERNAME and password_value == ADMIN_PASSWORD:
+                    print("Authentication successful")
+                    return {
+                        public_interface: gr.update(visible=False),
+                        login_form: gr.update(visible=False),
+                        admin_dashboard: gr.update(visible=True),
+                        error_message: gr.update(visible=False),
+                        current_interface: "admin",
+                        is_authenticated: True
+                    }
+                else:
+                    print("Authentication failed")
+                    return {
+                        error_message: gr.update(visible=True),
+                        is_authenticated: False
+                    }
+            
+            # Connect admin link directly
+            admin_link.click(
+                fn=switch_to_login,
+                inputs=[],
+                outputs=[public_interface, login_form, admin_dashboard, current_interface]
+            )
+            
+            # Connect the login form buttons
+            login_button.click(
+                fn=check_login,
+                inputs=[username, password],
+                outputs=[public_interface, login_form, admin_dashboard, error_message, current_interface, is_authenticated]
+            )
+            
+            back_button.click(
+                fn=switch_to_public,
+                inputs=[],
+                outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+            )
+            
+            # Connect return and logout buttons
+            return_btn.click(
+                fn=switch_to_public,
+                inputs=[],
+                outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+            )
+            
+            logout_btn.click(
+                fn=switch_to_login,
+                inputs=[],
+                outputs=[public_interface, login_form, admin_dashboard, current_interface]
+            )
+        
+        # Launch the app
+        print("Starting VoiceScribe Studio on http://0.0.0.0:7860")
+        app.launch(
             server_name="0.0.0.0",
             server_port=7860,
-            share=False,
-            prevent_thread_lock=True  # Allow multiple apps
-        )
-        
-        # Launch the testing interface on port 7861
-        print("Starting testing interface on http://0.0.0.0:7861")
-        testing_app.launch(
-            server_name="0.0.0.0",
-            server_port=7861,
             share=False
         )
         
