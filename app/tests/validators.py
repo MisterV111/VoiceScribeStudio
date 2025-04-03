@@ -12,6 +12,9 @@ import json
 # Configure logging
 logger = logging.getLogger("cross_template_testing")
 
+# Constants
+TEST_RESULTS_DIR = os.path.join('app', 'test_results')
+
 def validate_script(script, test_case):
     """Validate a generated script against test case expectations.
     
