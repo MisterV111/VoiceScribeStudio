@@ -18,6 +18,10 @@ output/scripts/*
 !output/audio/.gitkeep
 !output/scripts/.gitkeep
 
+# Test results
+app/test_results/
+!app/test_results/.gitkeep
+
 # Temporary output files
 temp_output/
 !temp_output/.gitkeep

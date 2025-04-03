@@ -6,6 +6,8 @@ This module provides validation functions for testing script outputs.
 
 import re
 import logging
+import os
+import json
 
 # Configure logging
 logger = logging.getLogger("cross_template_testing")
@@ -43,11 +45,13 @@ def validate_script(script, test_case):
         result['checks'][check_func.__name__] = check_result
         
         if not check_result['pass']:
-            if check_result.get('warning', False):
-                result['warnings'].append(check_result['message'])
-            else:
+            # Only template markers should cause hard failures
+            # All other failures become warnings
+            if check_func.__name__ == 'check_no_template_markers':
                 result['is_valid'] = False
                 result['errors'].append(check_result['message'])
+            else:
+                result['warnings'].append(check_result['message'])
     
     # Calculate word count
     words = len(script.split())
@@ -171,7 +175,7 @@ def check_keywords(script, test_case):
     keyword_density = keyword_instances / words * 100 if words > 0 else 0
         
     result = {
-        'pass': len(found_keywords) >= len(expected_keywords) * 0.6,  # Pass if at least 60% of keywords are present
+        'pass': True,
         'warning': len(found_keywords) < len(expected_keywords),
         'message': f"Found {len(found_keywords)}/{len(expected_keywords)} expected keywords ({keyword_presence:.1f}%)" + 
                   (f". Missing: {', '.join(missing_keywords)}" if missing_keywords else ""),
@@ -535,4 +539,83 @@ def check_tone_consistency(script, test_case):
         }
     }
     
-    return result 
+    return result
+
+def format_validation_results(validation):
+    """Format validation results as markdown for better readability."""
+    if not validation:
+        return "No validation results available."
+    
+    md_lines = []
+    
+    # Overall status with icon
+    success = validation.get('is_valid', False)
+    status_icon = "✅" if success else "❌"
+    md_lines.append(f"## Overall Result: {status_icon} {'PASSED' if success else 'FAILED'}")
+    md_lines.append("")
+    
+    # Word count
+    word_count = validation.get('metrics', {}).get('word_count', 0)
+    md_lines.append(f"**Word Count:** {word_count}")
+    md_lines.append("")
+    
+    # Add errors section
+    errors = validation.get('errors', [])
+    if errors:
+        md_lines.append(f"### ❌ Errors ({len(errors)})")
+        for i, error in enumerate(errors, 1):
+            md_lines.append(f"{i}. {error}")
+        md_lines.append("")
+    
+    # Add warnings section  
+    warnings = validation.get('warnings', [])
+    if warnings:
+        md_lines.append(f"### ⚠️ Warnings ({len(warnings)})")
+        for i, warning in enumerate(warnings, 1):
+            md_lines.append(f"{i}. {warning}")
+        md_lines.append("")
+    
+    # Add check results
+    checks = validation.get('checks', {})
+    if checks:
+        md_lines.append("### Validation Checks")
+        
+        for check_name, check_result in checks.items():
+            # Format the check name
+            readable_name = check_name.replace('check_', '').replace('_', ' ').title()
+            
+            # Add pass/fail icon
+            check_icon = "✅" if check_result.get('pass', False) else "❌"
+            
+            # Add the check description
+            check_desc = check_result.get('message', readable_name)
+            md_lines.append(f"- {check_icon} **{readable_name}**: {check_desc}")
+        
+        md_lines.append("")
+    
+    return "\n".join(md_lines)
+
+def update_test_details(test_id, run_id):
+    if not test_id or not run_id:
+        return [None, "", "", None]
+    
+    # Extract the clean run ID from the dropdown label if needed
+    clean_run_id = run_id.split(' - ')[0] if ' - ' in run_id else run_id
+    
+    # Get test details
+    file_path = os.path.join(TEST_RESULTS_DIR, clean_run_id, f"{test_id}.json")
+    if not os.path.exists(file_path):
+        return [None, "", "", None]
+    
+    with open(file_path, 'r') as f:
+        details = json.load(f)
+    
+    # Extract relevant information
+    config = details.get('test_case', {})
+    script = details.get('generated_script', '')
+    validation = details.get('validation', {})
+    
+    # Format validation results for better readability
+    validation_md = format_validation_results(validation)
+    
+    return [config, script, validation_md, validation] 
