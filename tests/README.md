@@ -18,12 +18,15 @@ Legacy tests that are no longer part of the active testing suite are stored in t
 VoiceScribe Studio includes a comprehensive cross-template testing suite for validating script generation across all templates and models. This testing system is accessible through:
 
 1. Command-line: Run tests via the `app.tests.run_tests` module
-2. Web interface: Access via the "Test Suite" button in the main application
+2. Web interface: Access via the Admin Interface in the main application
 
 ### Web Interface Access
-- URL: http://localhost:7861/ (when application is running)
-- Username: `admin`
-- Password: `testingsuite`
+- Access via the Admin Interface at http://localhost:7860/
+- Click the "Admin Login" link in the top right corner
+- Login with:
+  - Username: `admin`
+  - Password: `admin123`
+- Navigate to the "Testing Suite" tab
 
 ### Features
 - Automated testing of all templates with various parameter combinations
@@ -57,7 +60,7 @@ This directory also contains test assets like sample audio files used for testin
 
 ## Test Results
 
-Test results are stored in the `app/tests/results` directory and can be viewed through the testing dashboard interface. The dashboard provides:
+Test results are stored in the `app/tests/results` directory and can be viewed through the testing dashboard interface in the Admin section. The dashboard provides:
 
 - Summary statistics of test runs
 - Detailed view of individual test cases

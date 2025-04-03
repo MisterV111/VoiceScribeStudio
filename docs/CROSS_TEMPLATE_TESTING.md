@@ -129,12 +129,12 @@ Plus additional dimensions:
 
 ## Dashboard Interface
 
-The testing dashboard is accessible via a dedicated "Test Suite" button in the main interface and features:
+The testing dashboard is accessible through the admin interface and features:
 
 ### Authentication
-- Secure login system requiring credentials:
+- Secure login system requiring admin credentials:
   - Username: `admin`
-  - Password: `testingsuite`
+  - Password: `admin123`
 - Clear separation between user-facing features and testing tools
 
 ### Main Dashboard View
@@ -191,8 +191,7 @@ python -m app.tests.run_tests --force-fallback
 - ✅ Structured validation results with clear pass/fail indicators
 - ✅ Interactive dashboard for reviewing test outcomes
 - ✅ Color-coded validation checks organized by status (passed/failed)
-- ✅ Password-protected interface for secure access
-- ✅ Dedicated "Test Suite" button for clean separation from user features
+- ✅ Password-protected admin interface for secure access
 - ✅ Integration with DeepSeek R1 and Claude 3.7 Sonnet models
 - ✅ Forced fallback testing scenarios
 
@@ -202,33 +201,30 @@ python -m app.tests.run_tests --force-fallback
 - ⏳ Token usage tracking integration
 - ⏳ Historical comparison functionality
 - ⏳ Report generation features
-- ⏳ Integration with DeepSeek R1 and Claude 3.7 Sonnet models
-- ⏳ Forced fallback testing scenarios
 
 ### Accessing the Dashboard
 
 1. Start the VoiceScribe Studio application
-2. Click the "Test Suite" button in the bottom right corner of the interface
-3. Enter the login credentials:
+2. Click the "Admin Login" link in the top right corner of the interface
+3. Enter the admin credentials:
    - Username: `admin`
-   - Password: `testingsuite`
-4. Use the dashboard filters to select specific test results
-5. Click on individual results to see details
+   - Password: `admin123`
+4. Navigate to the "Testing Suite" tab in the admin dashboard
+5. Use the dashboard filters to select specific test results
+6. Click on individual results to see details
 
 ### Server Configuration
 
-The testing dashboard runs as a separate Gradio application:
+The testing dashboard is now integrated into the main application:
 
 - Main application: Runs on port 7860
-- Testing dashboard: Runs on port 7861 with password protection
+- Admin interface (including testing dashboard): Accessible through the same port with authentication
 
-This separation provides:
+This architecture provides:
 - Clean separation between user-facing features and testing/development tools
-- Ability to hide the testing interface during demonstrations
-- Enhanced security through authentication
-- Independent operation allowing testing while users interact with the main application
-
-When deployed to production, both applications can be configured behind a reverse proxy for seamless access.
+- Enhanced security through admin authentication
+- Simplified deployment with a single server instance
+- Unified interface for all administrative functions
 
 ### Interpreting Results
 

@@ -32,7 +32,19 @@ python -m app.tests.run_tests --audience beginner --length short
 python -m app.tests.run_tests --force-fallback
 ```
 
-### Accessing Results
+### Accessing Results via the Admin Interface
+
+The testing dashboard is now integrated into the main application's admin interface:
+
+1. Start the VoiceScribe Studio application
+2. Click the "Admin Login" link in the top right corner
+3. Enter the admin credentials:
+   - Username: `admin`
+   - Password: `admin123`
+4. Navigate to the "Testing Suite" tab
+5. Use the dashboard filters and interface to view and analyze test results
+
+### Results Storage
 
 Test results are saved to the `app/test_results/[timestamp]` directory with:
 

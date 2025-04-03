@@ -20,8 +20,8 @@
 - ✓ Created structured presentation of test configurations with clear parameters
 - ✓ Enhanced error and warning display with improved readability
 - ✓ Added collapsible sections for raw data and detailed inspection
-- ✓ Implemented secure authentication system with dedicated access button
-- ✓ Established clear separation between user interface and testing tools
+- ✓ Implemented secure authentication system for admin interface
+- ✓ Established clear separation between public and admin interfaces
 
 ### Voice Generator Improvements
 - ✓ Fixed issues with voice presets display and selection
