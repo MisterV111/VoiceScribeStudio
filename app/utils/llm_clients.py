@@ -1,10 +1,12 @@
 from openai import OpenAI
 from anthropic import Anthropic
+import uuid
 from ..config import (
     DEEPSEEK_API_KEY, DEEPSEEK_MODEL,
     DEEPSEEK_BASE_URL,
     ANTHROPIC_API_KEY, CLAUDE_MODEL
 )
+from .token_counter import token_tracker
 
 # --- Client Initialization --- 
 
@@ -31,7 +33,7 @@ else:
 
 # --- Generation Helper Functions --- 
 
-def _generate_with_openai_sdk(client_instance, system_message, user_message, model):
+def _generate_with_openai_sdk(client_instance, system_message, user_message, model, template=None, params=None, session_id=None, is_test=False):
     """Helper to generate script using an OpenAI-compatible SDK client instance (like DeepSeek)."""
     if not client_instance:
         print(f"Client instance for model {model} not available. Skipping.")
@@ -39,12 +41,17 @@ def _generate_with_openai_sdk(client_instance, system_message, user_message, mod
         
     try:
         print(f"Attempting script generation with model: {model} via client: {getattr(client_instance, 'base_url', 'Unknown Base URL')}")
+        
+        # Create messages array for the API call
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message}
+        ]
+        
+        # Perform the API call
         completion = client_instance.chat.completions.create(
             model=model,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ],
+            messages=messages,
             temperature=0.7,
             max_tokens=3000 
         )
@@ -58,13 +65,33 @@ def _generate_with_openai_sdk(client_instance, system_message, user_message, mod
             print(f"Token Usage ({model}): Prompt={prompt_tokens}, Completion={completion_tokens}, Total={completion.usage.total_tokens}")
         else:
             print(f"Token usage data not available for {model}.")
-        # --- End Token Tracking ---
             
+        # Content retrieval
         if completion.choices and completion.choices[0].message:
             generated_content = completion.choices[0].message.content
             print(f"Model {model} generated {len(generated_content.split())} words.")
-            # TODO: Store token usage data (prompt_tokens, completion_tokens) here later
-            return generated_content
+            
+            # Enhanced token tracking with our system
+            # Use reported tokens if available, otherwise let the tracker count them
+            input_text = system_message + "\n" + user_message
+            token_metrics = token_tracker.track_generation(
+                model="deepseek",
+                input_text=input_text,
+                output_text=generated_content,
+                template=template,
+                is_fallback=False,
+                parameters=params,
+                session_id=session_id,
+                is_test=is_test,
+                success=True
+            )
+            
+            # Return both content and metrics
+            return {
+                "content": generated_content,
+                "token_metrics": token_metrics,
+                "model_used": "deepseek"
+            }
         else:
             print(f"Model {model} response did not contain expected content.")
             return None
@@ -73,9 +100,25 @@ def _generate_with_openai_sdk(client_instance, system_message, user_message, mod
         print(f"Error generating script with OpenAI-SDK compatible model {model}: {str(e)}")
         import traceback
         traceback.print_exc()
+        
+        # Track failed attempt
+        if system_message and user_message:
+            token_tracker.track_generation(
+                model="deepseek",
+                input_text=system_message + "\n" + user_message,
+                output_text="",
+                template=template,
+                is_fallback=False,
+                parameters=params,
+                session_id=session_id,
+                is_test=is_test,
+                success=False
+            )
+            
         return None
 
-def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL):
+def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, template=None, params=None, 
+                         is_fallback=False, session_id=None, is_test=False):
     """Helper to generate script using the Anthropic Claude API."""
     if not anthropic_client:
         print(f"Anthropic client not available. Skipping Claude generation.")
@@ -83,6 +126,8 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL):
         
     try:
         print(f"Attempting script generation with Claude model: {model}")
+        
+        # Create the API call
         message = anthropic_client.messages.create(
             model=model,
             system=system_message, 
@@ -103,13 +148,33 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL):
             print(f"Token Usage ({model}): Input={input_tokens}, Output={output_tokens}, Total={total_tokens}")
         else:
             print(f"Token usage data not available for {model}.")
-        # --- End Token Tracking ---
             
+        # Content retrieval
         if message.content and isinstance(message.content, list) and message.content[0].text:
             generated_content = message.content[0].text
             print(f"Claude model {model} generated {len(generated_content.split())} words.")
-            # TODO: Store token usage data (input_tokens, output_tokens) here later
-            return generated_content
+            
+            # Enhanced token tracking with our system
+            # Use reported tokens if available, otherwise let the tracker count them
+            token_metrics = token_tracker.track_generation(
+                model="claude",
+                input_text=system_message + "\n" + user_message,
+                output_text=generated_content,
+                template=template,
+                is_fallback=is_fallback,
+                parameters=params,
+                session_id=session_id,
+                is_test=is_test,
+                success=True
+            )
+            
+            # Return both content and metrics
+            return {
+                "content": generated_content,
+                "token_metrics": token_metrics,
+                "model_used": "claude",
+                "is_fallback": is_fallback
+            }
         else:
             print(f"Claude model {model} response did not contain expected content structure.")
             return None
@@ -118,6 +183,21 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL):
         print(f"Error generating script with Claude model {model}: {str(e)}")
         import traceback
         traceback.print_exc()
+        
+        # Track failed attempt
+        if system_message and user_message:
+            token_tracker.track_generation(
+                model="claude",
+                input_text=system_message + "\n" + user_message,
+                output_text="",
+                template=template,
+                is_fallback=is_fallback,
+                parameters=params,
+                session_id=session_id,
+                is_test=is_test,
+                success=False
+            )
+            
         return None
 
 # --- Main Generation Function --- 
@@ -128,7 +208,9 @@ def generate_script(prompt,
                    audience="general", 
                    tone="informative",
                    template="General",
-                   context=""):
+                   context="",
+                   force_fallback=False,
+                   is_test=False):
     """
     Generate an educational script using the best available LLM 
     (DeepSeek primary via OpenAI SDK, Claude fallback).
@@ -141,10 +223,15 @@ def generate_script(prompt,
         tone (str): Tone of the script - informative, conversational, etc.
         template (str): Industry-specific template to use
         context (str): Additional context information
+        force_fallback (bool): If True, skip primary model and use Claude directly.
+        is_test (bool): Whether this is a test generation
         
     Returns:
-        str: The generated script or None if all models fail.
+        str or dict: The generated script (str) or dict with script and metadata
     """
+    # Generate session ID for tracking this generation across models
+    session_id = str(uuid.uuid4())
+    
     # Get template-specific guidance
     template_guidance = get_template_guidance(template)
     
@@ -180,26 +267,70 @@ Remember to build naturally on this background without phrases like "as you've l
         else:
             user_message = f"{prompt}\n\nAdditional context to incorporate:\n{context}"
     
-    # --- Simplified Generation Logic --- 
+    # Create parameters dict for token tracking
+    params = {
+        "subject": subject,
+        "length": length,
+        "audience": audience,
+        "tone": tone
+    }
+    
+    # --- Modified Generation Logic --- 
     print("--- Starting Script Generation --- ")
     
-    # 1. Try DeepSeek (via OpenAI SDK)
-    if deepseek_client_via_openai_sdk:
-        script = _generate_with_openai_sdk(deepseek_client_via_openai_sdk, system_message, user_message, model=DEEPSEEK_MODEL)
-        if script:
-            print("--- Script generated successfully with DeepSeek (via OpenAI SDK) --- ")
-            return script
-        else:
-             print("--- DeepSeek (via OpenAI SDK) failed, attempting Claude fallback --- ")
+    result = None
+    
+    # Check if fallback is forced
+    if force_fallback:
+        print("--- Fallback to Claude forced --- ")
     else:
-        print("--- DeepSeek client not configured, attempting Claude fallback --- ")
+        # 1. Try DeepSeek (via OpenAI SDK)
+        if deepseek_client_via_openai_sdk:
+            result = _generate_with_openai_sdk(
+                deepseek_client_via_openai_sdk, 
+                system_message, 
+                user_message, 
+                model=DEEPSEEK_MODEL,
+                template=template,
+                params=params,
+                session_id=session_id,
+                is_test=is_test
+            )
+            
+            if result:
+                print("--- Script generated successfully with DeepSeek (via OpenAI SDK) --- ")
+                if isinstance(result, dict) and "content" in result:
+                    # If called with metadata=True, return the full result
+                    return result
+                else:
+                    # Otherwise, maintain backward compatibility by returning just the script
+                    return result["content"]
+            else:
+                 print("--- DeepSeek (via OpenAI SDK) failed, attempting Claude fallback --- ")
+        else:
+            print("--- DeepSeek client not configured, attempting Claude fallback --- ")
 
-    # 2. Try Claude Model
+    # 2. Try Claude Model (either as fallback or forced)
     if anthropic_client:
-        script = _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL)
-        if script:
-             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}) --- ")
-             return script
+        result = _generate_with_claude(
+            system_message, 
+            user_message, 
+            model=CLAUDE_MODEL,
+            template=template,
+            params=params,
+            is_fallback=not force_fallback,  # It's a fallback unless explicitly forced
+            session_id=session_id,
+            is_test=is_test
+        )
+        
+        if result:
+             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}){' (forced fallback)' if force_fallback else ''} --- ")
+             if isinstance(result, dict) and "content" in result:
+                # If called with metadata=True, return the full result
+                return result
+             else:
+                # Otherwise, maintain backward compatibility by returning just the script
+                return result["content"]
         else:
             print(f"--- Claude ({CLAUDE_MODEL}) also failed. --- ")
     else:
@@ -210,7 +341,7 @@ Remember to build naturally on this background without phrases like "as you've l
     return None
 
 # --- Editing Function (Now using Claude) --- 
-def edit_script_with_claude(original_script, edit_instructions, context=""):
+def edit_script_with_claude(original_script, edit_instructions, context="", is_test=False):
     """
     Edit a script using the Anthropic Claude API.
     
@@ -218,13 +349,17 @@ def edit_script_with_claude(original_script, edit_instructions, context=""):
         original_script (str): The script to be edited.
         edit_instructions (str): Instructions on how to edit the script.
         context (str): Additional context to consider during editing.
+        is_test (bool): Whether this is a test edit
         
     Returns:
-        str: The edited script, or None if an error occurs.
+        str or dict: The edited script (str) or dict with script and metadata
     """
     if not anthropic_client:
         print("Anthropic client not initialized. Skipping Claude editing.")
         return None
+
+    # Generate session ID for tracking
+    session_id = str(uuid.uuid4())
 
     # Use a system prompt appropriate for Claude editing
     system_message = "You are an expert script editor. Your task is to modify the provided script based *only* on the user's specific instructions. Maintain the original tone, style, and length unless explicitly asked to change them. Apply the edits precisely and return only the complete, edited script without any commentary or explanation before or after it." 
@@ -256,13 +391,32 @@ def edit_script_with_claude(original_script, edit_instructions, context=""):
             print(f"Token Usage (Editing - {CLAUDE_MODEL}): Input={input_tokens}, Output={output_tokens}, Total={total_tokens}")
         else:
              print(f"Token usage data not available for editing with {CLAUDE_MODEL}.")
-        # --- End Token Tracking ---
              
+        # Content retrieval
         if message.content and isinstance(message.content, list) and message.content[0].text:
             edited_content = message.content[0].text
             print("Script edited successfully with Claude.")
-            # TODO: Store token usage data (input_tokens, output_tokens) here later
-            return edited_content
+            
+            # Enhanced token tracking for edits
+            params = {"operation": "edit"}
+            token_metrics = token_tracker.track_generation(
+                model="claude",
+                input_text=system_message + "\n" + user_message,
+                output_text=edited_content,
+                template="editing",  # Mark as an editing operation
+                is_fallback=False,
+                parameters=params,
+                session_id=session_id,
+                is_test=is_test,
+                success=True
+            )
+            
+            # Return both content and metrics if requested
+            return {
+                "content": edited_content,
+                "token_metrics": token_metrics,
+                "model_used": "claude"
+            }
         else:
             print(f"Claude ({CLAUDE_MODEL}) editing response did not contain expected content structure.")
             return None
@@ -271,6 +425,21 @@ def edit_script_with_claude(original_script, edit_instructions, context=""):
         print(f"Error editing script with Claude model {CLAUDE_MODEL}: {str(e)}")
         import traceback
         traceback.print_exc()
+        
+        # Track failed edit attempt
+        if system_message and user_message:
+            token_tracker.track_generation(
+                model="claude",
+                input_text=system_message + "\n" + user_message,
+                output_text="",
+                template="editing",
+                is_fallback=False,
+                parameters={"operation": "edit"},
+                session_id=session_id,
+                is_test=is_test,
+                success=False
+            )
+            
         return None
 
 # --- get_template_guidance function --- 

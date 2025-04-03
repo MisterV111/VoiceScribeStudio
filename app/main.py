@@ -15,6 +15,7 @@ from app.components.script_generator import create_script_generator_tab
 from app.components.script_editor import create_script_editor_tab
 from app.components.voiceover_generator import create_voiceover_tab, set_voice_data
 from app.components.testing_dashboard import create_testing_dashboard
+from app.components.token_dashboard import create_token_dashboard
 
 def setup_directories():
     """Create necessary output directories"""
@@ -268,6 +269,12 @@ def create_main_interface():
             script_output, script_file_output = create_script_generator_tab()
             edit_script_input, edited_script_output = create_script_editor_tab()
             voiceover_script, voiceover_status, ogg_output, mp3_output = create_voiceover_tab()
+            
+            # Add analytics tab for token usage tracking
+            with gr.TabItem("Analytics"):
+                gr.Markdown("## Token Usage Analytics")
+                gr.Markdown("Track API usage and costs for DeepSeek and Claude models.")
+                create_token_dashboard()
             
             # Connect script generator to script editor
             script_output.change(

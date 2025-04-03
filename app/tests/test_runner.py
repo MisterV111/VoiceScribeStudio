@@ -21,8 +21,9 @@ from app.tests.filter_presets import (
     filter_test_cases_by_approach, get_interactive_filters,
     estimate_test_count, estimate_time_and_tokens
 )
-from app.utils.llm_clients import generate_script, edit_script
+from app.utils.llm_clients import generate_script, edit_script_with_claude as edit_script
 from app.utils.test_logging import setup_test_logger, log_test_result, log_test_summary
+from app.utils.token_counter import token_tracker
 
 # Configure logging
 logger = logging.getLogger("cross_template_testing")
@@ -76,14 +77,27 @@ class TestRunner:
         try:
             # Generate the script
             generation_start = time.time()
-            script = generate_script(
+            script_result = generate_script(
+                prompt=test_case['subject'], 
                 template=test_case['template'],
                 subject=test_case['subject'],
                 length=test_case['length'],
                 audience=test_case['audience'],
                 tone=test_case['tone'],
-                force_fallback=self.force_fallback
+                force_fallback=self.force_fallback,
+                is_test=True
             )
+            
+            # Handle the new return format (dict with content and metrics)
+            if isinstance(script_result, dict) and "content" in script_result:
+                script = script_result["content"]
+                result['token_usage'] = script_result.get("token_metrics", {})
+                result['model_used'] = script_result.get("model_used", "unknown")
+                result['is_fallback'] = script_result.get("is_fallback", False)
+            else:
+                # Fallback for backward compatibility
+                script = script_result
+            
             generation_time = time.time() - generation_start
             result['timing']['generation'] = generation_time
             result['generated_script'] = script
@@ -94,6 +108,8 @@ class TestRunner:
             validation_time = time.time() - validation_start
             result['timing']['validation'] = validation_time
             
+            # Consider test as successful if we have a valid script (even with warnings)
+            # Tests fail only if they have hard errors (typically only template markers)
             if validation_result['is_valid']:
                 result['success'] = True
             else:
