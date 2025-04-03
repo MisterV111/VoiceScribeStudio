@@ -12,7 +12,20 @@ def edit_script(original_script, edit_instructions, context=""):
             return "Please provide instructions for editing.", None
         
         # Edit the script using Claude
-        edited_script = edit_script_with_claude(original_script, edit_instructions, context)
+        result = edit_script_with_claude(original_script, edit_instructions, context)
+        
+        # Handle the new dict return format
+        if isinstance(result, dict) and "content" in result:
+            edited_script = result["content"]
+            # We could also use result["token_metrics"] here if needed
+            model_used = result.get("model_used", "claude")
+            
+            # Add a small note about which model was used (optional)
+            model_info = f"Edited with: {model_used}"
+        else:
+            # Handle legacy return format (just the script text)
+            edited_script = result
+            model_info = ""
         
         if not edited_script:
             return "Failed to edit script with Claude. Please check API key and try again.", None
@@ -24,6 +37,10 @@ def edit_script(original_script, edit_instructions, context=""):
         
         with open(script_file, "w") as f:
             f.write(edited_script)
+            
+            # Optionally add model info to the file
+            if model_info:
+                f.write(f"\n\n{model_info}")
             
         return edited_script, script_file
     except Exception as e:

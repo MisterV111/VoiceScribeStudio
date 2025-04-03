@@ -9,7 +9,7 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
             return "Please provide a prompt for script generation.", None
         
         # Generate the script using the primary function (which handles fallbacks)
-        script = generate_script(
+        result = generate_script(
             prompt=prompt, 
             subject=subject, 
             length=length, 
@@ -18,6 +18,20 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
             template=template,
             context=context
         )
+        
+        # Handle the new dict return format
+        if isinstance(result, dict) and "content" in result:
+            script = result["content"]
+            # We could also use result["token_metrics"] here if needed
+            model_used = result.get("model_used", "unknown")
+            is_fallback = result.get("is_fallback", False)
+            
+            # Add a small note about which model was used (optional)
+            model_info = f"Generated with: {model_used}" + (" (fallback)" if is_fallback else "")
+        else:
+            # Handle legacy return format (just the script text)
+            script = result
+            model_info = ""
         
         if not script:
             return "Failed to generate script with all available models. Please check API keys and try again.", None
@@ -29,6 +43,10 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
         
         with open(script_file, "w") as f:
             f.write(script)
+            
+            # Optionally add model info to the file
+            if model_info:
+                f.write(f"\n\n{model_info}")
         
         return script, script_file
     except Exception as e:
