@@ -82,7 +82,8 @@ def get_voices():
         return []
 
 def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleven_multilingual_v2", 
-                       stability=0.5, similarity=0.75, style=0.0, speed=1.0, use_speaker_boost=False):
+                       stability=0.5, similarity=0.75, style=0.0, speed=1.0, use_speaker_boost=False,
+                       output_format="mp3_44100_128"):
     """
     Generate a voiceover using ElevenLabs API.
     
@@ -96,13 +97,18 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
         style (float): Style exaggeration (0.0 to 1.0)
         speed (float): Speaking speed (0.7 to 1.2)
         use_speaker_boost (bool): Whether to apply speaker boost
+        output_format (str): The desired output format from the API
+                            - "mp3_44100_128": MP3 format, 44.1kHz, 128kbps (standard)
+                            - "mp3_44100_192": MP3 format, 44.1kHz, 192kbps (higher quality)
+                            - "pcm_44100": WAV format, 44.1kHz, 16-bit (broadcast quality)
     
     Returns:
-        tuple: (audio_bytes, file_path) if successful, (None, None) if failed
+        tuple: (audio_bytes, file_path, is_premium_format) if successful, (None, None, False) if failed
+              The is_premium_format flag indicates if the requested format requires a premium subscription
     """
     if not client:
         print("ElevenLabs client not initialized. Skipping voiceover generation.")
-        return None, None
+        return None, None, False
         
     try:
         # Calculate character count for tracking
@@ -114,6 +120,7 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
         
         print(f"Generating voiceover with voice ID: {voice_id}, model: {model}")
         print(f"Voice settings - Stability: {stability}, Similarity: {similarity}, Style: {style}, Speed: {speed}, Speaker Boost: {use_speaker_boost}")
+        print(f"Requested output format: {output_format}")
         
         # Configure voice settings
         voice_settings = {
@@ -124,14 +131,42 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
             "speed": speed
         }
         
-        # Generate audio from script
-        audio_response = client.text_to_speech.convert(
-            text=script,
-            voice_id=voice_id,
-            model_id=model,
-            output_format="mp3_44100_128",
-            voice_settings=voice_settings
-        )
+        # Variable to track premium format usage
+        is_premium_format = False
+        original_format = output_format
+        
+        # Check if the requested format is a premium format (WAV/PCM or high bitrate MP3)
+        if output_format in ["pcm_44100", "mp3_44100_192"]:
+            is_premium_format = True
+            try:
+                # Generate audio from script with premium format
+                audio_response = client.text_to_speech.convert(
+                    text=script,
+                    voice_id=voice_id,
+                    model_id=model,
+                    output_format=output_format,
+                    voice_settings=voice_settings
+                )
+            except Exception as premium_error:
+                print(f"Error using premium format {output_format}: {str(premium_error)}")
+                print("Falling back to standard MP3 format")
+                output_format = "mp3_44100_128"
+                audio_response = client.text_to_speech.convert(
+                    text=script,
+                    voice_id=voice_id,
+                    model_id=model,
+                    output_format=output_format,
+                    voice_settings=voice_settings
+                )
+        else:
+            # Generate audio from script with standard format
+            audio_response = client.text_to_speech.convert(
+                text=script,
+                voice_id=voice_id,
+                model_id=model,
+                output_format=output_format,
+                voice_settings=voice_settings
+            )
         
         # Handle the response based on its type
         if isinstance(audio_response, bytes):
@@ -147,7 +182,7 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
             audio = bytes(audio_chunks)
         else:
             print(f"Unexpected response type: {type(audio_response)}")
-            return None, None
+            return None, None, False
         
         print(f"Successfully generated audio: {len(audio)} bytes")
         # --- Character Count Logging --- 
@@ -162,31 +197,51 @@ def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleve
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
             filename, ext = os.path.splitext(output_path)
-            if not ext: 
+            
+            # Determine the correct extension based on actual format received
+            if output_format.startswith("pcm_"):
+                ext = ".wav"
+            elif output_format.startswith("mp3_"):
                 ext = ".mp3"
+            else:
+                ext = ext or ".mp3"  # Default to mp3 if extension is empty
+                
             file_path = f"{filename}_{timestamp}{ext}"
             
             with open(file_path, "wb") as f:
                 f.write(audio)
             
             print(f"Saved audio to: {file_path}")
-            return audio, file_path
+            
+            # Check if we need to convert back to the originally requested format
+            if original_format != output_format and original_format.startswith("pcm_"):
+                # User wanted WAV but we could only get MP3 - convert as best we can
+                try:
+                    wav_path = file_path.replace(".mp3", ".wav")
+                    convert_to_wav(file_path, wav_path)
+                    file_path = wav_path
+                    print(f"Converted MP3 to WAV as fallback: {file_path}")
+                except Exception as conv_err:
+                    print(f"Error during fallback conversion: {str(conv_err)}")
+            
+            return audio, file_path, is_premium_format
         
-        return audio, None
+        return audio, None, is_premium_format
     
     except Exception as e:
         print(f"Error generating voiceover: {str(e)}")
         import traceback
         traceback.print_exc()
-        return None, None
+        return None, None, False
 
-def convert_mp3_to_ogg(mp3_data_or_path, output_path=None):
+def convert_mp3_to_ogg(mp3_data_or_path, output_path=None, quality="high"):
     """
     Convert MP3 audio to OGG format for better compatibility.
     
     Args:
         mp3_data_or_path: Either bytes data or file path of the MP3 audio
         output_path (str, optional): Where to save the OGG file
+        quality (str): Quality level - "low", "medium", or "high"
     
     Returns:
         tuple: (audio_segment, file_path) if successful, (None, None) if failed
@@ -202,14 +257,22 @@ def convert_mp3_to_ogg(mp3_data_or_path, output_path=None):
         else:
             raise ValueError("Invalid input: must be bytes data or existing file path")
         
+        # Set bitrate based on quality
+        if quality == "low":
+            bitrate = "128k"
+        elif quality == "medium":
+            bitrate = "192k"
+        else:  # high
+            bitrate = "256k"
+            
         # If output path is provided, export the OGG file
         if output_path:
             # Make sure the directory exists
             if not os.path.exists(os.path.dirname(output_path)):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
-            # Export as OGG with decent quality (quality scale: 0-10)
-            audio.export(output_path, format="ogg", codec="libvorbis", bitrate="192k")
+            # Export as OGG with quality based on parameter
+            audio.export(output_path, format="ogg", codec="libvorbis", bitrate=bitrate)
             return audio, output_path
         
         return audio, None
@@ -217,6 +280,86 @@ def convert_mp3_to_ogg(mp3_data_or_path, output_path=None):
     except Exception as e:
         print(f"Error converting MP3 to OGG: {str(e)}")
         return None, None
+
+def convert_to_wav(input_path, output_path, sample_rate=44100, bit_depth=16):
+    """
+    Convert any audio file to WAV format with specified quality settings.
+    
+    Args:
+        input_path (str): Path to the input audio file
+        output_path (str): Path to save the WAV file
+        sample_rate (int): The sample rate for the WAV file (default: 44100 Hz)
+        bit_depth (int): Bit depth for the WAV file (default: 16 bit)
+    
+    Returns:
+        str: Path to the output WAV file if successful, None if failed
+    """
+    try:
+        # Load the audio
+        audio = AudioSegment.from_file(input_path)
+        
+        # Set the desired sample rate if needed
+        if audio.frame_rate != sample_rate:
+            audio = audio.set_frame_rate(sample_rate)
+        
+        # Set the desired bit depth if needed
+        if audio.sample_width != bit_depth // 8:
+            audio = audio.set_sample_width(bit_depth // 8)
+        
+        # Export as WAV (PCM format)
+        audio.export(output_path, format="wav")
+        
+        print(f"Converted audio to WAV: {output_path}")
+        return output_path
+    
+    except Exception as e:
+        print(f"Error converting to WAV: {str(e)}")
+        return None
+
+def convert_wav_to_format(wav_path, output_path, format_type="mp3", quality="high"):
+    """
+    Convert WAV to another format with high quality.
+    
+    Args:
+        wav_path (str): Path to the WAV file
+        output_path (str): Path to save the output file
+        format_type (str): Output format - "mp3", "ogg"
+        quality (str): Quality level - "low", "medium", or "high"
+    
+    Returns:
+        str: Path to the output file if successful, None if failed
+    """
+    try:
+        # Load the WAV file
+        audio = AudioSegment.from_file(wav_path, format="wav")
+        
+        # Define quality parameters for each format
+        quality_settings = {
+            "mp3": {
+                "low": {"bitrate": "128k"},
+                "medium": {"bitrate": "192k"},
+                "high": {"bitrate": "320k"}
+            },
+            "ogg": {
+                "low": {"bitrate": "128k"},
+                "medium": {"bitrate": "192k"},
+                "high": {"bitrate": "256k"}
+            }
+        }
+        
+        # Get quality settings for the requested format
+        format_settings = quality_settings.get(format_type, {})
+        settings = format_settings.get(quality, format_settings.get("high", {}))
+        
+        # Export to the desired format
+        audio.export(output_path, format=format_type, **settings)
+        
+        print(f"Converted WAV to {format_type}: {output_path}")
+        return output_path
+    
+    except Exception as e:
+        print(f"Error converting WAV to {format_type}: {str(e)}")
+        return None
 
 # Keep the old function for backward compatibility
 def convert_wav_to_ogg(wav_data_or_path, output_path=None):
