@@ -52,9 +52,9 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         
         # Map UI format to API format
         format_mapping = {
-            "wav": "pcm_44100",       # Highest quality - broadcast standard
+            "wav": "pcm_44100",       # Highest quality - broadcast standard (requires Pro subscription)
             "ogg": "mp3_44100_128",   # We'll convert MP3 to high-quality OGG
-            "mp3": "mp3_44100_128"    # Standard quality MP3
+            "mp3": "mp3_44100_192"    # High quality MP3 (Creator tier+)
         }
         
         # Track all generated files for batch mode
@@ -321,8 +321,8 @@ def create_voiceover_tab():
                     )
                     
                     # Add batch output display for when multiple formats are generated
-                    batch_output = gr.Dataframe(
-                        headers=["Format", "File Path"],
+                    batch_output = gr.Markdown(
+                        value="",
                         label="All Generated Formats",
                         visible=False
                     )
@@ -473,9 +473,24 @@ def create_voiceover_tab():
             outputs=[stability_slider, similarity_slider, style_slider, speed_slider, speaker_boost]
         )
         
-        # Connect the voiceover button to the create_voiceover function
+        # Connect the voiceover button to the create_voiceover function with output formatter
+        def create_voiceover_with_markdown(*args):
+            """Wrapper function that converts file list output to markdown"""
+            status, ogg, mp3, wav, file_list = create_voiceover(*args)
+            
+            # Convert file list to markdown
+            if isinstance(file_list, list) and len(file_list) > 0:
+                markdown = "### Generated Audio Files\n\n"
+                for format_name, file_path in file_list:
+                    file_name = os.path.basename(file_path)
+                    markdown += f"- **{format_name}**: [{file_name}]({file_path})\n"
+                return status, ogg, mp3, wav, markdown
+            else:
+                return status, ogg, mp3, wav, ""
+        
+        # Connect the voiceover button to the function
         voiceover_btn.click(
-            fn=create_voiceover,
+            fn=create_voiceover_with_markdown,
             inputs=[
                 voiceover_script, 
                 preset_voice_selector, 
