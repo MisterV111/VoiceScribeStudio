@@ -291,14 +291,28 @@ def get_css():
         margin-top: 10px !important;
     }
     /* Admin bar styling */
+    .admin-bar-container {
+        margin-bottom: 20px !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
     .admin-bar {
-        background-color: #3a0647 !important;
+        background: #3b355d !important;
         color: white !important;
-        padding: 10px 20px !important;
+        padding: 15px 20px !important;
         font-weight: bold !important;
         text-align: center !important;
-        margin-bottom: 20px !important;
+        margin: 0 !important;
         border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        width: 100% !important;
+    }
+    .admin-bar h1 {
+        font-size: 1.8rem !important;
+        margin: 0 !important;
+        color: white !important;
     }
     """
 
@@ -358,20 +372,20 @@ def main():
                     script_output, script_file_output = create_script_generator_tab()
                     edit_script_input, edited_script_output = create_script_editor_tab()
                     voiceover_script, voiceover_status, ogg_output, mp3_output = create_voiceover_tab()
-                    
-                    # Connect script generator to script editor
-                    script_output.change(
-                        fn=lambda x: x,
-                        inputs=[script_output],
-                        outputs=[edit_script_input]
-                    )
-                    
-                    # Connect script editor to voiceover generator
-                    edited_script_output.change(
-                        fn=lambda x: x,
-                        inputs=[edited_script_output],
-                        outputs=[voiceover_script]
-                    )
+                
+                # Connect script generator to script editor
+                script_output.change(
+                    fn=lambda x: x,
+                    inputs=[script_output],
+                    outputs=[edit_script_input]
+                )
+                
+                # Connect script editor to voiceover generator
+                edited_script_output.change(
+                    fn=lambda x: x,
+                    inputs=[edited_script_output],
+                    outputs=[voiceover_script]
+                )
             
             # Admin login form
             with gr.Column(visible=False) as login_form:
@@ -394,7 +408,9 @@ def main():
                 # Create the banner
                 create_banner(banner_base64)
                 
-                gr.Markdown("# VoiceScribe Studio - Admin Dashboard", elem_classes=["admin-bar"])
+                # Admin title bar
+                with gr.Column(elem_classes=["admin-bar-container"]):
+                    gr.Markdown("# Admin Dashboard", elem_classes=["admin-bar"])
                 
                 with gr.Row():
                     with gr.Column(scale=10):
