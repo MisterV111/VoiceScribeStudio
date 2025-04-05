@@ -1,7 +1,5 @@
 # VoiceScribe Studio (Version 0.1.0)
 
-AI-powered script generation and voiceover production studio for educational and marketing content.
-
 <div align="center">
   <img src="app/assets/VoiceScribe Studio Banner.png" alt="VoiceScribe Studio Banner" width="800">
 </div>
