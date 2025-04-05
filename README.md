@@ -38,7 +38,9 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 
 The roadmap includes transforming VoiceScribe into a full AI content **production** partner through phased development:
 
-- **Phase 2: Smarter Context & Content Processing**: AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
+- **Phase 2: Smarter Context & Content Processing**: 
+  - AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
+  - **Humanize Feature**: Intelligent script formatting that automatically adds natural pauses, emotional emphasis, and timing cues to optimize voiceover delivery.
 - **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
 - **Phase 4: AI Research Assistant**: Web browsing (FireCrawl) and fact-verification (Perplexity MCP) capabilities for accurate, informed scripts.
 - **Phase 5: Multimedia Production**: AI-generated background music (Suno AI), visual content (EverArt MCP), and professional document exports.
