@@ -73,6 +73,9 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [✓] **Backend:** Design initial structured content format (JSON) for analysis output
 - [✓] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
 - [✓] **UI:** Implement Gradio file upload component for documents
+  - [ ] Add token counting logic for uploaded files (`tiktoken`)
+  - [ ] Implement `.upload()` event handler to check file size
+  - [ ] Add UI warning message for large documents (>75k tokens)
 - [✓] **UI:** Implement Gradio input component for YouTube URLs
 - [✓] **UI:** Implement Gradio input component for general URLs
 - [✓] **UI:** Create unified reference input UI with conditional visibility
@@ -372,3 +375,18 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Additional LLM options
 - Mobile application development
 - Enterprise deployment options 
+
+reference_type = gr.Radio(
+    label="Input Type",
+    choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
+    value="None"
+)
+
+# Document Upload Input 
+with gr.Column(visible=False) as doc_upload_group:
+    # Add a placeholder for the size warning message
+    doc_size_warning = gr.Markdown(visible=False, elem_classes=["warning-text"])
+    document_upload_input = gr.File(
+        label="Upload Document",
+        file_count="single",
+    ) 
