@@ -21,6 +21,10 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
   - **Format Preview**: See which formats will be generated when selecting "Generate All Formats".
   - **Professional Download Interface**: Clean, responsive cards with format-specific icons and file details.
   - **Styled Status Messages**: Clear visual feedback (e.g., colored success messages) for generation status.
+- 📄 **Reference Input Options** (In Development - Phase 2): Multiple ways to provide context:
+  - **Document Upload**: Support for various file formats (.txt, .md, .pdf, .docx)
+  - **Web URL Reference**: Extract context directly from web pages
+  - **YouTube Reference**: Use YouTube videos as style or content references
 - 🔧 **Voice Customization**: Fine-tune voice parameters (stability, similarity, style, speed).
 - ✏️ **Script Editing**: Built-in editor to refine generated scripts.
 - 🔀 **Multiple Templates**: Specialized templates (General Education, Technical Tutorial, Marketing, Business Training, Music Lesson).

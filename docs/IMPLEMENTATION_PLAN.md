@@ -72,14 +72,15 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [✓] **Backend:** Implement Claude 3.7 API integration for document analysis
 - [✓] **Backend:** Design initial structured content format (JSON) for analysis output
 - [✓] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
-- [ ] **UI:** Implement Gradio file upload component for documents
+- [✓] **UI:** Implement Gradio file upload component for documents
+- [✓] **UI:** Implement Gradio input component for YouTube URLs
+- [✓] **UI:** Implement Gradio input component for general URLs
+- [✓] **UI:** Create unified reference input UI with conditional visibility
 - [ ] **Integration:** Connect file upload UI to the backend analysis module
 - [ ] **Backend:** Direct YouTube API integration for style reference
 - [ ] **Backend:** Style reference processing module
-- [ ] **UI:** Implement Gradio input component for YouTube URLs
 - [ ] **Integration:** Connect YouTube URL UI to backend processing
 - [ ] **Backend:** Implement *basic* URL content fetching (Note: Robust MCP-based fetching in Phase 4)
-- [ ] **UI:** Implement Gradio input component for general URLs
 - [ ] **Integration:** Connect general URL UI to basic fetching & analysis pipeline
 - [ ] **Backend:** Implement source tracking system development
 - [ ] **Backend:** Token usage storage implementation for analysis steps
