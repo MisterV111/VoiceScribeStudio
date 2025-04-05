@@ -82,6 +82,19 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [✓] **Integration:** Connect file upload UI to the backend analysis module
 - [✓] **Backend:** Implement YouTube API integration for transcript extraction
 - [ ] **Backend:** Style reference processing module
+  - [ ] Create style analysis module using Claude 3.7 to identify tonal and structural elements
+  - [ ] Develop structured JSON format for style attributes (tone, pacing, vocabulary level, structure)
+  - [ ] Implement style extraction for YouTube content, documents, and web articles
+  - [ ] Create style-enhanced prompt templates for DeepSeek
+  - [ ] Build style matching algorithm to apply identified patterns to script generation
+  - [ ] **UI:** Implement style matching controls:
+    - [ ] Create Style Matching Toggle with on/off state
+    - [ ] Add Style Extraction Controls (tone, structure, pacing, vocabulary)
+    - [ ] Implement Style Strength Slider (subtle to strong mimicry)
+    - [ ] Develop template-specific style suggestions based on content type
+  - [ ] Create backend handler for style parameter processing
+  - [ ] Implement style attribute visualization for user feedback
+  - [ ] Add response metrics to evaluate style matching effectiveness
 - [✓] **Integration:** Connect YouTube URL UI to backend processing
 - [✓] **Backend:** Implement web URL content fetching
 - [✓] **Integration:** Connect general URL UI to fetching & analysis pipeline
@@ -205,6 +218,21 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Rate limits: [TBD]
 - Generation parameters: mood, style, duration
 
+### Style Reference Processing Details
+- **Analysis Model:** Claude 3.7 Sonnet
+- **Style Attributes:**
+  - Tone (formal/casual/technical/conversational)
+  - Structure (organization patterns, section transitions)
+  - Pacing (sentence length, paragraph structure)
+  - Vocabulary (complexity level, domain-specific terminology)
+  - Voice (authority level, personal engagement)
+- **Style Application Controls:**
+  - Toggle to enable/disable style matching
+  - Multi-selector for specific elements to extract
+  - Strength slider (1-10) determining influence level
+  - Template-specific suggestions based on content type
+- **Storage Format:** JSON with style attribute weights and examples
+
 ### Translation Service Details (New Section)
 - **Primary LLM:** Claude 3.7 Sonnet
 - **Target Languages:** French, Spanish, German, Italian, Portuguese, Russian, Japanese, Korean, Chinese
@@ -283,6 +311,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 | API rate limiting | High | Medium | Intelligent caching, queue management, premium tier controls |
 | **Translation Quality/Accuracy** | Medium | High | Contextual prompts, glossary system, quality review cycles, potential fallback (manual edit) |
 | **Glossary Maintenance Overhead** | Medium | Medium | Start with core templates, community contribution model?, automated suggestions? |
+| **Style Matching Effectiveness** | Medium | Medium | Fine-tuned prompts, style attribute weighting, user feedback loop for improvement |
 
 ## Progress Tracking
 
@@ -343,6 +372,8 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] **Translation Quality:** Manual review scores > 4.0/5.0 (New)
 - [ ] **Translation Performance:** <5s completion for average scripts (New)
 - [ ] **Translation User Satisfaction:** >85% positive feedback (New)
+- [ ] **Style Matching Accuracy:** >80% detection of intended stylistic elements
+- [ ] **Style Application Quality:** >75% user satisfaction with style matching
 
 ## Appendix
 
