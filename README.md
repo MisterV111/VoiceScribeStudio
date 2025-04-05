@@ -1,4 +1,4 @@
-# VoiceScribe Studio
+# VoiceScribe Studio (Version 0.1.0)
 
 AI-powered script generation and voiceover production studio for educational and marketing content.
 
@@ -8,60 +8,47 @@ AI-powered script generation and voiceover production studio for educational and
 
 ## About
 
-VoiceScribe Studio is a comprehensive application that combines advanced AI technologies to streamline content creation from script to voiceover. Designed for educators, marketers, and content creators, this application simplifies the process of creating professional, engaging content with minimal effort.
+VoiceScribe Studio streamlines content creation using advanced AI. This version (v0.1.0) focuses on providing a high-quality script generation core and a polished voiceover production experience.
 
-### Features
+Our vision is to evolve VoiceScribe into a comprehensive AI content production studio, assisting with research, writing, translation, fact-checking, music generation, visual creation, and professional exports.
 
-**Current MVP Features:**
+### Current Capabilities (v0.1.0 - Phase 1 Complete)
 
-- 📝 **Script Generation**: Create customized scripts using our multi-model architecture:
-  - **DeepSeek R1 as primary model** for superior creative script generation 
-  - **Claude 3.7 Sonnet as fallback** for reliable content processing
-- 🗣️ **Voice Synthesis**: Transform scripts into natural-sounding voiceovers using ElevenLabs' advanced TTS technology.
-  - Support for multiple audio formats (MP3, OGG, High-Quality WAV)
-  - Batch generation of all formats with a single click
-  - Professionally styled download interface with format-specific icons
-  - Format preview capabilities for multi-format generation
-  - Visual status indicators with custom styling for better user feedback
-- 🔧 **Voice Customization**: Adjust voice parameters including stability, clarity, style, and speed to achieve the perfect sound.
-- ✏️ **Script Editing**: Integrated editor for refining AI-generated scripts before voiceover creation.
-- 🔀 **Multiple Templates**: Specialized script templates for different content types and audiences.
-- 📊 **Audience Targeting**: Customize content for different audience levels from beginner to expert.
-- 🔍 **Content Adaptation**: Adjust tone, length, and style based on your specific needs.
-- 💾 **Local Storage**: Save generated scripts and audio files locally.
-- 🧪 **Testing Dashboard**: Comprehensive cross-template testing suite with user-friendly result visualization for quality assurance.
-  - Password-protected interface accessible via a dedicated button
-  - Formatted test configuration visualization with clear parameters
-  - Enhanced validation results with color-coded pass/fail indicators
-  - Interactive data visualization and filtering capabilities
+- 📝 **Smarter Script Generation**: Significantly upgraded AI engine using:
+  - **DeepSeek R1** as the primary model for high-quality, creative scripts across various templates.
+  - **Claude 3.7 Sonnet** as a robust fallback for reliability.
+- 🗣️ **Enhanced Voice Synthesis & Output**: A more polished experience for generating voiceovers:
+  - Support for multiple audio formats: **MP3 (High Quality 192kbps)**, **OGG (Game Audio Quality)**, and **High Quality WAV (48kHz/24-bit)**.
+  - **Batch Generation**: Create all formats with a single click.
+  - **Format Preview**: See which formats will be generated when selecting "Generate All Formats".
+  - **Professional Download Interface**: Clean, responsive cards with format-specific icons and file details.
+  - **Styled Status Messages**: Clear visual feedback (e.g., colored success messages) for generation status.
+- 🔧 **Voice Customization**: Fine-tune voice parameters (stability, similarity, style, speed).
+- ✏️ **Script Editing**: Built-in editor to refine generated scripts.
+- 🔀 **Multiple Templates**: Specialized templates (General Education, Technical Tutorial, Marketing, Business Training, Music Lesson).
+- 📊 **Audience & Content Adaptation**: Customize scripts for different audience levels, tones, and lengths.
+- 💾 **Local Storage**: Save generated scripts and audio files to your machine.
+- 🧪 **Admin & Testing Tools**:
+  - **Secure Admin Dashboard**: Separate interface for testing and analytics (Login: `admin`/`admin123`).
+  - **Cross-Template Testing Suite**: Ensures reliability and quality across templates.
 
-### Planned Enhancements (v2 - Under Development)
+### Future Vision (Planned Enhancements)
 
-VoiceScribe Studio is undergoing a major enhancement. Future versions (developed on the `voicescribe-v2` branch) will include:
+The roadmap includes transforming VoiceScribe into a full AI content partner through phased development:
 
-- **🌐 Multi-Source Content Integration**: Ability to process content from various sources:
-    - **Web Content Retrieval** (via FireCrawl)
-    - **Direct URL Processing** (via Browser Tools MCP)
-    - **Document Uploads & Analysis**
-- **✅ Enhanced Accuracy & Verification**: Fact-checking and knowledge enhancement using **Perplexity MCP**.
-- **<0xF0><0x9F><0xAA><0x9E> YouTube Integration**: Direct API integration to reference YouTube video style and content.
-- **<0xF0><0x9F><0xA7><0xA0> Memory & Context**: Persistent user preferences and context using **Memory MCP**.
-- **<0xF0><0x9F><0xAA><0xA8> Multilingual Translation**: In-app script translation to multiple languages (French, Spanish, German, etc.) powered by Claude 3.7 Sonnet with glossary support.
-- **<0xF0><0x9F><0x8E><0xB5> Background Music Generation**: AI-powered background music creation tailored to script tone using **Suno AI**.
-- **<0xF0><0x9F><0x96><0xBC>️ Visual Content Generation**: AI-generated images relevant to the script content using **EverArt MCP**.
-- **<0xF0><0x9F><0x93><0x84> Professional Exports**: Advanced document export formats using **Document Conversion MCP**.
-- **📂 Enhanced File Management**: Improved content organization via **File System MCP**.
-- **📊 Advanced Analytics**: Detailed token usage dashboard and API cost monitoring.
-- 📊 **Analytics Dashboard**: Track project metrics, token usage, and generation trends
+- **Phase 2: Smarter Context & Content Processing**: AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
+- **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
+- **Phase 4: AI Research Assistant**: Web browsing (FireCrawl) and fact-verification (Perplexity MCP) capabilities for accurate, informed scripts.
+- **Phase 5: Multimedia Production**: AI-generated background music (Suno AI), visual content (EverArt MCP), and professional document exports.
+- **Phase 6: Polishing & Professional Tools**: User dashboards for cost tracking, enhanced input methods (URLs, docs), media previews, and final deployment.
 
-## Development Branches
+## Development & Versioning
 
-The repository is organized with the following branch structure:
+- **main**: Represents the latest stable, released version (currently v0.1.0).
+- **phase-2-features**: Active development branch for features planned in Phase 2.
+- **Tags**: Specific versions (like `v0.1.0`) are marked using Git tags on the `main` branch.
 
-- **main**: Stable, production-ready version of VoiceScribe Studio
-- **voicescribe-v2**: Development branch for the next major version (currently in active development)
-
-All new feature development happens on the **voicescribe-v2** branch and is merged to main when ready for release.
+Development for upcoming features occurs on dedicated branches (like `phase-2-features`) and is merged into `main` upon completion, accompanied by a new version tag.
 
 ## Installation
 
@@ -72,19 +59,19 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
 - Anthropic API key (for Claude 3.7 Sonnet fallback)
 - ElevenLabs API key (for voice synthesis)
 
-### Additional Prerequisites (Optional Features)
+### Additional Prerequisites (Future Features)
 
-- YouTube Data API Key (for YouTube features)
-- Perplexity API Key (for verification features)
-- Suno AI API Key (for music generation)
-- EverArt API Key (for image generation)
-- Configuration for self-hosted MCP servers (e.g., FireCrawl) where applicable.
+- YouTube Data API Key
+- Perplexity API Key
+- Suno AI API Key
+- EverArt API Key
+- Configuration for self-hosted MCP servers (e.g., FireCrawl)
 
 ### Setup
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/VoiceScribeStudio.git
+   git clone https://github.com/MisterV111/VoiceScribeStudio.git
    cd VoiceScribeStudio
    ```
 
@@ -101,13 +88,12 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
 
 4. Create a `.env` file in the root directory with your API keys:
    ```dotenv
-   # --- Required Keys ---
+   # --- Required Keys (v0.1.0) ---
    DEEPSEEK_API_KEY=your_deepseek_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 
-   # --- Optional Feature Keys ---
-   # OPENAI_API_KEY=your_openai_api_key_here  # For legacy support if needed
+   # --- Optional Keys (Future Features) ---
    # YOUTUBE_DATA_API_KEY=your_youtube_data_api_key_here
    # PERPLEXITY_API_KEY=your_perplexity_api_key_here
    # SUNO_API_KEY=your_suno_api_key_here
@@ -118,52 +104,40 @@ All new feature development happens on the **voicescribe-v2** branch and is merg
    ```
    python run.py
    ```
-   
-   This will start two server applications:
-   - Main application: http://localhost:7860/
-   - Testing dashboard: http://localhost:7861/ (protected with authentication)
+   The application will be available at http://localhost:7860/.
 
 ## Application Structure
 
-VoiceScribe Studio now runs as two separate Gradio applications:
+VoiceScribe Studio runs as a single Gradio application, with a separate admin section accessible via login.
 
-1. **Main Application (Port 7860)**: The primary user interface for script generation, editing, and voiceover production.
-2. **Testing Dashboard (Port 7861)**: A dedicated interface for cross-template testing and quality assurance, accessible via:
-   - A "Test Suite" button in the main application
-   - Direct access at http://localhost:7861/
-   - Authentication required (username: `admin`, password: `testingsuite`)
+- **Main Interface (Port 7860)**: User-facing tools for script generation, editing, and voiceover production.
+- **Admin Dashboard (Accessible via Login)**: Contains the Testing Suite and future analytics dashboards. Use the "Admin Login" link and credentials (`admin`/`admin123`).
 
-This separation ensures a clean user experience while maintaining robust testing capabilities for development and quality control.
+## Usage (v0.1.0)
 
-## Usage
-
-*(Note: Usage will expand significantly with v2 features)*
-
-1. **Script Generation**: Select a template, provide a subject/prompt, **or input content via document upload, URL, or YouTube link (v2)**.
-2. **Script Editing & Translation (v2)**: Review, refine, and translate the generated script.
-3. **Voiceover Creation**: Select a voice and adjust parameters.
-4. **Media Enhancement (v2)**: Generate background music and visual content.
-5. **Export**: Save script, audio, **music (v2)**, **images (v2)**, and **professional document formats (v2)**.
+1.  **Script Generation**: Select a template, provide a subject/prompt, define audience, tone, and length. Click "Generate Script".
+2.  **Script Editing**: Modify the generated script in the "Edit Script" tab.
+3.  **Voiceover Creation**:
+    *   Go to the "Generate Voiceover" tab (script is pre-filled).
+    *   Select a preset voice or enter a custom ElevenLabs Voice ID.
+    *   Choose an audio format (MP3, OGG, WAV) or select "Generate All Formats".
+    *   Adjust voice settings (Stability, Similarity, etc.).
+    *   Click "Generate Voiceover".
+4.  **Download**: Use the download links provided in the output area.
 
 ## Templates
 
 VoiceScribe Studio offers several specialized templates:
 
-- **General Education**: For traditional educational content
-- **Technical Tutorial**: For software, coding, and technical instruction
-- **Marketing**: For promotional and advertising content
-- **Business Training**: For corporate training and professional development
-- **Music Lesson**: For music instruction and demonstration
+- General Education
+- Technical Tutorial
+- Marketing
+- Business Training
+- Music Lesson
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please follow standard GitHub fork & pull request procedures, targeting the relevant development branch (e.g., `phase-2-features`).
 
 ## License
 
@@ -171,12 +145,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- [OpenAI](https://openai.com/) for the language model API
+- [DeepSeek AI](https://www.deepseek.com/) for the DeepSeek R1 model
+- [Anthropic](https://www.anthropic.com/) for the Claude 3.7 Sonnet model
 - [ElevenLabs](https://elevenlabs.io/) for the text-to-speech technology
 - [Gradio](https://gradio.app/) for the web interface
-- **[Anthropic](https://www.anthropic.com/) (Planned v2)** for the Claude 3.7 Sonnet model
-- **[DeepSeek AI](https://www.deepseek.com/) (Planned v2)** for the DeepSeek R1 model
-- **[Suno AI](https://suno.ai/) (Planned v2)** for AI music generation
-- **[Perplexity AI](https://perplexity.ai/) (Planned v2)** for verification features
-- **[YouTube Data API](https://developers.google.com/youtube/v3) (Planned v2)**
-- **Various MCP Server technologies (Planned v2)** (FireCrawl, EverArt, etc.) 
+- Future Acknowledgments: Suno AI, Perplexity AI, YouTube Data API, FireCrawl, EverArt, etc. 
