@@ -1,12 +1,38 @@
 import gradio as gr
 import os
+import tiktoken # Added for token counting
 from app.utils.llm_clients import generate_script
 
-def create_script(prompt, subject, length, audience, tone, template="General", context=""):
-    """Generate a script using the best available LLM"""
+def create_script(prompt, subject, length, audience, tone, template="General", context="", 
+               uploaded_file=None, web_url="", youtube_url="", reference_type="None"):
+    """Generate a script using the best available LLM, using different reference sources based on input type."""
     try:
         if not prompt or not prompt.strip():
             return "Please provide a prompt for script generation.", None
+        
+        # Initialize reference content
+        reference_context = ""
+        
+        # Process different reference types
+        if reference_type == "Document Upload" and uploaded_file is not None:
+            try:
+                # Read document content
+                with open(uploaded_file.name, 'r', encoding='utf-8') as f:
+                    document_content = f.read()
+                reference_context = f"\n\n--- Document Context ---\n{document_content}\n--- End Document Context ---"
+            except Exception as e:
+                print(f"Error reading uploaded file: {e}")
+        
+        elif reference_type == "Web URL Reference" and web_url and web_url.strip():
+            # Format web URL reference
+            reference_context = f"\n\n--- Web Reference ---\nURL: {web_url.strip()}\n--- End Web Reference ---"
+            
+        elif reference_type == "YouTube Link Reference" and youtube_url and youtube_url.strip():
+            # Format YouTube reference
+            reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url.strip()}\n--- End YouTube Reference ---"
+        
+        # Combine all context sources
+        combined_context = context + reference_context
         
         # Generate the script using the primary function (which handles fallbacks)
         result = generate_script(
@@ -16,7 +42,7 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
             audience=audience, 
             tone=tone,
             template=template,
-            context=context
+            context=combined_context # Pass the combined context
         )
         
         # Handle the new dict return format
@@ -52,6 +78,55 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
     except Exception as e:
         return f"Error generating script: {str(e)}", None
 
+# --- Helper function for document size check ---
+def check_document_size(file_obj):
+    """Checks the token count of the uploaded file and returns a warning update."""
+    TOKEN_LIMIT_THRESHOLD = 75000  # Example threshold
+    WARNING_MESSAGE = f"""⚠️ **Large Document Warning**
+
+This document contains more than {TOKEN_LIMIT_THRESHOLD:,} tokens (approximately {TOKEN_LIMIT_THRESHOLD//1.5:,.0f} words).
+
+Processing may take longer and could incur higher costs. The document might be truncated during processing for optimal results."""
+    
+    if file_obj is None:
+        # No file uploaded or file cleared
+        return gr.update(value="", visible=False)
+
+    try:
+        # Initialize tiktoken encoder (cl100k_base is common for OpenAI/Anthropic)
+        encoding = tiktoken.get_encoding("cl100k_base")
+        
+        with open(file_obj.name, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        token_count = len(encoding.encode(content))
+        print(f"Uploaded document token count: {token_count}") # Log the count
+        
+        if token_count > TOKEN_LIMIT_THRESHOLD:
+            # For very large documents, add extra warning
+            if token_count > TOKEN_LIMIT_THRESHOLD * 2:
+                WARNING_MESSAGE += "\n\n**VERY LARGE DOCUMENT:** This document is extremely large and will likely be truncated significantly."
+            
+            return gr.update(value=WARNING_MESSAGE, visible=True)
+        else:
+            # Show token count for smaller documents too
+            return gr.update(
+                value=f"✓ Document size: {token_count:,} tokens (approximately {token_count//1.5:,.0f} words)",
+                visible=True
+            )
+            
+    except FileNotFoundError:
+         print(f"Error: Temporary file not found: {file_obj.name}")
+         return gr.update(value="Error reading file.", visible=True) # Show error
+    except tiktoken.RegistryError:
+         print("Error: Tiktoken encoding 'cl100k_base' not found. Make sure tiktoken is installed correctly.")
+         # Cannot check size, return no warning
+         return gr.update(value="", visible=False) 
+    except Exception as e:
+        print(f"Error checking document size: {e}")
+        # Return a generic error or no warning
+        return gr.update(value="Error processing file.", visible=True)
+
 def create_script_generator_tab():
     with gr.TabItem("Generate Script"):
         with gr.Row():
@@ -71,69 +146,114 @@ def create_script_generator_tab():
                     info="Select an industry-specific template to guide script generation"
                 )
                 
-                # Reference Input Section
-                with gr.Group():
-                    gr.Markdown("### Context / Reference Input")
+                # Context Reference Input section with radio buttons
+                gr.Markdown("### Context / Reference Input", elem_classes=["section-header"])
+                reference_type = gr.Radio(
+                    label="Input Type",
+                    choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
+                    value="None"
+                )
+                
+                # Document Upload - Conditionally visible
+                with gr.Column(visible=False) as doc_upload_group:
+                    # Move the existing document upload component here
+                    doc_size_warning = gr.Markdown(visible=False, value="", elem_classes=["warning-text"])
                     
-                    # Reference Type Selector
-                    reference_type = gr.Radio(
-                        label="Input Type",
-                        choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
-                        value="None"
+                    # Create a horizontal layout with upload area and info side by side
+                    with gr.Row(elem_classes=["upload-info-container"]):
+                        # Left side: Upload area (smaller width)
+                        with gr.Column(scale=1, elem_classes=["upload-area-column"]):
+                            document_upload = gr.File(
+                                label="Upload Document (Optional)",
+                                file_count="single",
+                                file_types=[".txt", ".md", ".pdf", ".docx"] # Add more as needed
+                            )
+                        
+                        # Right side: File information
+                        with gr.Column(scale=1, elem_classes=["file-info-column"]):
+                            gr.Markdown("""
+                            <div class="file-info-panel">
+                                <div class="file-type-section">
+                                    <h4>Supported File Types</h4>
+                                    <div class="file-types">
+                                        <p><span class="checkmark selected">✓</span>Text files (.txt)</p>
+                                        <p><span class="checkmark selected">✓</span>Markdown files (.md)</p>
+                                        <p><span class="checkmark selected">✓</span>PDF documents (.pdf)</p>
+                                        <p><span class="checkmark selected">✓</span>Word documents (.docx)</p>
+                                    </div>
+                                </div>
+                                <div class="file-size-section">
+                                    <h4>File Size Limit</h4>
+                                    <p>75,000 Tokens = 60,000 Words</p>
+                                </div>
+                            </div>
+                            """, elem_classes=["side-by-side-info"])
+                    
+                    # Connect file upload to document size warning
+                    document_upload.change(
+                        fn=check_document_size,
+                        inputs=[document_upload],
+                        outputs=[doc_size_warning]
                     )
-                    
-                    # Document Upload Input 
-                    with gr.Column(visible=False) as doc_upload_group:
-                        document_upload_input = gr.File(
-                            label="Upload Document",
-                            file_count="single",
-                            file_types=[".txt", ".md", ".pdf", ".docx"]
-                        )
-                        gr.Markdown(
-                            value='<div style="text-align: center;">Upload a document (.txt, .md, .pdf, .docx) for analysis.<br><small>Accepted formats: .txt, .md, .pdf, .docx. Max 10MB.</small></div>'
-                        )
-                    
-                    # Web URL Input
-                    with gr.Column(visible=False) as url_input_group:
-                        url_reference_input = gr.Textbox(
-                            label="Web URL Reference",
-                            placeholder="Enter the full URL (e.g., https://www.example.com/article)"
-                        )
-                    
-                    # YouTube Link Input
-                    with gr.Column(visible=False) as youtube_input_group:
-                        youtube_reference_input = gr.Textbox(
-                            label="YouTube Link Reference",
-                            placeholder="Enter the full YouTube video URL"
-                        )
+                
+                # Web URL Reference - Conditionally visible
+                with gr.Column(visible=False) as web_url_group:
+                    web_url_input = gr.Textbox(
+                        label="Web URL Reference",
+                        placeholder="Enter the full website URL (e.g., https://example.com/article)",
+                        info="Add a link to a web page to use as context for script generation"
+                    )
+                
+                # YouTube Link Reference - Conditionally visible
+                with gr.Column(visible=False) as youtube_group:
+                    youtube_url_input = gr.Textbox(
+                        label="YouTube Link Reference",
+                        placeholder="Enter the full YouTube video URL",
+                        info="Add a YouTube video link to use as context for script generation"
+                    )
+                
+                # Function to show/hide reference input based on selection
+                def update_reference_visibility(choice):
+                    if choice == "None":
+                        return {
+                            doc_upload_group: gr.update(visible=False),
+                            web_url_group: gr.update(visible=False),
+                            youtube_group: gr.update(visible=False)
+                        }
+                    elif choice == "Document Upload":
+                        return {
+                            doc_upload_group: gr.update(visible=True),
+                            web_url_group: gr.update(visible=False),
+                            youtube_group: gr.update(visible=False)
+                        }
+                    elif choice == "Web URL Reference":
+                        return {
+                            doc_upload_group: gr.update(visible=False),
+                            web_url_group: gr.update(visible=True),
+                            youtube_group: gr.update(visible=False)
+                        }
+                    elif choice == "YouTube Link Reference":
+                        return {
+                            doc_upload_group: gr.update(visible=False),
+                            web_url_group: gr.update(visible=False),
+                            youtube_group: gr.update(visible=True)
+                        }
+                
+                # Connect the radio buttons to the visibility function
+                reference_type.change(
+                    fn=update_reference_visibility,
+                    inputs=[reference_type],
+                    outputs=[doc_upload_group, web_url_group, youtube_group]
+                )
                 
                 prompt_input = gr.Textbox(
                     label="What is your script about?",
                     placeholder="E.g., Create a script about the importance of sustainability",
                     lines=3
                 )
-                
                 subject_input = gr.Textbox(
                     label="Subject",
                     placeholder="E.g., Environmental Science, Sustainable Practices, Conservation",
-                )
-                
-                # Reference Type change handler - define after all components exist
-                def update_reference_visibility(choice):
-                    if choice == "Document Upload":
-                        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
-                    elif choice == "Web URL Reference":
-                        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
-                    elif choice == "YouTube Link Reference":
-                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
-                    else:  # "None"
-                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
-                
-                # Connect the radio buttons to the visibility function
-                reference_type.change(
-                    fn=update_reference_visibility,
-                    inputs=reference_type,
-                    outputs=[doc_upload_group, url_input_group, youtube_input_group]
                 )
                 
                 # Add context manager
@@ -217,7 +337,11 @@ def create_script_generator_tab():
                 audience_input, 
                 tone_input,
                 template_selector,
-                context_input
+                context_input,
+                document_upload,
+                web_url_input,
+                youtube_url_input,
+                reference_type
             ],
             outputs=[script_output, script_file_output]
         )

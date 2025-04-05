@@ -178,6 +178,14 @@ def get_css():
         margin-left: auto !important;
         display: block !important;
     }
+    /* Info text styling */
+    .info-text {
+        font-size: 0.85rem !important;
+        color: #6c757d !important; /* Use Gradio's secondary text color */
+        margin-top: -10px !important; /* Adjust spacing relative to the File component */
+        margin-bottom: 10px !important;
+        padding-left: 1px !important; /* Align with other component labels */
+    }
     /* Remove test suite button styling as it's defined inline now */
     button.primary {
         background: #5e166a !important;
@@ -324,6 +332,133 @@ def get_css():
         overflow: hidden !important;
     }
     
+    /* File types info styling */
+    .file-types-info {
+        background-color: #f8f9fb !important;
+        border: 1px solid #e0e4e9 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* File info box styling for side-by-side layout */
+    .file-info-box {
+        background-color: #f8f9fb !important;
+        border: 1px solid #e0e4e9 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin: 10px 5px 15px 5px !important;
+        height: 100% !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .file-info-box h3 {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+        color: #3b355d !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Compact file info styling */
+    .compact-info-row {
+        margin-top: 5px !important;
+        margin-bottom: 5px !important;
+    }
+    
+    .compact-file-info {
+        background-color: #f8f9fb !important;
+        border: 1px solid #e0e4e9 !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+        margin: 2px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .compact-file-info h3 {
+        margin-top: 0 !important;
+        margin-bottom: 5px !important;
+        color: #3b355d !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Ultra-compact file info styling to match example */
+    .file-info-container {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .ultra-compact-info {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .file-info-wrapper {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        background-color: #f8f9fb !important;
+        border: 1px solid #e0e4e9 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+    }
+    
+    .file-type-section, .file-limit-section {
+        padding: 0 10px !important;
+    }
+    
+    .file-type-section {
+        flex: 3 !important;
+        border-right: 1px solid #e0e4e9 !important;
+    }
+    
+    .file-limit-section {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    
+    .file-info-wrapper h4 {
+        margin-top: 0 !important;
+        margin-bottom: 8px !important;
+        color: #3b355d !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .file-info-wrapper p {
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .file-types-info h3 {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+        color: #3b355d !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .file-types-info ul, .file-types-info li {
+        margin-bottom: 5px !important;
+    }
+    
+    .warning-text {
+        background-color: #fff7ed !important;
+        border-left: 4px solid #f59e0b !important;
+        padding: 10px 15px !important;
+        margin-bottom: 15px !important;
+        color: #92400e !important;
+        font-weight: 500 !important;
+    }
+    
     .generated-files-header {
         background: linear-gradient(135deg, #5e166a 0%, #3b355d 100%) !important;
         color: white !important;
@@ -461,6 +596,115 @@ def get_css():
         background-color: #5e166a !important;
         border-radius: 50% !important;
     }
+    
+    /* Compact File Upload Component */
+    #document-upload-input,
+    #document-upload-input .file-preview-holder {
+        min-height: 80px !important; /* Reduce minimum height */
+        height: auto !important;
+    }
+    #document-upload-input .upload-button,
+    #document-upload-input .upload-button p {
+        padding: 8px 12px !important; /* Reduce button padding */
+        font-size: 0.9rem !important; /* Slightly smaller font */
+    }
+    #document-upload-input .upload-button svg {
+        width: 20px !important; /* Smaller icon */
+        height: 20px !important;
+    }
+    #document-upload-input .file-preview-holder .grid-wrap {
+        gap: 5px !important;
+    }
+    #document-upload-input .file-preview-holder .file {
+        padding: 5px !important;
+    }
+    /* Side-by-side upload and info styling */
+    .upload-info-container {
+        gap: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .upload-area-column {
+        min-width: 0 !important; /* Allow column to shrink */
+    }
+    
+    .file-info-column {
+        min-width: 0 !important; /* Allow column to shrink */
+    }
+    
+    .side-by-side-info {
+        height: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .file-info-panel {
+        background-color: #f8f9fb !important;
+        border: 1px solid #e0e4e9 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .file-type-section h4, .file-size-section h4 {
+        margin-top: 0 !important;
+        margin-bottom: 8px !important;
+        color: #3b355d !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .file-types {
+        margin: 0 !important;
+        padding-left: 0 !important;
+    }
+    
+    .file-types p {
+        margin: 0 0 3px 0 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Checkmark styling */
+    .checkmark {
+        display: inline-block !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        text-align: center !important;
+        line-height: 18px !important;
+        margin-right: 8px !important;
+        font-weight: bold !important;
+        background-color: #f0f0f0 !important;
+        color: #666 !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .checkmark.selected {
+        background-color: #ff7b31 !important;
+        color: white !important;
+        border-color: #ff7b31 !important;
+    }
+    
+    .file-size-section {
+        margin-top: 15px !important;
+    }
+    
+    .file-size-section p {
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: #5e166a !important;
+    }
+    
+    /* Make file upload component more compact */
+    .upload-area-column [data-testid="file"] {
+        min-height: 150px !important;
+        height: auto !important;
+    }
     """
 
 def create_banner(base64_banner):
@@ -519,21 +763,21 @@ def main():
                     script_output, script_file_output = create_script_generator_tab()
                     edit_script_input, edited_script_output = create_script_editor_tab()
                     voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
-                
-                # Connect script generator to script editor
-                script_output.change(
-                    fn=lambda x: x,
-                    inputs=[script_output],
-                    outputs=[edit_script_input]
-                )
-                
-                # Connect script editor to voiceover generator
-                edited_script_output.change(
-                    fn=lambda x: x,
-                    inputs=[edited_script_output],
-                    outputs=[voiceover_script]
-                )
             
+            # Connect script generator to script editor
+            script_output.change(
+                fn=lambda x: x,
+                inputs=[script_output],
+                outputs=[edit_script_input]
+            )
+            
+            # Connect script editor to voiceover generator
+            edited_script_output.change(
+                fn=lambda x: x,
+                inputs=[edited_script_output],
+                outputs=[voiceover_script]
+            )
+    
             # Admin login form
             with gr.Column(visible=False) as login_form:
                 # Create the banner
@@ -652,10 +896,10 @@ def main():
             )
         
         # Launch the app
-        print("Starting VoiceScribe Studio on http://0.0.0.0:7860")
+        print("Starting VoiceScribe Studio on http://0.0.0.0:7861")
         app.launch(
             server_name="0.0.0.0",
-            server_port=7860,
+            server_port=7861,
             share=False
         )
         
