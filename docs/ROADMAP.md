@@ -69,7 +69,7 @@
 ### Phase 2: Content Processing Enhancement
 - ✓ **Backend Foundation Completed:** Initial document analysis logic using Claude 3.7 Sonnet is implemented, including the handoff protocol to DeepSeek R1 for enhanced script generation.
 - ✓ **UI Implementation Completed:** Reference input section with radio button selection for Document Upload, Web URL Reference, and YouTube Link inputs.
-  - *Enhancement Planned:* Add document size check with user warning on upload.
+  - ✓ **Document Processing Features:** Token counting logic for uploaded files, file size checking, and UI warning messages for large documents (>75k tokens).
 - **Humanize Feature Planned:** An intelligent script formatting tool that automatically prepares text for optimal voiceover delivery:
   - Smart pause and timing markup insertion based on semantic analysis
   - Emphasis and emotional cue detection and formatting
@@ -176,4 +176,4 @@
 
 ---
 
-This roadmap is subject to change based on user feedback and market conditions. The core focus remains providing an easy-to-use solution for generating high-quality educational scripts and voiceovers with enhanced accuracy, media capabilities, and professional outputs. 
+This roadmap is subject to change based on user feedback and market conditions. The core focus remains providing an easy-to-use solution for generating high-quality educational scripts and voiceovers with enhanced accuracy, media capabilities, and professional outputs.
