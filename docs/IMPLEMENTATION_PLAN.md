@@ -68,18 +68,20 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 ### Phase 2: Content Processing Enhancement
 **Timeline: 3-4 weeks**
 
-- [ ] Content processing module creation
-- [ ] Document analysis implementation
-- [ ] Structured content format design
-- [ ] Claude-DeepSeek handoff protocol
-- [ ] Source tracking system development
-- [ ] Token usage storage implementation
-- [ ] Memory MCP integration for context retention
-- [ ] Direct YouTube API integration for style reference
-- [ ] Style reference processing module
-- [ ] Testing with varied content sources
+- [ ] **Backend:** Create content processing module (`content_analyzer.py`)
+- [ ] **Backend:** Implement Claude 3.7 API integration for document analysis
+- [ ] **Backend:** Design initial structured content format (JSON) for analysis output
+- [ ] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
+- [ ] **UI:** Implement Gradio file upload component for documents
+- [ ] **Integration:** Connect file upload UI to the backend analysis module
+- [ ] **Backend:** Implement source tracking system development
+- [ ] **Backend:** Token usage storage implementation for analysis steps
+- [ ] **Backend:** Memory MCP integration for context retention
+- [ ] **Backend:** Direct YouTube API integration for style reference
+- [ ] **Backend:** Style reference processing module
+- [ ] **Testing:** Test document analysis pipeline with varied content sources
 
-**Milestone:** Enhanced content processing pipeline functional (Foundation for Translation)
+**Milestone:** Enhanced content processing pipeline functional with Document Upload UI
 
 ### Phase 3: Translation Feature Implementation
 **Timeline: 4-5 weeks** (New Phase)
@@ -134,7 +136,6 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Token usage dashboard creation
 - [ ] API cost monitoring across services
 - [ ] Premium feature usage tracking
-- [ ] Document upload functionality
 - [ ] URL and YouTube reference input interface
 - [ ] Audio preview for generated music
 - [ ] Visual content gallery
