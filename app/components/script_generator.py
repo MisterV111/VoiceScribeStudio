@@ -2,6 +2,8 @@ import gradio as gr
 import os
 import tiktoken # Added for token counting
 from app.utils.llm_clients import generate_script
+from app.utils.web_utils import extract_content_from_url, format_web_content_for_llm, is_valid_url
+from app.utils.youtube_utils import extract_video_id, get_transcript, format_youtube_transcript_for_llm
 
 def create_script(prompt, subject, length, audience, tone, template="General", context="", 
                uploaded_file=None, web_url="", youtube_url="", reference_type="None"):
@@ -24,12 +26,45 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
                 print(f"Error reading uploaded file: {e}")
         
         elif reference_type == "Web URL Reference" and web_url and web_url.strip():
-            # Format web URL reference
-            reference_context = f"\n\n--- Web Reference ---\nURL: {web_url.strip()}\n--- End Web Reference ---"
+            try:
+                # Extract content from the provided URL
+                print(f"Extracting content from URL: {web_url}")
+                extracted_data = extract_content_from_url(web_url)
+                
+                if extracted_data['success']:
+                    # Format the extracted content for the LLM
+                    formatted_content = format_web_content_for_llm(extracted_data)
+                    reference_context = f"\n\n--- Web Content Reference ---\nURL: {web_url}\n\n{formatted_content}\n--- End Web Content Reference ---"
+                else:
+                    print(f"Failed to extract web content: {extracted_data['error']}")
+                    reference_context = f"\n\n--- Web Reference ---\nURL: {web_url}\nNote: Could not extract content from this URL (Error: {extracted_data['error']})\n--- End Web Reference ---"
+            except Exception as e:
+                print(f"Error processing web URL: {e}")
+                reference_context = f"\n\n--- Web Reference ---\nURL: {web_url}\nNote: Error occurred while processing this URL\n--- End Web Reference ---"
             
         elif reference_type == "YouTube Link Reference" and youtube_url and youtube_url.strip():
-            # Format YouTube reference
-            reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url.strip()}\n--- End YouTube Reference ---"
+            try:
+                # Extract video ID from YouTube URL
+                print(f"Processing YouTube URL: {youtube_url}")
+                video_id = extract_video_id(youtube_url)
+                
+                if video_id:
+                    # Get transcript from YouTube
+                    transcript_data = get_transcript(video_id)
+                    
+                    if transcript_data['success']:
+                        # Format transcript for the LLM
+                        formatted_transcript = format_youtube_transcript_for_llm(video_id, transcript_data)
+                        reference_context = f"\n\n--- YouTube Transcript Reference ---\n{formatted_transcript}\n--- End YouTube Transcript Reference ---"
+                    else:
+                        print(f"Failed to get YouTube transcript: {transcript_data['error']}")
+                        reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Could not extract transcript from this video (Error: {transcript_data['error']})\n--- End YouTube Reference ---"
+                else:
+                    print(f"Failed to extract video ID from URL: {youtube_url}")
+                    reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Could not extract video ID from this URL\n--- End YouTube Reference ---"
+            except Exception as e:
+                print(f"Error processing YouTube URL: {e}")
+                reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Error occurred while processing this URL\n--- End YouTube Reference ---"
         
         # Combine all context sources
         combined_context = context + reference_context
@@ -203,14 +238,32 @@ def create_script_generator_tab():
                         placeholder="Enter the full website URL (e.g., https://example.com/article)",
                         info="Add a link to a web page to use as context for script generation"
                     )
+                    web_url_status = gr.Markdown(visible=False, value="", elem_classes=["info-text"])
+                    
+                    # Add note about content extraction
+                    gr.Markdown("""
+                    <div class="url-note">
+                    <p>When you generate a script, the content from this URL will be automatically extracted 
+                    and used as context. For best results, use article pages with clear, relevant content.</p>
+                    </div>
+                    """, elem_classes=["url-extraction-note"])
                 
                 # YouTube Link Reference - Conditionally visible
                 with gr.Column(visible=False) as youtube_group:
                     youtube_url_input = gr.Textbox(
                         label="YouTube Link Reference",
-                        placeholder="Enter the full YouTube video URL",
-                        info="Add a YouTube video link to use as context for script generation"
+                        placeholder="Enter the full YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)",
+                        info="Add a YouTube video link to use its transcript as context for script generation"
                     )
+                    youtube_url_status = gr.Markdown(visible=False, value="", elem_classes=["info-text"])
+                    
+                    # Add note about transcript extraction
+                    gr.Markdown("""
+                    <div class="youtube-note">
+                    <p>When you generate a script, the transcript from this YouTube video will be automatically extracted 
+                    and used as context. Only videos with transcripts/captions can be used.</p>
+                    </div>
+                    """, elem_classes=["youtube-extraction-note"])
                 
                 # Function to show/hide reference input based on selection
                 def update_reference_visibility(choice):
@@ -329,6 +382,22 @@ def create_script_generator_tab():
                 
         # Connect the generate button to the create_script function
         generate_btn.click(
+            fn=lambda url, ref_type: gr.update(
+                value="⏳ Extracting content from URL..." if ref_type == "Web URL Reference" and url else "",
+                visible=ref_type == "Web URL Reference" and bool(url),
+                elem_classes=["info-text"]
+            ),
+            inputs=[web_url_input, reference_type],
+            outputs=[web_url_status]
+        ).then(
+            fn=lambda url, ref_type: gr.update(
+                value="⏳ Extracting transcript from YouTube..." if ref_type == "YouTube Link Reference" and url else "",
+                visible=ref_type == "YouTube Link Reference" and bool(url),
+                elem_classes=["info-text"]
+            ),
+            inputs=[youtube_url_input, reference_type],
+            outputs=[youtube_url_status]
+        ).then(
             fn=create_script,
             inputs=[
                 prompt_input, 
@@ -344,6 +413,74 @@ def create_script_generator_tab():
                 reference_type
             ],
             outputs=[script_output, script_file_output]
+        )
+        
+        # Add a URL validation check
+        def validate_url(url, ref_type):
+            if ref_type != "Web URL Reference" or not url:
+                return gr.update(visible=False)
+            
+            if is_valid_url(url):
+                return gr.update(value="✓ Valid URL format. Content will be extracted when you generate the script.", 
+                               visible=True,
+                               elem_classes=["success-text"])
+            else:
+                return gr.update(value="⚠️ Invalid URL format. Please enter a complete URL including http:// or https://", 
+                               visible=True,
+                               elem_classes=["warning-text"])
+        
+        # Validate URL when entered
+        web_url_input.change(
+            fn=validate_url,
+            inputs=[web_url_input, reference_type],
+            outputs=[web_url_status]
+        )
+        
+        # Update URL validation status when reference type changes
+        reference_type.change(
+            fn=lambda url, ref_type: validate_url(url, ref_type) if ref_type == "Web URL Reference" and url else gr.update(visible=False),
+            inputs=[web_url_input, reference_type],
+            outputs=[web_url_status],
+            queue=False
+        )
+        
+        # Add a YouTube URL validation check
+        def validate_youtube_url(url, ref_type):
+            if ref_type != "YouTube Link Reference" or not url:
+                return gr.update(visible=False)
+            
+            from app.utils.youtube_utils import extract_video_id
+            video_id = extract_video_id(url)
+            
+            if video_id:
+                return gr.update(value="✓ Valid YouTube URL format. Transcript will be extracted when you generate the script.", 
+                               visible=True,
+                               elem_classes=["success-text"])
+            else:
+                return gr.update(value="⚠️ Invalid YouTube URL format. Please enter a complete YouTube video URL.", 
+                               visible=True,
+                               elem_classes=["warning-text"])
+        
+        # Validate YouTube URL when entered
+        youtube_url_input.change(
+            fn=validate_youtube_url,
+            inputs=[youtube_url_input, reference_type],
+            outputs=[youtube_url_status]
+        )
+        
+        # Update YouTube validation status when reference type changes
+        reference_type.change(
+            fn=lambda url, ref_type: validate_youtube_url(url, ref_type) if ref_type == "YouTube Link Reference" and url else gr.update(visible=False),
+            inputs=[youtube_url_input, reference_type],
+            outputs=[youtube_url_status],
+            queue=False
+        )
+        
+        # Update reference visibility
+        reference_type.change(
+            fn=update_reference_visibility,
+            inputs=[reference_type],
+            outputs=[doc_upload_group, web_url_group, youtube_group]
         )
         
         # Display template-specific guidance when template is selected

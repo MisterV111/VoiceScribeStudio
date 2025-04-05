@@ -459,6 +459,62 @@ def get_css():
         font-weight: 500 !important;
     }
     
+    .success-text {
+        background-color: #ecfdf5 !important;
+        border-left: 4px solid #10b981 !important;
+        padding: 10px 15px !important;
+        margin-bottom: 15px !important;
+        color: #065f46 !important;
+        font-weight: 500 !important;
+    }
+    
+    .info-text {
+        background-color: #f0f9ff !important;
+        border-left: 4px solid #3b82f6 !important;
+        padding: 10px 15px !important;
+        margin-bottom: 15px !important;
+        color: #1e40af !important;
+        font-weight: 500 !important;
+    }
+    
+    .url-extraction-note {
+        margin-top: 5px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .url-note {
+        padding: 8px 12px !important;
+        background-color: #f8fafc !important;
+        border: 1px dashed #cbd5e1 !important;
+        border-radius: 6px !important;
+    }
+    
+    .url-note p {
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        color: #475569 !important;
+        line-height: 1.4 !important;
+    }
+    
+    .youtube-extraction-note {
+        margin-top: 5px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .youtube-note {
+        padding: 8px 12px !important;
+        background-color: #fdf2f8 !important;
+        border: 1px dashed #f472b6 !important;
+        border-radius: 6px !important;
+    }
+    
+    .youtube-note p {
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        color: #9d174d !important;
+        line-height: 1.4 !important;
+    }
+    
     .generated-files-header {
         background: linear-gradient(135deg, #5e166a 0%, #3b355d 100%) !important;
         color: white !important;
@@ -726,7 +782,7 @@ def main():
         
         # Setup necessary directories
         setup_directories()
-        
+    
         # Load voices
         preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
         set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
@@ -763,21 +819,21 @@ def main():
                     script_output, script_file_output = create_script_generator_tab()
                     edit_script_input, edited_script_output = create_script_editor_tab()
                     voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
+                    
+                    # Connect script generator to script editor
+                    script_output.change(
+                        fn=lambda x: x,
+                        inputs=[script_output],
+                        outputs=[edit_script_input]
+                    )
+                    
+                    # Connect script editor to voiceover generator
+                    edited_script_output.change(
+                        fn=lambda x: x,
+                        inputs=[edited_script_output],
+                        outputs=[voiceover_script]
+                    )
             
-            # Connect script generator to script editor
-            script_output.change(
-                fn=lambda x: x,
-                inputs=[script_output],
-                outputs=[edit_script_input]
-            )
-            
-            # Connect script editor to voiceover generator
-            edited_script_output.change(
-                fn=lambda x: x,
-                inputs=[edited_script_output],
-                outputs=[voiceover_script]
-            )
-    
             # Admin login form
             with gr.Column(visible=False) as login_form:
                 # Create the banner
@@ -896,10 +952,10 @@ def main():
             )
         
         # Launch the app
-        print("Starting VoiceScribe Studio on http://0.0.0.0:7861")
+        print("Starting VoiceScribe Studio on http://0.0.0.0:7862")
         app.launch(
             server_name="0.0.0.0",
-            server_port=7861,
+            server_port=7862,
             share=False
         )
         
