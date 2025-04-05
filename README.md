@@ -1,4 +1,4 @@
-# VoiceScribe Studio (Version 0.1.0)
+# (Version 0.1.0)
 
 <div align="center">
   <img src="app/assets/VoiceScribe Studio Banner.png" alt="VoiceScribe Studio Banner" width="800">
@@ -6,9 +6,9 @@
 
 ## About
 
-VoiceScribe Studio streamlines content creation using advanced AI. This version (v0.1.0) focuses on providing a high-quality script generation core and a polished voiceover production experience.
+VoiceScribe Studio leverages advanced AI workflow backend integrations to enhance content creation. This version (v0.1.0) focuses on providing a high-quality script generation core and a polished voiceover production experience.
 
-Our vision is to evolve VoiceScribe into a comprehensive AI content production studio, assisting with research, writing, translation, fact-checking, music generation, visual creation, and professional exports.
+Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Production Studio**, integrating AI agents directly into the workflow to streamline both the creative and production processes, from initial concept to final multimedia output.
 
 ### Current Capabilities (v0.1.0 - Phase 1 Complete)
 
@@ -32,7 +32,7 @@ Our vision is to evolve VoiceScribe into a comprehensive AI content production s
 
 ### Future Vision (Planned Enhancements)
 
-The roadmap includes transforming VoiceScribe into a full AI content partner through phased development:
+The roadmap includes transforming VoiceScribe into a full AI content **production** partner through phased development:
 
 - **Phase 2: Smarter Context & Content Processing**: AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
 - **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
