@@ -15,16 +15,16 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 - 📝 **Smarter Script Generation**: Significantly upgraded AI engine using:
   - **DeepSeek R1** as the primary model for high-quality, creative scripts across various templates.
   - **Claude 3.7 Sonnet** as a robust fallback for reliability.
+- 🔍 **Context Reference Input**: Generate scripts based on various reference sources:
+  - **Document Upload**: Extract content from uploaded documents (.txt, .md, .pdf, .docx)
+  - **Web URL Reference**: Automatically extract relevant content from web pages
+  - **YouTube Transcript**: Extract and use transcripts from YouTube videos as context
 - 🗣️ **Enhanced Voice Synthesis & Output**: A more polished experience for generating voiceovers:
   - Support for multiple audio formats: **MP3 (High Quality 192kbps)**, **OGG (Game Audio Quality)**, and **High Quality WAV (48kHz/24-bit)**.
   - **Batch Generation**: Create all formats with a single click.
   - **Format Preview**: See which formats will be generated when selecting "Generate All Formats".
   - **Professional Download Interface**: Clean, responsive cards with format-specific icons and file details.
   - **Styled Status Messages**: Clear visual feedback (e.g., colored success messages) for generation status.
-- 📄 **Reference Input Options** (In Development - Phase 2): Multiple ways to provide context:
-  - **Document Upload**: Support for various file formats (.txt, .md, .pdf, .docx)
-  - **Web URL Reference**: Extract context directly from web pages
-  - **YouTube Reference**: Use YouTube videos as style or content references
 - 🔧 **Voice Customization**: Fine-tune voice parameters (stability, similarity, style, speed).
 - ✏️ **Script Editing**: Built-in editor to refine generated scripts.
 - 🔀 **Multiple Templates**: Specialized templates (General Education, Technical Tutorial, Marketing, Business Training, Music Lesson).
@@ -38,9 +38,7 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 
 The roadmap includes transforming VoiceScribe into a full AI content **production** partner through phased development:
 
-- **Phase 2: Smarter Context & Content Processing**: 
-  - AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
-  - **Humanize Feature**: Intelligent script formatting that automatically adds natural pauses, emotional emphasis, and timing cues to optimize voiceover delivery.
+- **Phase 2: Smarter Context & Content Processing**: AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
 - **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
 - **Phase 4: AI Research Assistant**: Web browsing (FireCrawl) and fact-verification (Perplexity MCP) capabilities for accurate, informed scripts.
 - **Phase 5: Multimedia Production**: AI-generated background music (Suno AI), visual content (EverArt MCP), and professional document exports.
@@ -119,7 +117,13 @@ VoiceScribe Studio runs as a single Gradio application, with a separate admin se
 
 ## Usage (v0.1.0)
 
-1.  **Script Generation**: Select a template, provide a subject/prompt, define audience, tone, and length. Click "Generate Script".
+1.  **Script Generation**: 
+    * Select a template, provide a subject/prompt, define audience, tone, and length.
+    * Optionally select a reference source:
+      * Upload a document (.txt, .md, .pdf, .docx)
+      * Provide a web URL to extract content from
+      * Enter a YouTube URL to use its transcript as context
+    * Click "Generate Script".
 2.  **Script Editing**: Modify the generated script in the "Edit Script" tab.
 3.  **Voiceover Creation**:
     *   Go to the "Generate Voiceover" tab (script is pre-filled).

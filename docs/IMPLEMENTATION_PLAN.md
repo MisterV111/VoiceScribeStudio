@@ -73,18 +73,18 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [✓] **Backend:** Design initial structured content format (JSON) for analysis output
 - [✓] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
 - [✓] **UI:** Implement Gradio file upload component for documents
-  - [ ] Add token counting logic for uploaded files (`tiktoken`)
-  - [ ] Implement `.upload()` event handler to check file size
-  - [ ] Add UI warning message for large documents (>75k tokens)
+  - [✓] Add token counting logic for uploaded files (`tiktoken`)
+  - [✓] Implement `.upload()` event handler to check file size
+  - [✓] Add UI warning message for large documents (>75k tokens)
 - [✓] **UI:** Implement Gradio input component for YouTube URLs
 - [✓] **UI:** Implement Gradio input component for general URLs
 - [✓] **UI:** Create unified reference input UI with conditional visibility
-- [ ] **Integration:** Connect file upload UI to the backend analysis module
-- [ ] **Backend:** Direct YouTube API integration for style reference
+- [✓] **Integration:** Connect file upload UI to the backend analysis module
+- [✓] **Backend:** Implement YouTube API integration for transcript extraction
 - [ ] **Backend:** Style reference processing module
-- [ ] **Integration:** Connect YouTube URL UI to backend processing
-- [ ] **Backend:** Implement *basic* URL content fetching (Note: Robust MCP-based fetching in Phase 4)
-- [ ] **Integration:** Connect general URL UI to basic fetching & analysis pipeline
+- [✓] **Integration:** Connect YouTube URL UI to backend processing
+- [✓] **Backend:** Implement web URL content fetching
+- [✓] **Integration:** Connect general URL UI to fetching & analysis pipeline
 - [ ] **Humanize Feature:** LLM-powered script optimization for voiceover delivery
   - [ ] Research professional voiceover timing & emphasis techniques
   - [ ] Develop standardized markup syntax for pauses, emphasis, and emotion
@@ -95,9 +95,9 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] **Backend:** Implement source tracking system development
 - [ ] **Backend:** Token usage storage implementation for analysis steps
 - [ ] **Backend:** Memory MCP integration for context retention
-- [ ] **Testing:** Test document, YouTube, and basic URL analysis pipelines
+- [✓] **Testing:** Test document, YouTube, and URL analysis pipelines
 
-**Milestone:** Enhanced content processing pipeline functional with Document Upload, YouTube URL, Basic General URL input interfaces, and Humanize formatting feature.
+**Milestone Update:** Content Reference Input fully implemented with Document Upload, Web URL content extraction, and YouTube transcript extraction. Users can now use different reference sources as context for script generation.
 
 ### Phase 3: Translation Feature Implementation
 **Timeline: 4-5 weeks** (New Phase)
@@ -289,7 +289,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 | Phase | Status | Start Date | Target End Date | Actual End Date | Notes |
 |-------|--------|------------|----------------|----------------|-------|
 | 1     | Completed | March 25, 2025 | April 15, 2025 | April 12, 2025 | Foundation - Cross-template testing suite enhanced with formatted UI and authentication. Additional UI/UX improvements for batch output and status messages completed ahead of schedule. |
-| 2     | Not Started | April 16, 2025 | May 14, 2025 |  | Content Processing Core |
+| 2     | In Progress | April 16, 2025 | May 14, 2025 |  | Content Processing Core - Completed Context Reference Input implementation with Document Upload, Web URL content extraction, and YouTube transcript extraction functionality. |
 | 3     | Not Started | May 15, 2025 | June 19, 2025 |  | **Translation Feature** (New) |
 | 4     | Not Started | June 20, 2025 | July 18, 2025 |  | Multi-Source Data (Shifted) |
 | 5     | Not Started | July 19, 2025 | August 8, 2025 |  | Media/Output (Shifted) |
@@ -390,3 +390,10 @@ with gr.Column(visible=False) as doc_upload_group:
         label="Upload Document",
         file_count="single",
     ) 
+
+# Ensure necessary output directories exist
+setup_directories()
+
+# Create and launch the Gradio interface
+demo = create_gradio_interface()
+demo.launch(share=False) # Set share=True to create a public link 
