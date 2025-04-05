@@ -200,20 +200,77 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
             
         return None
 
+# --- New Claude Helper for Analysis --- 
+def call_claude_sonnet_for_analysis(system_prompt: str, user_prompt: str, model: str = CLAUDE_MODEL) -> str | None:
+    """
+    Calls the Claude Sonnet API specifically for analysis tasks that expect a structured response (like JSON).
+    Handles basic API interaction, error handling, and returns the raw text content.
+    Token tracking is handled separately if needed after successful parsing.
+
+    Args:
+        system_prompt: The system prompt guiding the analysis task.
+        user_prompt: The user prompt containing the content to analyze and structure instructions.
+        model: The specific Claude model to use.
+
+    Returns:
+        The raw text content from the API response, or None if an error occurs.
+    """
+    if not anthropic_client:
+        print(f"Anthropic client not available. Skipping Claude analysis call.")
+        return None
+        
+    try:
+        print(f"Attempting analysis with Claude model: {model}")
+        
+        # Create the API call - slightly lower temperature might be good for structured output
+        message = anthropic_client.messages.create(
+            model=model,
+            system=system_prompt, 
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.2, # Lower temperature for more deterministic JSON output
+            max_tokens=2000  # Adjust max_tokens based on expected analysis size
+        )
+        
+        # Log token usage (basic logging here, detailed tracking can happen after parsing)
+        if message.usage:
+            print(f"Token Usage (Analysis - {model}): Input={message.usage.input_tokens}, Output={message.usage.output_tokens}")
+        else:
+            print(f"Token usage data not available for analysis call ({model}).")
+            
+        # Content retrieval - return the raw text content for parsing
+        if message.content and isinstance(message.content, list) and message.content[0].text:
+            raw_content = message.content[0].text
+            print(f"Claude model {model} returned analysis content.")
+            return raw_content
+        else:
+            print(f"Claude model {model} analysis response did not contain expected text content.")
+            return None
+            
+    except Exception as e:
+        print(f"Error during Claude analysis API call with model {model}: {str(e)}")
+        # Consider more detailed logging or error propagation if needed
+        # import traceback
+        # traceback.print_exc()
+        return None
+
 # --- Main Generation Function --- 
 
-def generate_script(prompt, 
-                   subject="", 
-                   length="medium", 
-                   audience="general", 
-                   tone="informative",
-                   template="General",
-                   context="",
-                   force_fallback=False,
-                   is_test=False):
+def generate_script(prompt: str, 
+                   subject: str ="", 
+                   length: str ="medium", 
+                   audience: str ="general", 
+                   tone: str ="informative",
+                   template: str ="General",
+                   context: str ="",
+                   analysis_results: dict | None = None,
+                   force_fallback: bool =False,
+                   is_test: bool =False):
     """
     Generate an educational script using the best available LLM 
     (DeepSeek primary via OpenAI SDK, Claude fallback).
+    Optionally uses pre-computed analysis results to enhance generation.
     
     Args:
         prompt (str): The main script generation prompt
@@ -222,12 +279,13 @@ def generate_script(prompt,
         audience (str): Target audience - general, beginner, advanced, etc.
         tone (str): Tone of the script - informative, conversational, etc.
         template (str): Industry-specific template to use
-        context (str): Additional context information
+        context (str): Additional context information (e.g., background knowledge)
+        analysis_results (dict | None): Structured analysis from content_analyzer (optional)
         force_fallback (bool): If True, skip primary model and use Claude directly.
         is_test (bool): Whether this is a test generation
         
     Returns:
-        str or dict: The generated script (str) or dict with script and metadata
+        dict or None: Dictionary containing generated content and metadata, or None if failed.
     """
     # Generate session ID for tracking this generation across models
     session_id = str(uuid.uuid4())
@@ -235,8 +293,8 @@ def generate_script(prompt,
     # Get template-specific guidance
     template_guidance = get_template_guidance(template)
     
-    # Prepare a system message
-    system_message = f"""
+    # Prepare base system message
+    system_message_base = f"""
     You are an expert educational script writer. Create a well-structured {length} script 
     about {subject} for a {audience} audience with a {tone} tone.
     
@@ -250,16 +308,34 @@ def generate_script(prompt,
     - Medium: 300-500 words
     - Long: 600-900 words
     """
-    
-    # Prepare user message
+
+    # --- Incorporate Analysis Results into System Message (if available) --- 
+    system_message = system_message_base
+    if analysis_results and isinstance(analysis_results, dict):
+        print("Incorporating analysis results into generation prompt...")
+        analysis_context = "\n\nCONTEXTUAL ANALYSIS (Use this information to enhance the script's accuracy and relevance):\n"
+        if "summary" in analysis_results:
+            analysis_context += f"- Summary: {analysis_results['summary']}\n"
+        if "key_topics" in analysis_results and analysis_results['key_topics']:
+            analysis_context += f"- Key Topics: {', '.join(analysis_results['key_topics'])}\n"
+        if "structure_outline" in analysis_results and analysis_results['structure_outline']:
+            analysis_context += f"- Suggested Structure: {', '.join(analysis_results['structure_outline'])}\n"
+        if "extracted_keywords" in analysis_results and analysis_results['extracted_keywords']:
+            analysis_context += f"- Keywords: {', '.join(analysis_results['extracted_keywords'])}\n"
+        
+        system_message += analysis_context
+        system_message += "\nGenerate the script based on the user's main prompt, ensuring it aligns with and incorporates insights from this contextual analysis. Focus on accuracy based on the context provided."
+    # --- End Analysis Incorporation ---
+
+    # Prepare user message (handle existing context field)
     user_message = prompt
     if context:
+        # Special handling for Music Lesson context, append analysis after it
         if template == "Music Lesson":
-            user_message = f"""
+             user_message = f"""
 {prompt}
 
 BACKGROUND KNOWLEDGE (Do not reference this directly in your script):
-The student has the following background and capabilities. Use this information to tailor the content appropriately without explicitly mentioning what they already know or have learned:
 {context}
 
 Remember to build naturally on this background without phrases like "as you've learned before" or "now that you know X". Simply assume this knowledge is present and create a natural progression.
@@ -272,12 +348,12 @@ Remember to build naturally on this background without phrases like "as you've l
         "subject": subject,
         "length": length,
         "audience": audience,
-        "tone": tone
+        "tone": tone,
+        "analysis_provided": bool(analysis_results) # Track if analysis was used
     }
     
-    # --- Modified Generation Logic --- 
+    # --- Generation Logic --- 
     print("--- Starting Script Generation --- ")
-    
     result = None
     
     # Check if fallback is forced
@@ -288,7 +364,7 @@ Remember to build naturally on this background without phrases like "as you've l
         if deepseek_client_via_openai_sdk:
             result = _generate_with_openai_sdk(
                 deepseek_client_via_openai_sdk, 
-                system_message, 
+                system_message, # Use potentially modified system_message
                 user_message, 
                 model=DEEPSEEK_MODEL,
                 template=template,
@@ -299,12 +375,7 @@ Remember to build naturally on this background without phrases like "as you've l
             
             if result:
                 print("--- Script generated successfully with DeepSeek (via OpenAI SDK) --- ")
-                if isinstance(result, dict) and "content" in result:
-                    # If called with metadata=True, return the full result
-                    return result
-                else:
-                    # Otherwise, maintain backward compatibility by returning just the script
-                    return result["content"]
+                return result # Always return the dict now
             else:
                  print("--- DeepSeek (via OpenAI SDK) failed, attempting Claude fallback --- ")
         else:
@@ -312,8 +383,10 @@ Remember to build naturally on this background without phrases like "as you've l
 
     # 2. Try Claude Model (either as fallback or forced)
     if anthropic_client:
+        # Note: Claude fallback currently uses the *original* system message without analysis context
+        # We might want to reconsider if Claude should also use the analysis context in fallback scenarios
         result = _generate_with_claude(
-            system_message, 
+            system_message_base, # Use original system message for fallback for now
             user_message, 
             model=CLAUDE_MODEL,
             template=template,
@@ -324,13 +397,8 @@ Remember to build naturally on this background without phrases like "as you've l
         )
         
         if result:
-             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}){' (forced fallback)' if force_fallback else ''} --- ")
-             if isinstance(result, dict) and "content" in result:
-                # If called with metadata=True, return the full result
-                return result
-             else:
-                # Otherwise, maintain backward compatibility by returning just the script
-                return result["content"]
+             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}){' (forced fallback)' if force_fallback else ' (fallback)'} --- ")
+             return result # Always return the dict
         else:
             print(f"--- Claude ({CLAUDE_MODEL}) also failed. --- ")
     else:
@@ -338,7 +406,19 @@ Remember to build naturally on this background without phrases like "as you've l
             
     # 3. If all configured models fail
     print("--- All configured models failed to generate the script. --- ")
-    return None
+    # Track complete failure (maybe needed in token_tracker?)
+    token_tracker.track_generation(
+        model="none",
+        input_text=system_message + "\n" + user_message,
+        output_text="GENERATION FAILED",
+        template=template,
+        is_fallback=False,
+        parameters=params,
+        session_id=session_id,
+        is_test=is_test,
+        success=False
+    )
+    return None # Return None on complete failure
 
 # --- Editing Function (Now using Claude) --- 
 def edit_script_with_claude(original_script, edit_instructions, context="", is_test=False):
