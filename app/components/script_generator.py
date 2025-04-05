@@ -71,14 +71,69 @@ def create_script_generator_tab():
                     info="Select an industry-specific template to guide script generation"
                 )
                 
+                # Reference Input Section
+                with gr.Group():
+                    gr.Markdown("### Context / Reference Input")
+                    
+                    # Reference Type Selector
+                    reference_type = gr.Radio(
+                        label="Input Type",
+                        choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
+                        value="None"
+                    )
+                    
+                    # Document Upload Input 
+                    with gr.Column(visible=False) as doc_upload_group:
+                        document_upload_input = gr.File(
+                            label="Upload Document",
+                            file_count="single",
+                            file_types=[".txt", ".md", ".pdf", ".docx"]
+                        )
+                        gr.Markdown(
+                            value='<div style="text-align: center;">Upload a document (.txt, .md, .pdf, .docx) for analysis.<br><small>Accepted formats: .txt, .md, .pdf, .docx. Max 10MB.</small></div>'
+                        )
+                    
+                    # Web URL Input
+                    with gr.Column(visible=False) as url_input_group:
+                        url_reference_input = gr.Textbox(
+                            label="Web URL Reference",
+                            placeholder="Enter the full URL (e.g., https://www.example.com/article)"
+                        )
+                    
+                    # YouTube Link Input
+                    with gr.Column(visible=False) as youtube_input_group:
+                        youtube_reference_input = gr.Textbox(
+                            label="YouTube Link Reference",
+                            placeholder="Enter the full YouTube video URL"
+                        )
+                
                 prompt_input = gr.Textbox(
                     label="What is your script about?",
                     placeholder="E.g., Create a script about the importance of sustainability",
                     lines=3
                 )
+                
                 subject_input = gr.Textbox(
                     label="Subject",
                     placeholder="E.g., Environmental Science, Sustainable Practices, Conservation",
+                )
+                
+                # Reference Type change handler - define after all components exist
+                def update_reference_visibility(choice):
+                    if choice == "Document Upload":
+                        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
+                    elif choice == "Web URL Reference":
+                        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
+                    elif choice == "YouTube Link Reference":
+                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
+                    else:  # "None"
+                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+                
+                # Connect the radio buttons to the visibility function
+                reference_type.change(
+                    fn=update_reference_visibility,
+                    inputs=reference_type,
+                    outputs=[doc_upload_group, url_input_group, youtube_input_group]
                 )
                 
                 # Add context manager
