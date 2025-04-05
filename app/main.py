@@ -314,6 +314,153 @@ def get_css():
         margin: 0 !important;
         color: white !important;
     }
+    
+    /* Generated audio files styling */
+    .generated-formats-container {
+        background-color: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+    
+    .generated-files-header {
+        background: linear-gradient(135deg, #5e166a 0%, #3b355d 100%) !important;
+        color: white !important;
+        padding: 16px 24px !important;
+        border-radius: 12px 12px 0 0 !important;
+        margin: 0 !important;
+    }
+    
+    .generated-files-header h3 {
+        margin: 0 0 8px 0 !important;
+        font-weight: 600 !important;
+        font-size: 1.5rem !important;
+        color: white !important;
+    }
+    
+    .generated-files-header p {
+        margin: 0 !important;
+        opacity: 0.9 !important;
+        font-size: 0.9rem !important;
+        color: white !important;
+    }
+    
+    .generated-files-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 16px !important;
+        padding: 20px !important;
+        background-color: #f8faff !important;
+    }
+    
+    .audio-file-card {
+        display: flex !important;
+        align-items: center !important;
+        background-color: white !important;
+        border-radius: 10px !important;
+        padding: 16px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    
+    .audio-file-card:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+    }
+    
+    .format-icon {
+        font-size: 2rem !important;
+        margin-right: 16px !important;
+        width: 40px !important;
+        text-align: center !important;
+    }
+    
+    .format-details {
+        flex: 1 !important;
+    }
+    
+    .format-name {
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        color: #3b355d !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .file-info {
+        font-size: 0.85rem !important;
+        color: #666 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .download-link {
+        display: inline-block !important;
+        background-color: #5e166a !important;
+        color: white !important;
+        text-decoration: none !important;
+        padding: 6px 12px !important;
+        border-radius: 6px !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        transition: background-color 0.2s ease !important;
+    }
+    
+    .download-link:hover {
+        background-color: #4a1255 !important;
+    }
+    
+    /* Pending format styles */
+    .pending-format {
+        background-color: #f8f9ff !important;
+        border: 1px dashed #aab4cf !important;
+    }
+    
+    .pending-label {
+        display: inline-block !important;
+        background-color: #e9edf7 !important;
+        color: #4a5568 !important;
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+        border-radius: 20px !important;
+        margin-top: 4px !important;
+        font-weight: 500 !important;
+        border: 1px solid #d0d7e8 !important;
+    }
+    
+    /* Audio preview player styles */
+    .audio-preview-container {
+        background-color: white !important;
+        padding: 20px !important;
+        margin-bottom: 20px !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        text-align: center !important;
+    }
+    
+    .preview-title {
+        color: #3b355d !important;
+        margin-top: 0 !important;
+        margin-bottom: 12px !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .audio-preview-player {
+        width: 100% !important;
+        max-width: 600px !important;
+        height: 40px !important;
+        outline: none !important;
+    }
+    
+    /* Style the audio controls to match the theme */
+    audio::-webkit-media-controls-panel {
+        background-color: #f8f9ff !important;
+    }
+    
+    audio::-webkit-media-controls-play-button {
+        background-color: #5e166a !important;
+        border-radius: 50% !important;
+    }
     """
 
 def create_banner(base64_banner):

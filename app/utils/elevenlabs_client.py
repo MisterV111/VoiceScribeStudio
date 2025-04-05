@@ -439,4 +439,50 @@ def convert_wav_to_format(wav_path, output_path, format_type="mp3", quality="hig
 def convert_wav_to_ogg(wav_data_or_path, output_path=None):
     """Legacy function - redirects to convert_mp3_to_ogg"""
     print("Warning: convert_wav_to_ogg is deprecated, use convert_mp3_to_ogg instead")
-    return convert_mp3_to_ogg(wav_data_or_path, output_path) 
+    return convert_mp3_to_ogg(wav_data_or_path, output_path)
+
+def convert_to_high_quality_wav(mp3_path, output_path, sample_rate=48000, bit_depth=24):
+    """
+    Convert MP3 to high-quality WAV format with specified sample rate and bit depth.
+    No audio enhancement is applied, just a lossless conversion to WAV.
+    
+    Args:
+        mp3_path (str): Path to the MP3 file
+        output_path (str): Where to save the WAV file
+        sample_rate (int): The sample rate for the WAV file (default: 48000 Hz for broadcast quality)
+        bit_depth (int): Bit depth for the WAV file (default: 24 bit for professional audio)
+    
+    Returns:
+        str: Path to the output WAV file if successful, None if failed
+    """
+    try:
+        print(f"Converting {mp3_path} to high-quality WAV format ({sample_rate}Hz/{bit_depth}-bit)")
+        
+        # Load the audio
+        audio = AudioSegment.from_file(mp3_path, format="mp3")
+        
+        # Set the desired sample rate if needed
+        if audio.frame_rate != sample_rate:
+            print(f"Adjusting sample rate from {audio.frame_rate}Hz to {sample_rate}Hz")
+            audio = audio.set_frame_rate(sample_rate)
+        
+        # Set the desired bit depth if needed (sample_width is in bytes, bit_depth is in bits)
+        desired_width = bit_depth // 8
+        if audio.sample_width != desired_width:
+            print(f"Adjusting bit depth from {audio.sample_width*8}-bit to {bit_depth}-bit")
+            audio = audio.set_sample_width(desired_width)
+        
+        # Make sure the output directory exists
+        if not os.path.exists(os.path.dirname(output_path)):
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Export as WAV (PCM format) with the highest quality
+        audio.export(output_path, format="wav")
+        
+        file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
+        print(f"Successfully converted to WAV: {output_path} ({file_size_mb:.2f} MB)")
+        return output_path
+    
+    except Exception as e:
+        print(f"Error converting MP3 to high-quality WAV: {str(e)}")
+        return None 
