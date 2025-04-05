@@ -74,14 +74,19 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
 - [ ] **UI:** Implement Gradio file upload component for documents
 - [ ] **Integration:** Connect file upload UI to the backend analysis module
+- [ ] **Backend:** Direct YouTube API integration for style reference
+- [ ] **Backend:** Style reference processing module
+- [ ] **UI:** Implement Gradio input component for YouTube URLs
+- [ ] **Integration:** Connect YouTube URL UI to backend processing
+- [ ] **Backend:** Implement *basic* URL content fetching (Note: Robust MCP-based fetching in Phase 4)
+- [ ] **UI:** Implement Gradio input component for general URLs
+- [ ] **Integration:** Connect general URL UI to basic fetching & analysis pipeline
 - [ ] **Backend:** Implement source tracking system development
 - [ ] **Backend:** Token usage storage implementation for analysis steps
 - [ ] **Backend:** Memory MCP integration for context retention
-- [ ] **Backend:** Direct YouTube API integration for style reference
-- [ ] **Backend:** Style reference processing module
-- [ ] **Testing:** Test document analysis pipeline with varied content sources
+- [ ] **Testing:** Test document, YouTube, and basic URL analysis pipelines
 
-**Milestone:** Enhanced content processing pipeline functional with Document Upload UI
+**Milestone:** Enhanced content processing pipeline functional with Document Upload, YouTube URL, and Basic General URL input interfaces.
 
 ### Phase 3: Translation Feature Implementation
 **Timeline: 4-5 weeks** (New Phase)
@@ -104,7 +109,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 - [ ] FireCrawl MCP server integration
 - [ ] Perplexity MCP integration for fact verification
-- [ ] Browser Tools MCP for URL processing
+- [ ] Browser Tools MCP for **robust** URL processing (Enhances Phase 2 basic fetching)
 - [ ] Source selection logic implementation
 - [ ] Unified data pipeline development
 - [ ] FireCrawl-Claude-Perplexity workflow
@@ -113,7 +118,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Premium feature access control system
 - [ ] Multi-source testing
 
-**Milestone:** Comprehensive data acquisition system functional
+**Milestone:** Comprehensive data acquisition system functional with robust URL processing.
 
 ### Phase 5: Media Enhancement & Output Management
 **Timeline: 3 weeks**
@@ -136,7 +141,6 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Token usage dashboard creation
 - [ ] API cost monitoring across services
 - [ ] Premium feature usage tracking
-- [ ] URL and YouTube reference input interface
 - [ ] Audio preview for generated music
 - [ ] Visual content gallery
 - [ ] Source citation UI component
