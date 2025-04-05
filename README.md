@@ -18,6 +18,11 @@ VoiceScribe Studio is a comprehensive application that combines advanced AI tech
   - **DeepSeek R1 as primary model** for superior creative script generation 
   - **Claude 3.7 Sonnet as fallback** for reliable content processing
 - 🗣️ **Voice Synthesis**: Transform scripts into natural-sounding voiceovers using ElevenLabs' advanced TTS technology.
+  - Support for multiple audio formats (MP3, OGG, High-Quality WAV)
+  - Batch generation of all formats with a single click
+  - Professionally styled download interface with format-specific icons
+  - Format preview capabilities for multi-format generation
+  - Visual status indicators with custom styling for better user feedback
 - 🔧 **Voice Customization**: Adjust voice parameters including stability, clarity, style, and speed to achieve the perfect sound.
 - ✏️ **Script Editing**: Integrated editor for refining AI-generated scripts before voiceover creation.
 - 🔀 **Multiple Templates**: Specialized script templates for different content types and audiences.
