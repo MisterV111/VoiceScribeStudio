@@ -77,7 +77,13 @@
   - Single-click transformation with standardized markup syntax
 - Document analysis and structured content format (Refinement Ongoing)
 - Memory MCP for user preferences and context retention
-- Direct YouTube API integration for style references
+- **Style Reference Processing:** An intelligent style matching system that analyzes reference content to inform script generation:
+  - Style Matching Toggle to enable/disable reference style adoption
+  - Style Extraction Controls for selecting specific elements (tone, structure, pacing, vocabulary)
+  - Style Strength Slider for determining influence level
+  - Template-specific style suggestions based on content type
+  - Style analysis using Claude 3.7 to extract writing patterns
+  - Generated scripts that reflect the tone and structure of reference content
 - Source attribution system for content transparency
 - Token usage tracking and optimization
 
