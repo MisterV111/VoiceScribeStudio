@@ -914,7 +914,7 @@ def create_script_generator_tab():
                     )
                     
                     # Document Upload Input 
-                    with gr.Column(visible=False) as doc_upload_group:
+                    with gr.Column(visible=False, elem_classes=["doc-upload-wrapper"]) as doc_upload_group:
                         with gr.Row():
                             # Left column: File upload area
                             with gr.Column(scale=1, elem_classes=["file-upload-container"]):

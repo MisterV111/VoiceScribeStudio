@@ -30,7 +30,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 300px;
+    min-height: 280px;
+    background-color: white;
 }
 
 .file-upload-container:hover {
@@ -43,75 +44,76 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    min-height: 300px;
+    min-height: 280px;
     padding: 0;
     margin: 0;
+    background-color: #f1f1f1;
+    border-radius: 8px;
 }
 
 /* Supported file types section styling */
 .supported-file-types {
-    margin: 0 auto 10px;
-    padding: 0 10px 0 30px;
-    max-width: 500px;
+    margin: 0;
+    padding: 12px 20px 0;
 }
 
 /* File type title styling */
 .file-type-title {
     text-align: center;
-    margin: 5px 0 8px;
+    margin: 6px 0 12px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 18px;
     color: #333;
     padding-bottom: 4px;
-    border-bottom: 1px solid #e0e0e0;
 }
 
 .file-type-item {
-    padding: 5px 0;
-    font-size: 14px;
+    padding: 8px 0;
+    font-size: 16px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .file-type-item:last-child {
     border-bottom: none;
+    margin-bottom: 20px;
 }
 
 .check-mark {
     color: #ff9800; /* Orange color for check marks */
     font-weight: bold;
-    font-size: 16px;
-    margin-right: 8px;
+    font-size: 18px;
+    margin-right: 10px;
 }
 
 /* File size limit section styling */
 .file-size-section {
     margin-top: auto;
+    padding: 0 20px 20px;
 }
 
 /* File size limit styling */
 .file-size-limit {
     text-align: center;
-    margin: 5px 0;
+    margin: 10px 0;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 18px;
     color: #333;
     padding-bottom: 4px;
-    border-bottom: 1px solid #e0e0e0;
 }
 
 /* Token/word count display */
 .token-count-display {
     font-weight: bold;
     color: #333;
-    margin: 8px auto;
+    margin: 0;
     text-align: center;
     display: block;
-    padding: 6px;
-    background-color: #f9f9f9;
+    padding: 12px;
+    background-color: white;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* Document processing status indicator */
@@ -133,6 +135,14 @@
 
 .processing-indicator.error {
     background-color: #f44336;
+}
+
+/* Document upload container wrapper */
+.doc-upload-wrapper {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 /* Custom radio button styling */
