@@ -26,11 +26,10 @@
     padding: 20px;
     text-align: center;
     transition: border-color 0.3s ease;
-    height: 100%;
+    height: 280px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 280px;
     background-color: white;
 }
 
@@ -42,9 +41,7 @@
 .file-info-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    min-height: 280px;
+    height: auto;
     padding: 0;
     margin: 0;
     background-color: #f1f1f1;
@@ -54,13 +51,13 @@
 /* Supported file types section styling */
 .supported-file-types {
     margin: 0;
-    padding: 12px 20px 0;
+    padding: 12px 20px 12px;
 }
 
 /* File type title styling */
 .file-type-title {
     text-align: center;
-    margin: 6px 0 12px;
+    margin: 0 0 8px;
     font-weight: 600;
     font-size: 18px;
     color: #333;
@@ -68,16 +65,15 @@
 }
 
 .file-type-item {
-    padding: 8px 0;
+    padding: 4px 0;
     font-size: 16px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.file-type-item:last-child {
+.file-type-item-last {
     border-bottom: none;
-    margin-bottom: 20px;
 }
 
 .check-mark {
@@ -87,33 +83,25 @@
     margin-right: 10px;
 }
 
-/* File size limit section styling */
-.file-size-section {
-    margin-top: auto;
-    padding: 0 20px 20px;
+/* Added styling for File Size Limit title text */
+.file-size-limit-title-text {
+    text-align: center;
+    font-size: 16px; /* Slightly larger than token text */
+    font-weight: 600; /* Bolder */
+    color: #333;    /* Darker color */
+    margin-top: 20px; /* More space above */
+    margin-bottom: 5px; /* Space below before token text */
+    padding: 0;
 }
 
-/* File size limit styling */
-.file-size-limit {
+/* Style for the token limit text */
+.token-limit-text {
     text-align: center;
-    margin: 10px 0;
-    font-weight: 600;
-    font-size: 18px;
-    color: #333;
-    padding-bottom: 4px;
-}
-
-/* Token/word count display */
-.token-count-display {
-    font-weight: bold;
-    color: #333;
-    margin: 0;
-    text-align: center;
-    display: block;
-    padding: 12px;
-    background-color: white;
-    border-radius: 6px;
-    font-size: 16px;
+    font-size: 14px;
+    color: #555;
+    margin-top: 0; /* Remove top margin as it's handled by title */
+    padding: 0;
+    font-weight: normal;
 }
 
 /* Document processing status indicator */

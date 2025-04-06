@@ -913,48 +913,30 @@ def create_script_generator_tab():
                         value="None"
                     )
                     
-                    # Document Upload Input 
-                    with gr.Column(visible=False, elem_classes=["doc-upload-wrapper"]) as doc_upload_group:
-                        with gr.Row():
-                            # Left column: File upload area
-                            with gr.Column(scale=1, elem_classes=["file-upload-container"]):
-                                document_upload_input = gr.File(
-                                    label="Upload Document (Optional)",
-                                    file_count="single",
-                                    file_types=[".txt", ".md", ".pdf", ".docx"]
-                                )
-                            
-                            # Right column: File information in a single column layout
-                            with gr.Column(scale=1, elem_classes=["file-info-container"]):
-                                # Top section: File types
-                                with gr.Column():
-                                    # Use HTML for better styling of section title
-                                    gr.HTML('<h3 class="file-type-title">Supported File Types</h3>')
-                                    with gr.Column(elem_classes=["supported-file-types"]):
-                                        # Custom HTML for file types with orange checkmarks instead of radio buttons
-                                        gr.HTML("""
-                                        <div class="file-type-item">
-                                            <span class="check-mark">✓</span> Text files (.txt)
-                                        </div>
-                                        <div class="file-type-item">
-                                            <span class="check-mark">✓</span> Markdown files (.md)
-                                        </div>
-                                        <div class="file-type-item">
-                                            <span class="check-mark">✓</span> PDF documents (.pdf)
-                                        </div>
-                                        <div class="file-type-item">
-                                            <span class="check-mark">✓</span> Word documents (.docx)
-                                        </div>
-                                        """)
+                    # Display document upload area when 'Document Upload' is selected
+                    with gr.Column(visible=False, elem_id="document_upload_section") as document_upload_section:
+                        with gr.Column(elem_classes="doc-upload-wrapper"):
+                            with gr.Row():
+                                with gr.Column(): # Left column: File upload
+                                    file_upload = gr.File(
+                                        label="Upload Document (Optional)",
+                                        file_types=[".txt", ".md", ".pdf", ".docx"],
+                                        elem_classes=["file-upload-container"]
+                                    )
                                 
-                                # Bottom section: File size limit
-                                with gr.Column(elem_classes=["file-size-section"]):
-                                    # Use HTML for better styling of file size limit section
-                                    gr.HTML('<h3 class="file-size-limit">File Size Limit</h3>')
-                                    gr.HTML('<div class="token-count-display">75,000 Tokens = 60,000 Words</div>')
-                        
-                        # Add a placeholder for the size warning message
-                        doc_size_warning = gr.Markdown(visible=False, value="⚠️ **Warning:** File exceeds recommended size limit. Processing may be slow or incomplete.", elem_classes=["warning-text"])
+                                with gr.Column(elem_classes=["file-info-container"]): # Right-side container
+                                    # Combined Supported File Types and Token Limit in one HTML component
+                                    gr.HTML("""
+                                        <div class="supported-file-types">
+                                            <h3 class="file-type-title">Supported File Types</h3>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> Text files (.txt)</div>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> Markdown files (.md)</div>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> PDF documents (.pdf)</div>
+                                            <div class="file-type-item file-type-item-last"><span class="check-mark">✓</span> Word documents (.docx)</div>
+                                            <h4 class="file-size-limit-title-text">File Size Limit</h4>
+                                            <p class="token-limit-text">75,000 Tokens = 60,000 Words</p> 
+                                        </div>
+                                    """)
                     
                     # Web URL Input
                     with gr.Column(visible=False) as url_input_group:
@@ -1001,7 +983,7 @@ def create_script_generator_tab():
                 reference_type.change(
                     fn=update_reference_visibility,
                     inputs=[reference_type],
-                    outputs=[doc_upload_group, url_input_group, youtube_input_group, reference_type]
+                    outputs=[document_upload_section, url_input_group, youtube_input_group, reference_type]
                 )
                 
                 # Add context manager
@@ -1096,8 +1078,8 @@ def create_script_generator_tab():
             if template == "Music Lesson":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain chord progressions for beginners",
-                        info="Focus on educational content about music theory, instrument techniques, or practice methods"
+                    placeholder="E.g., Explain chord progressions for beginners",
+                    info="Focus on educational content about music theory, instrument techniques, or practice methods"
                     ),
                     gr.update(
                         placeholder="E.g., Music Theory, Piano Technique, Jazz Improvisation"
@@ -1137,8 +1119,8 @@ def create_script_generator_tab():
             elif template == "Corporate Training":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain effective communication strategies for team leaders",
-                        info="Focus on professional development, soft skills, or company procedures"
+                    placeholder="E.g., Explain effective communication strategies for team leaders",
+                    info="Focus on professional development, soft skills, or company procedures"
                     ),
                     gr.update(
                         placeholder="E.g., Leadership, Team Management, Communication Skills"
@@ -1176,8 +1158,8 @@ def create_script_generator_tab():
             elif template == "Marketing":
                 return [
                     gr.update(
-                        placeholder="E.g., Create a script highlighting our product's key features",
-                        info="Focus on benefits, features, customer needs, and call-to-action elements"
+                    placeholder="E.g., Create a script highlighting our product's key features",
+                    info="Focus on benefits, features, customer needs, and call-to-action elements"
                     ),
                     gr.update(
                         placeholder="E.g., Product Launch, Brand Awareness, Customer Testimonial"
@@ -1216,8 +1198,8 @@ def create_script_generator_tab():
             elif template == "General Education":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
-                        info="Focus on clear explanations of educational concepts for learning purposes"
+                    placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
+                    info="Focus on clear explanations of educational concepts for learning purposes"
                     ),
                     gr.update(
                         placeholder="E.g., Biology, Chemistry, Physics, History, Mathematics"
@@ -1255,8 +1237,8 @@ def create_script_generator_tab():
             elif template == "Technical Tutorial":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain how to set up a development environment for Python",
-                        info="Focus on step-by-step instructions, technical details, and best practices"
+                    placeholder="E.g., Explain how to set up a development environment for Python",
+                    info="Focus on step-by-step instructions, technical details, and best practices"
                     ),
                     gr.update(
                         placeholder="E.g., Software Development, Data Analysis, System Administration"
@@ -1293,8 +1275,8 @@ def create_script_generator_tab():
             else:  # General
                 return [
                     gr.update(
-                        placeholder="E.g., Create a script about the importance of sustainability",
-                        info="General purpose script without industry-specific formatting"
+                    placeholder="E.g., Create a script about the importance of sustainability",
+                    info="General purpose script without industry-specific formatting"
                     ),
                     gr.update(
                         placeholder="E.g., Environmental Science, Sustainable Practices, Conservation"
@@ -1340,10 +1322,10 @@ def create_script_generator_tab():
         )
         
         # Add event handlers for document upload, web URL, and YouTube URL
-        document_upload_input.change(
+        file_upload.change(
             fn=process_uploaded_document,
-            inputs=[document_upload_input],
-            outputs=[doc_size_warning]
+            inputs=[file_upload],
+            outputs=[document_upload_section]
         )
         
         # Add event handler for web URL input

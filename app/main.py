@@ -119,6 +119,13 @@ def load_voices():
 
 def get_css():
     """Get shared CSS for the application"""
+    # Load our custom CSS file if it exists
+    custom_css = ""
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "styles.css")
+    if os.path.exists(css_path):
+        with open(css_path, "r") as css_file:
+            custom_css = css_file.read()
+            
     return """
     .gradio-container {
         background-color: #f8faff !important;
@@ -461,7 +468,7 @@ def get_css():
         background-color: #5e166a !important;
         border-radius: 50% !important;
     }
-    """
+    """ + custom_css
 
 def create_banner(base64_banner):
     """Create the banner component with the given base64 encoded image"""
@@ -477,8 +484,12 @@ def main():
         print(f"Using DeepSeek model: {DEEPSEEK_MODEL}")
         print(f"Using Claude model: {CLAUDE_MODEL}")
         
-        # Validate configuration
-        validate_config()
+        try:
+            # Validate configuration
+            validate_config()
+        except Exception as e:
+            print(f"Error during startup: {e}")
+            raise
         
         # Setup necessary directories
         setup_directories()
@@ -491,13 +502,12 @@ def main():
         banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
         with open(banner_path, "rb") as img_file:
             banner_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-        
+            
         # Create a single Gradio app with interface switching
         with gr.Blocks(title="VoiceScribe Studio", css=get_css()) as app:
             # Create a state variable to track the current interface
             current_interface = gr.State("public")
             is_authenticated = gr.State(False)
-            
             # Public interface components
             with gr.Column(visible=True) as public_interface:
                 # Create the banner
@@ -512,29 +522,28 @@ def main():
                         scale=0,
                         size="sm"
                     )
-                
-                # Create the main tabs
+                # Create the main tabs INSIDE the public_interface column
                 with gr.Tabs():
                     # Create tabs using the component functions
                     script_output, script_file_output = create_script_generator_tab()
                     edit_script_input, edited_script_output = create_script_editor_tab()
                     voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
-                
-                # Connect script generator to script editor
-                script_output.change(
-                    fn=lambda x: x,
-                    inputs=[script_output],
-                    outputs=[edit_script_input]
-                )
-                
-                # Connect script editor to voiceover generator
-                edited_script_output.change(
-                    fn=lambda x: x,
-                    inputs=[edited_script_output],
-                    outputs=[voiceover_script]
-                )
             
-            # Admin login form
+                    # Connect script generator to script editor
+                    script_output.change(
+                        fn=lambda x: x,
+                        inputs=[script_output],
+                        outputs=[edit_script_input]
+                    )
+            
+                    # Connect script editor to voiceover generator
+                    edited_script_output.change(
+                        fn=lambda x: x,
+                        inputs=[edited_script_output],
+                        outputs=[voiceover_script]
+                    )
+            
+            # Admin login form (Keep this at the same level as public_interface)
             with gr.Column(visible=False) as login_form:
                 # Create the banner
                 create_banner(banner_base64)
@@ -550,7 +559,7 @@ def main():
                         login_button = gr.Button("Login", variant="primary", elem_classes=["login-button"])
                         back_button = gr.Button("Back to Main App")
             
-            # Admin dashboard
+            # Admin dashboard (Keep this at the same level as public_interface)
             with gr.Column(visible=False) as admin_dashboard:
                 # Create the banner
                 create_banner(banner_base64)
@@ -650,15 +659,15 @@ def main():
                 inputs=[],
                 outputs=[public_interface, login_form, admin_dashboard, current_interface]
             )
-        
-        # Launch the app
-        print("Starting VoiceScribe Studio on http://0.0.0.0:7860")
+            
+            # Launch the app
+            print("Starting VoiceScribe Studio on http://0.0.0.0:7860")
         app.launch(
             server_name="0.0.0.0",
-            server_port=7860,
+                server_port=7860,
             share=False
         )
-        
+            
     except ValueError as e:
         print(f"Configuration error: {str(e)}")
         print("Please update your .env file with the required API keys.")
