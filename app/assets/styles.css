@@ -1,0 +1,146 @@
+/* VoiceScribe Studio Custom Styles */
+
+/* Warning messages */
+.warning-text {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+/* Add border for file info/warning messages */
+.warning-text p {
+    border-left: 3px solid #ff9800;
+    padding-left: 10px;
+}
+
+/* Token count info messages */
+.warning-text p:not([class*="warning"]) {
+    border-left: 3px solid #4CAF50;
+}
+
+/* Style for the file upload area */
+.file-upload-container {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.file-upload-container:hover {
+    border-color: #2196F3;
+}
+
+/* Right-side info container styling */
+.file-info-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 300px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Supported file types section styling */
+.supported-file-types {
+    margin: 0 auto 10px;
+    padding: 0 10px 0 30px;
+    max-width: 500px;
+}
+
+/* File type title styling */
+.file-type-title {
+    text-align: center;
+    margin: 5px 0 8px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.file-type-item {
+    padding: 5px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.file-type-item:last-child {
+    border-bottom: none;
+}
+
+.check-mark {
+    color: #ff9800; /* Orange color for check marks */
+    font-weight: bold;
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+/* File size limit section styling */
+.file-size-section {
+    margin-top: auto;
+}
+
+/* File size limit styling */
+.file-size-limit {
+    text-align: center;
+    margin: 5px 0;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Token/word count display */
+.token-count-display {
+    font-weight: bold;
+    color: #333;
+    margin: 8px auto;
+    text-align: center;
+    display: block;
+    padding: 6px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Document processing status indicator */
+.processing-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.processing-indicator.success {
+    background-color: #4CAF50;
+}
+
+.processing-indicator.warning {
+    background-color: #ff9800;
+}
+
+.processing-indicator.error {
+    background-color: #f44336;
+}
+
+/* Custom radio button styling */
+.custom-radio .gr-radio-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+.custom-radio label {
+    margin-bottom: 5px !important;
+} 
