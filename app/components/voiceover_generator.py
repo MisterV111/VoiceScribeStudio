@@ -15,6 +15,8 @@ def set_voice_data(p_names, p_ids, v_names, v_ids):
     preset_voice_ids = p_ids
     voice_names = v_names
     voice_ids = v_ids
+    print(f"set_voice_data received {len(preset_voice_names)} preset voices")
+    print(f"Voice data in component: {preset_voice_names[:3]}")
 
 def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voice_id="", output_format="ogg",
                     stability=0.5, similarity=0.75, style=0.0, speed=1.0, speaker_boost=False,
@@ -172,6 +174,15 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         return f"Error generating voiceover: {str(e)}", None, None, None, []
 
 def create_voiceover_tab():
+    """Create the voiceover generation tab"""
+    # Make sure we can access the global voice data
+    global preset_voice_names, preset_voice_ids, voice_names, voice_ids
+    print(f"create_voiceover_tab has access to {len(preset_voice_names)} preset voices")
+    
+    # Make a local copy to ensure it's available during component creation
+    local_preset_voice_names = list(preset_voice_names)
+    print(f"Local copy contains {len(local_preset_voice_names)} voice names")
+    
     with gr.TabItem("Generate Voiceover"):
         with gr.Row():
             # Left column - Script input and basic controls
@@ -248,10 +259,11 @@ def create_voiceover_tab():
                     
                     # Preset voices selection
                     with gr.Group(visible=True) as preset_group:
+                        print(f"Creating dropdown with {len(local_preset_voice_names)} voices")
                         preset_voice_selector = gr.Dropdown(
                             label="Select Voice",
-                            choices=preset_voice_names,
-                            value=preset_voice_names[0] if preset_voice_names else None,
+                            choices=local_preset_voice_names,
+                            value=local_preset_voice_names[0] if local_preset_voice_names else None,
                             info="These voices will work with a valid ElevenLabs API key"
                         )
                     

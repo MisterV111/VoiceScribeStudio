@@ -357,16 +357,16 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
 def call_claude_sonnet_for_analysis(system_prompt: str, user_prompt: str, model: str = CLAUDE_MODEL) -> str | None:
     """
     Calls the Claude Sonnet API specifically for analysis tasks that expect a structured response (like JSON).
-    Handles basic API interaction, error handling, and returns the raw text content.
-    Token tracking is handled separately if needed after successful parsing.
-
+    
+    This is a specialized helper for analysis tasks, more focused than the general generation function.
+    
     Args:
         system_prompt: The system prompt guiding the analysis task.
         user_prompt: The user prompt containing the content to analyze and structure instructions.
-        model: The specific Claude model to use.
-
+        model: The Claude model to use (defaults to the one in config.py).
+        
     Returns:
-        The raw text content from the API response, or None if an error occurs.
+        str: The raw model output if successful, or None if there's an error.
     """
     if not anthropic_client:
         print(f"Anthropic client not available. Skipping Claude analysis call.")
@@ -375,38 +375,91 @@ def call_claude_sonnet_for_analysis(system_prompt: str, user_prompt: str, model:
     try:
         print(f"Attempting analysis with Claude model: {model}")
         
-        # Create the API call - slightly lower temperature might be good for structured output
-        message = anthropic_client.messages.create(
+        # Call the Claude API with retry logic
+        message = call_anthropic_with_retry(
+            anthropic_client.messages.create,
             model=model,
-            system=system_prompt, 
+            system=system_prompt,
             messages=[
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.2, # Lower temperature for more deterministic JSON output
+            temperature=0.0,  # Use 0 temperature for analytical tasks for consistency
             max_tokens=2000  # Adjust max_tokens based on expected analysis size
         )
         
-        # Log token usage (basic logging here, detailed tracking can happen after parsing)
-        if message.usage:
+        # Handle token usage reporting
+        if hasattr(message, 'usage'):
             print(f"Token Usage (Analysis - {model}): Input={message.usage.input_tokens}, Output={message.usage.output_tokens}")
         else:
             print(f"Token usage data not available for analysis call ({model}).")
             
-        # Content retrieval - return the raw text content for parsing
-        if message.content and isinstance(message.content, list) and message.content[0].text:
-            raw_content = message.content[0].text
+        # Extract content from the response
+        if message.content and isinstance(message.content, list) and len(message.content) > 0 and hasattr(message.content[0], 'text'):
+            content = message.content[0].text
             print(f"Claude model {model} returned analysis content.")
-            return raw_content
+            return content
         else:
             print(f"Claude model {model} analysis response did not contain expected text content.")
             return None
-            
     except Exception as e:
         print(f"Error during Claude analysis API call with model {model}: {str(e)}")
-        # Consider more detailed logging or error propagation if needed
-        # import traceback
-        # traceback.print_exc()
         return None
+
+# ---------------
+# Content Analysis
+# ---------------
+
+def analyze_content(content_type, content, **kwargs):
+    """
+    Analyzes content from different sources and returns structured data.
+    
+    This function acts as a central dispatcher for content analysis
+    features, selecting the appropriate analyzer based on content_type.
+    
+    Args:
+        content_type (str): The type of content to analyze:
+            - "document": Direct text content from a document
+            - "youtube": A YouTube URL for transcript analysis
+            - "web": A general web URL for content analysis
+        content (str): The actual content to analyze (text or URL)
+        **kwargs: Additional parameters specific to different content types
+    
+    Returns:
+        dict: Structured analysis results or error information
+    """
+    try:
+        from ..components.content_analyzer import (
+            analyze_document_content,
+            analyze_youtube_url,
+            analyze_web_url
+        )
+        
+        # Log the analysis request
+        print(f"Analyzing content of type: {content_type}")
+        
+        # Validate basic inputs
+        if not content or not isinstance(content, str):
+            return {"error": "No content provided for analysis"}
+            
+        if content_type == "document":
+            # Direct document text analysis
+            return analyze_document_content(content)
+            
+        elif content_type == "youtube":
+            # YouTube URL analysis
+            return analyze_youtube_url(content)
+            
+        elif content_type == "web":
+            # General web URL analysis
+            return analyze_web_url(content)
+            
+        else:
+            return {"error": f"Unsupported content type: {content_type}"}
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Error in content analysis: {str(e)}"}
 
 # --- Main Generation Function --- 
 
