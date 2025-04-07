@@ -33,6 +33,7 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 - 🧪 **Admin & Testing Tools**:
   - **Secure Admin Dashboard**: Separate interface for testing and analytics (Login: `admin`/`admin123`).
   - **Cross-Template Testing Suite**: Ensures reliability and quality across templates.
+  - **Token Analytics Dashboard**: Track token usage, costs, and model efficiency for both DeepSeek and Claude models.
 
 ### Future Vision (Planned Enhancements)
 
