@@ -1,6 +1,7 @@
 import gradio as gr
 import os
 from app.utils.llm_clients import edit_script_with_claude
+from app.utils.humanize_script import humanize_script
 
 def edit_script(original_script, edit_instructions, context=""):
     """Edit a script using Claude"""
@@ -46,6 +47,29 @@ def edit_script(original_script, edit_instructions, context=""):
     except Exception as e:
         return f"Error editing script: {str(e)}", None
 
+def apply_humanize(script_text):
+    """
+    Apply humanization to a script to optimize it for voiceover delivery
+    
+    Args:
+        script_text (str): The script to humanize
+        
+    Returns:
+        str: The humanized script with pause markers, emphasis, and emotions
+    """
+    if not script_text or not script_text.strip():
+        return "Please provide a script to humanize."
+    
+    # Call the humanize_script function from app.utils.humanize_script
+    result = humanize_script(script_text)
+    
+    # Check if humanization was successful
+    if result.get("error"):
+        return f"Error humanizing script: {result['error']}"
+    
+    # Return the humanized content
+    return result["content"]
+
 def create_script_editor_tab():
     with gr.TabItem("Edit Script"):
         with gr.Row():
@@ -72,9 +96,10 @@ def create_script_editor_tab():
                         info="This helps ensure edits align with your specific requirements"
                     )
                 
-                # Add spacer to push button to bottom
+                # Add buttons in a row - one for editing, one for humanizing
                 with gr.Row():
                     edit_btn = gr.Button("Edit Script", elem_classes=["primary"])
+                    humanize_btn = gr.Button("Humanize for Voiceover", variant="secondary")
             
             # Right column for output
             with gr.Column():
@@ -88,12 +113,50 @@ def create_script_editor_tab():
                     label="Edited Script File",
                     visible=False
                 )
+                
+                # Add Humanize Guide
+                with gr.Accordion("Humanize Feature Guide", open=False):
+                    gr.Markdown("""
+                    ## 🎙️ Humanize Feature Guide
+                    
+                    The **Humanize** feature transforms your script into a format optimized for natural-sounding voiceovers by adding:
+                    
+                    ### Added Markup
+                    
+                    - **Pause Markers**: `<break time="1s" />` for natural pauses between sentences and sections
+                    - **Emphasis**: `*important words*` to emphasize key terms
+                    - **Emotion Tags**: `<cheerful>text</cheerful>` to indicate tone and emotion
+                    
+                    ### Benefits
+                    
+                    1. **More Natural Delivery**: Properly timed pauses for better comprehension
+                    2. **Artifact Prevention**: Special handling to prevent audio glitches
+                    3. **Professional Sound**: Book-style narration techniques for engaging delivery
+                    4. **Better Emphasis**: Clear marking of important terms and concepts
+                    
+                    ### Usage
+                    
+                    1. Input or generate your script
+                    2. Click the "Humanize for Voiceover" button
+                    3. Review the transformed script with added markup
+                    4. Use the output directly in the Voiceover tab
+                    
+                    The humanize process uses Claude 3.7 Sonnet to analyze your script and add professional
+                    voiceover markup based on content, structure, and natural speech patterns.
+                    """)
         
         # Connect the edit button to the edit_script function
         edit_btn.click(
             fn=edit_script,
             inputs=[edit_script_input, edit_instructions, edit_context_input],
             outputs=[edited_script_output, edited_script_file]
+        )
+        
+        # Connect the humanize button to the apply_humanize function
+        humanize_btn.click(
+            fn=apply_humanize,
+            inputs=[edited_script_output],
+            outputs=[edited_script_output]
         )
         
         return edit_script_input, edited_script_output 

@@ -323,6 +323,133 @@ def get_css():
         color: white !important;
     }
     
+    /* Humanize feature styling */
+    .humanize-container {
+        background-color: white !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        padding: 20px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .humanize-explainer {
+        background-color: #f8f9ff !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin-bottom: 20px !important;
+        border-left: 4px solid #5e166a !important;
+    }
+    
+    .humanize-explainer h4 {
+        color: #5e166a !important;
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+        font-weight: 600 !important;
+    }
+    
+    .humanize-explainer p {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .humanize-explainer ul {
+        margin-bottom: 0 !important;
+        padding-left: 20px !important;
+    }
+    
+    .humanize-explainer li {
+        margin-bottom: 5px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .humanize-preview {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 20px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .humanize-original, .humanize-transformed {
+        flex: 1 !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+        background-color: #f8f9fb !important;
+    }
+    
+    .humanize-original h4, .humanize-transformed h4 {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+        color: #3b355d !important;
+        font-weight: 600 !important;
+    }
+    
+    .script-content {
+        font-family: 'Roboto Mono', monospace !important;
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
+        white-space: pre-wrap !important;
+        max-height: 500px !important;
+        overflow-y: auto !important;
+        padding: 10px !important;
+        background-color: white !important;
+        border-radius: 6px !important;
+        border: 1px solid #e0e4e9 !important;
+    }
+    
+    .humanize-transformed {
+        background-color: #f8f9ff !important;
+        border-left: 4px solid #5e166a !important;
+    }
+    
+    .humanize-pause {
+        background-color: #e5e7ff !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        color: #4338ca !important;
+        font-family: monospace !important;
+        font-size: 0.9em !important;
+    }
+    
+    .humanize-emphasis {
+        color: #5e166a !important;
+        font-weight: bold !important;
+    }
+    
+    .humanize-strong-emphasis {
+        color: #5e166a !important;
+        font-weight: bold !important;
+        background-color: rgba(94, 22, 106, 0.1) !important;
+        border-radius: 4px !important;
+        padding: 1px 3px !important;
+    }
+    
+    .humanize-warning {
+        background-color: #fee2e2 !important;
+        color: #b91c1c !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        font-family: monospace !important;
+        font-size: 0.9em !important;
+    }
+    
+    .humanize-narration {
+        background-color: #ecfdf5 !important;
+        color: #047857 !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        font-style: italic !important;
+    }
+    
+    .humanize-emotion {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        font-family: monospace !important;
+        font-size: 0.9em !important;
+    }
+    
     /* Generated audio files styling */
     .generated-formats-container {
         background-color: white !important;
