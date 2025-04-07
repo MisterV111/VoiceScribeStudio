@@ -33,6 +33,7 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 - 🧪 **Admin & Testing Tools**:
   - **Secure Admin Dashboard**: Separate interface for testing and analytics (Login: `admin`/`admin123`).
   - **Cross-Template Testing Suite**: Ensures reliability and quality across templates.
+  - **Token Analytics Dashboard**: Track token usage, costs, and model efficiency for both DeepSeek and Claude models.
 
 ### Future Vision (Planned Enhancements)
 
@@ -153,4 +154,33 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Anthropic](https://www.anthropic.com/) for the Claude 3.7 Sonnet model
 - [ElevenLabs](https://elevenlabs.io/) for the text-to-speech technology
 - [Gradio](https://gradio.app/) for the web interface
-- Future Acknowledgments: Suno AI, Perplexity AI, YouTube Data API, FireCrawl, EverArt, etc. 
+- Future Acknowledgments: Suno AI, Perplexity AI, YouTube Data API, FireCrawl, EverArt, etc.
+
+## New Humanize Feature
+
+The Humanize feature transforms your scripts to sound more natural with ElevenLabs by adding optimized markup based on research from experienced users:
+
+- **Enhanced Pause Markers**: 
+  - `<break time="0.5s" />` for minor phrase breaks
+  - `<break time="1s" />` for pauses between sentences
+  - `<break time="1.5s" />` for emphasis points
+  - `<break time="2s" />` for paragraph breaks
+
+- **Artifact Prevention**:
+  - `. <break time="2s" /> [text starts here...]` at the beginning
+  - `[...text ends here] <break time="2s" /> .` at the end
+
+- **Emotional Expression**:
+  - Book-style narration: `"Our options are limited", he said angrily.`
+  - Emotion tags: `<cheerful, happily>Great news!</cheerful, happily>`
+
+- **Emphasis Markers**:
+  - `*word*` for emphasis
+  - `**word**` for strong emphasis
+
+- **Known Issues**:
+  - Avoid using arrow symbols like `↗` or `↘` as they cause artifacts in ElevenLabs voiceovers
+
+See `docs/ELEVENLABS_OPTIMIZATION.md` for detailed documentation and `examples/optimized_elevenlabs_script.txt` for a complete demonstration of these techniques.
+
+These optimizations make ElevenLabs voices sound more natural, with better emotional range and fewer artifacts. The Humanize feature applies these techniques automatically to any script. 

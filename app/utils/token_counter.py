@@ -248,7 +248,7 @@ class TokenTracker:
                    SUM(input_tokens) as input_tokens,
                    SUM(output_tokens) as output_tokens,
                    SUM(total_tokens) as total_tokens,
-                   COUNT(*) as request_coun
+                   COUNT(*) as request_count
             {query_base}
             GROUP BY model
             """, params)
@@ -269,7 +269,7 @@ class TokenTracker:
 
             # Get usage by template
             cursor.execute(f"""
-            SELECT template, SUM(total_tokens) as total_tokens, COUNT(*) as request_coun
+            SELECT template, SUM(total_tokens) as total_tokens, COUNT(*) as request_count
             {query_base}
             GROUP BY template
             """, params)
