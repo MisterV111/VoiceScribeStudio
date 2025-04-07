@@ -1,73 +1,861 @@
 import gradio as gr
 import os
-import tiktoken # Added for token counting
 from app.utils.llm_clients import generate_script
-from app.utils.web_utils import extract_content_from_url, format_web_content_for_llm, is_valid_url
-from app.utils.youtube_utils import extract_video_id, get_transcript, format_youtube_transcript_for_llm
+import tiktoken
+import tempfile
+import io
+from pathlib import Path
+import re
+import urllib.parse
+import json  # Add this import if it's not already there
 
-def create_script(prompt, subject, length, audience, tone, template="General", context="", 
-               uploaded_file=None, web_url="", youtube_url="", reference_type="None"):
-    """Generate a script using the best available LLM, using different reference sources based on input type."""
+# Below imports for document processing
+try:
+    import fitz  # PyMuPDF
+    import docx
+    HAS_DOCUMENT_LIBS = True
+except ImportError:
+    HAS_DOCUMENT_LIBS = False
+    print("Warning: Document processing libraries not installed. PDF and DOCX support limited.")
+
+# Import content analysis components
+# The analyze_document_content will be imported through ensure_analyze_function when needed
+
+# Attempt to import reference handlers
+try:
+    from app.utils.reference_handlers.web_utils import extract_web_content
+    from app.utils.reference_handlers.youtube_utils import extract_youtube_transcript
+    HAS_REFERENCE_HANDLERS = True
+except ImportError:
+    HAS_REFERENCE_HANDLERS = False
+    print("Warning: Reference handlers not found. Creating fallback implementations.")
+    
+    # Fallback implementation for web content extraction
+    def extract_web_content(url):
+        """Fallback implementation for web content extraction"""
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+            
+            response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Remove script and style elements
+            for script in soup(["script", "style"]):
+                script.extract()
+                
+            # Get text
+            text = soup.get_text()
+            
+            # Break into lines and remove leading/trailing space
+            lines = (line.strip() for line in text.splitlines())
+            # Break multi-headlines into a line each
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            # Drop blank lines
+            text = '\n'.join(chunk for chunk in chunks if chunk)
+            
+            return text, None
+        except Exception as e:
+            return None, f"Error extracting web content: {str(e)}"
+    
+    # Fallback implementation for YouTube transcript extraction
+    def extract_youtube_transcript(url):
+        """Fallback implementation for YouTube transcript extraction"""
+        try:
+            from youtube_transcript_api import YouTubeTranscriptApi
+            
+            # Extract video ID from URL
+            video_id = None
+            patterns = [
+                r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)',
+                r'youtube\.com\/watch.*?[?&]v=([\w-]+)',
+                r'youtube\.com\/shorts\/([\w-]+)'
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, url)
+                if match:
+                    video_id = match.group(1)
+                    break
+                    
+            if not video_id:
+                return None, "Could not extract YouTube video ID from URL"
+                
+            # Get transcript
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+            transcript_text = " ".join([item['text'] for item in transcript_list])
+            
+            return transcript_text, None
+        except Exception as e:
+            return None, f"Error extracting YouTube transcript: {str(e)}"
+
+# Add variables to store reference text and analysis results
+document_text = None
+document_analysis = None
+web_url_content = None
+youtube_transcript = None
+
+# Make sure analyze_document_content is a function
+def ensure_analyze_function(text):
+    """Fallback implementation for document analysis when the real function is not available"""
+    real_analyze = None
+    try:
+        # Try to import the function from content_analyzer
+        from app.components.content_analyzer import analyze_document_content as real_analyze
+        
+        # Test if the imported function is callable
+        if callable(real_analyze):
+            try:
+                result = real_analyze(text)
+                # Check that the result is a dictionary - if not, create a fallback
+                if not isinstance(result, dict):
+                    print(f"Warning: analyze_document_content returned non-dict result: {type(result)}")
+                    return {
+                        "summary": f"Analysis result was {type(result).__name__}, expected dict",
+                        "key_topics": ["Result type error"],
+                        "structure_outline": ["Content analysis returned invalid type"],
+                        "extracted_keywords": ["error", "invalid result"]
+                    }
+                
+                # Ensure all required keys are present
+                required_keys = ['summary', 'key_topics', 'structure_outline', 'extracted_keywords']
+                for key in required_keys:
+                    if key not in result:
+                        print(f"Warning: analyze_document_content result missing required key: {key}")
+                        # Add the missing key with a default value
+                        if key == 'summary':
+                            result[key] = "No summary available"
+                        else:
+                            result[key] = ["No data available"]
+                
+                # Ensure all list attributes are actually lists
+                list_keys = ['key_topics', 'structure_outline', 'extracted_keywords']
+                for key in list_keys:
+                    if key in result and not isinstance(result[key], list):
+                        print(f"Warning: {key} is not a list, converting")
+                        if result[key] is None:
+                            result[key] = []
+                        else:
+                            # Try to convert to a list if possible, otherwise use a default
+                            try:
+                                result[key] = [str(result[key])]
+                            except:
+                                result[key] = ["Conversion error"]
+                
+                return result
+            except Exception as e:
+                print(f"Error calling analyze_document_content: {e}")
+                return {
+                    "summary": f"Error during analysis execution: {str(e)}",
+                    "key_topics": ["Error", "Analysis execution failed"],
+                    "structure_outline": ["Error during content analysis"],
+                    "extracted_keywords": ["error", "analysis", "execution", "failed"]
+                }
+        else:
+            print(f"Warning: analyze_document_content is not callable, type: {type(real_analyze)}")
+            # Return a basic analysis result
+            return {
+                "summary": "Content analysis unavailable",
+                "key_topics": ["Unable to analyze document"],
+                "structure_outline": ["Content analysis unavailable"],
+                "extracted_keywords": ["analysis", "unavailable"]
+            }
+    except ImportError as e:
+        print(f"Error importing analyze_document_content: {e}")
+        # Return a basic analysis result
+        return {
+            "summary": "Content analysis module not available",
+            "key_topics": ["Unable to analyze document"],
+            "structure_outline": ["Content analysis unavailable"],
+            "extracted_keywords": ["analysis", "unavailable"]
+        }
+    except Exception as e:
+        print(f"Error using analyze_document_content: {e}")
+        # Return a basic analysis result
+        return {
+            "summary": f"Error during content analysis: {str(e)}",
+            "key_topics": ["Error", "Analysis unavailable"],
+            "structure_outline": ["Content analysis unavailable"],
+            "extracted_keywords": ["error", "analysis", "unavailable"]
+        }
+
+def extract_text_from_file(file_obj):
+    """Extract text from various file formats and analyze content"""
+    global document_text, document_analysis
+    
+    if not file_obj:
+        return None, "No file provided."
+    
+    try:
+        # Debug info about the file object
+        print(f"File object type: {type(file_obj)}")
+        print(f"File object attributes: {dir(file_obj)}")
+        
+        # Print all attributes and their values for debugging
+        for attr in ['name', 'orig_name', 'path', 'file', 'filepath', 'filename']:
+            if hasattr(file_obj, attr):
+                value = getattr(file_obj, attr)
+                print(f"  - {attr}: {value} (type: {type(value)})")
+                
+                # If it's a file attribute, check its attributes too
+                if attr == 'file' and value is not None:
+                    print(f"  - file attributes: {dir(value)}")
+                    for subattr in ['name', 'path', 'mode']:
+                        if hasattr(value, subattr):
+                            subvalue = getattr(value, subattr)
+                            print(f"    - file.{subattr}: {subvalue}")
+        
+        # Special handling for Gradio File components which return special object structure
+        if hasattr(file_obj, 'name') and file_obj.name:
+            # Modern Gradio (1.27+) returns FileData objects with direct .name
+            print(f"Detected Gradio FileData object with name: {file_obj.name}")
+        elif hasattr(file_obj, 'path') and file_obj.path:
+            # Some versions use path attribute directly
+            print(f"Detected object with path attribute: {file_obj.path}")
+            if os.path.exists(file_obj.path):
+                file_obj = file_obj.path  # Use the path directly
+        elif isinstance(file_obj, dict) and 'name' in file_obj:
+            # Some Gradio versions use a dict representation
+            print(f"Detected Gradio File dict with name: {file_obj['name']}")
+        elif isinstance(file_obj, tuple) and len(file_obj) == 2:
+            # Older Gradio versions may return a tuple of (temp_path, orig_name)
+            print(f"Detected Gradio tuple format: {file_obj}")
+            temp_path, orig_name = file_obj
+            if temp_path and os.path.exists(temp_path):
+                print(f"Using temp_path from tuple: {temp_path}")
+                file_obj = temp_path  # Use the path directly
+            
+        # Handle cases where Gradio returns a list of files even with file_count="single"
+        if isinstance(file_obj, list) and len(file_obj) > 0:
+            print(f"Unwrapping file object from list: {file_obj}")
+            file_obj = file_obj[0]  # Take the first file
+            
+        # Get file extension
+        file_path = None
+        ext = None
+        orig_name = None
+        
+        # Handle different possible file object types from Gradio
+        if isinstance(file_obj, str):
+            # Path string
+            file_path = file_obj
+            ext = os.path.splitext(file_path)[1].lower()
+            print(f"File is a string path: {file_path}")
+        elif isinstance(file_obj, bytes):
+            # Direct bytes content - try to get name from orig_name if available
+            orig_name = getattr(file_obj, 'orig_name', None)
+            if orig_name:
+                ext = os.path.splitext(orig_name)[1].lower()
+            else:
+                # Can't determine type from bytes, default to txt
+                ext = '.txt'
+            print(f"File is bytes content with orig_name: {orig_name}")
+        elif hasattr(file_obj, 'name'):
+            # File-like object with name
+            file_path = file_obj.name
+            ext = os.path.splitext(file_path)[1].lower()
+            print(f"File has name attribute: {file_path}")
+        elif hasattr(file_obj, 'orig_name'):
+            # Gradio file object with orig_name
+            orig_name = file_obj.orig_name
+            ext = os.path.splitext(orig_name)[1].lower()
+            print(f"File has orig_name attribute: {orig_name}")
+        else:
+            # Try as file-like object or Gradio's special format
+            try:
+                # Check if it's a Gradio UploadedFile or dictionary with file info
+                if hasattr(file_obj, 'name'):
+                    file_path = file_obj.name
+                    ext = os.path.splitext(file_path)[1].lower()
+                    print(f"Found name in file object: {file_path}")
+                elif isinstance(file_obj, dict) and 'name' in file_obj:
+                    file_path = file_obj['name']
+                    ext = os.path.splitext(file_path)[1].lower()
+                    print(f"File is a dict with name: {file_path}")
+                elif hasattr(file_obj, 'file') and hasattr(file_obj.file, 'name'):
+                    file_path = file_obj.file.name
+                    ext = os.path.splitext(file_path)[1].lower()
+                    print(f"File has nested file.name: {file_path}")
+                else:
+                    # Get attributes that might help identify the file
+                    attrs = dir(file_obj)
+                    print(f"No standard attributes found, available attrs: {attrs}")
+                    # Look for interesting attributes
+                    for attr in ['filepath', 'path', 'filename', 'file', 'data']:
+                        if hasattr(file_obj, attr):
+                            value = getattr(file_obj, attr)
+                            print(f"Found attribute {attr}: {value}")
+                    
+                    # Last resort - try to read and treat as text
+                    ext = '.txt'
+                    print(f"Using default extension: {ext}")
+            except Exception as e:
+                print(f"Error determining file type: {e}")
+                return None, "Could not determine file type."
+                
+        print(f"Determined file extension: {ext}")
+        
+        # Process based on file type
+        if ext == '.txt':
+            # Text file
+            try:
+                if isinstance(file_obj, bytes):
+                    text = file_obj.decode('utf-8', errors='replace')
+                elif hasattr(file_obj, 'read'):
+                    # File-like object
+                    content = file_obj.read()
+                    if isinstance(content, bytes):
+                        text = content.decode('utf-8', errors='replace')
+                    else:
+                        text = content
+                else:
+                    # Path
+                    with open(file_obj, 'r', encoding='utf-8', errors='replace') as f:
+                        text = f.read()
+                
+                document_text = text
+                
+                # Analyze the document content if text was extracted successfully
+                try:
+                    document_analysis = ensure_analyze_function(text)
+                    if isinstance(document_analysis, dict) and "error" in document_analysis:
+                        print(f"Warning: Document analysis error: {document_analysis['error']}")
+                except Exception as e:
+                    print(f"Error during document analysis: {e}")
+                    document_analysis = None
+                    
+                return text, None
+            except Exception as e:
+                return None, f"Error processing text file: {str(e)}"
+            
+        elif ext == '.md':
+            # Markdown file - treat as text
+            try:
+                if isinstance(file_obj, bytes):
+                    text = file_obj.decode('utf-8', errors='replace')
+                elif hasattr(file_obj, 'read'):
+                    content = file_obj.read()
+                    if isinstance(content, bytes):
+                        text = content.decode('utf-8', errors='replace')
+                    else:
+                        text = content
+                else:
+                    # Path
+                    with open(file_obj, 'r', encoding='utf-8', errors='replace') as f:
+                        text = f.read()
+                
+                document_text = text
+                
+                # Analyze the document content if text was extracted successfully
+                try:
+                    document_analysis = ensure_analyze_function(text)
+                    if isinstance(document_analysis, dict) and "error" in document_analysis:
+                        print(f"Warning: Document analysis error: {document_analysis['error']}")
+                except Exception as e:
+                    print(f"Error during document analysis: {e}")
+                    document_analysis = None
+                    
+                return text, None
+            except Exception as e:
+                return None, f"Error processing markdown file: {str(e)}"
+            
+        elif ext == '.pdf':
+            if not HAS_DOCUMENT_LIBS:
+                return None, "PDF processing libraries not installed."
+                
+            # Create a temporary file to work with
+            temp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp:
+                    # Handle various file object types
+                    print(f"Processing PDF file: {type(file_obj)}")
+                    
+                    if isinstance(file_obj, bytes):
+                        print("Writing bytes directly to temp file")
+                        temp.write(file_obj)
+                    elif isinstance(file_obj, str):
+                        print("Opening file path and writing content")
+                        with open(file_obj, 'rb') as src:
+                            temp.write(src.read())
+                    elif hasattr(file_obj, 'read'):
+                        try:
+                            print("Using read() method on file object")
+                            content = file_obj.read()
+                            temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                        except Exception as read_err:
+                            print(f"Error reading file: {read_err}")
+                            # Try alternative approaches
+                            if hasattr(file_obj, 'file') and hasattr(file_obj.file, 'read'):
+                                print("Trying nested file.read()")
+                                content = file_obj.file.read()
+                                temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                            elif hasattr(file_obj, 'name') or isinstance(file_obj, dict) and 'name' in file_obj:
+                                # Try to open the file by name
+                                filename = getattr(file_obj, 'name', None) or file_obj.get('name')
+                                print(f"Opening file by name: {filename}")
+                                with open(filename, 'rb') as src:
+                                    temp.write(src.read())
+                            else:
+                                raise ValueError("Could not read file content")
+                    elif isinstance(file_obj, dict) and 'name' in file_obj:
+                        print(f"File is dictionary with name: {file_obj['name']}")
+                        if 'content' in file_obj:
+                            # Some APIs provide content directly
+                            content = file_obj['content']
+                            temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                        else:
+                            # Try to open the file by name
+                            with open(file_obj['name'], 'rb') as src:
+                                temp.write(src.read())
+                    elif hasattr(file_obj, 'filepath') and file_obj.filepath:
+                        # Handle the case where filepath is provided
+                        print(f"Using filepath attribute: {file_obj.filepath}")
+                        with open(file_obj.filepath, 'rb') as src:
+                            temp.write(src.read())
+                    else:
+                        # Try to extract information about the file
+                        filepath = None
+                        for attr_name in ['filepath', 'path', 'filename', 'name', 'orig_name']:
+                            if hasattr(file_obj, attr_name):
+                                filepath = getattr(file_obj, attr_name)
+                                if filepath:
+                                    print(f"Found path from attribute {attr_name}: {filepath}")
+                                    break
+                                    
+                        if filepath:
+                            # Read content from the filepath
+                            with open(filepath, 'rb') as src:
+                                temp.write(src.read())
+                        else:
+                            # Last resort - try to serialize the object itself
+                            temp.write(str(file_obj).encode('utf-8'))
+                            print("Warning: Could not extract file content properly")
+                            
+                    temp_path = temp.name
+                    print(f"Created temporary file: {temp_path}")
+                
+                # Extract text from PDF
+                try:
+                    print(f"Opening PDF with PyMuPDF: {temp_path}")
+                    doc = fitz.open(temp_path)
+                    text = ""
+                    for page in doc:
+                        text += page.get_text()
+                    doc.close()
+                    print(f"Successfully extracted text from PDF: {len(text)} chars")
+                    
+                    # Store text for script generation
+                    document_text = text
+                    
+                    # Analyze the document content if text was extracted successfully
+                    try:
+                        document_analysis = ensure_analyze_function(text)
+                        if isinstance(document_analysis, dict) and "error" in document_analysis:
+                            print(f"Warning: Document analysis error: {document_analysis['error']}")
+                    except Exception as e:
+                        print(f"Error during document analysis: {e}")
+                        document_analysis = None
+                    
+                    return text, None
+                except Exception as pdf_error:
+                    error_msg = f"Error processing PDF: {str(pdf_error)}"
+                    print(error_msg)
+                    return None, error_msg
+            except Exception as e:
+                error_msg = f"Error preparing PDF file: {str(e)}"
+                print(error_msg)
+                return None, error_msg
+            finally:
+                # Clean up temp file
+                if temp_path and os.path.exists(temp_path):
+                    try:
+                        os.unlink(temp_path)
+                        print(f"Cleaned up temporary file: {temp_path}")
+                    except Exception as clean_error:
+                        print(f"Error cleaning up temporary file: {clean_error}")
+                        pass
+                
+        elif ext == '.docx':
+            if not HAS_DOCUMENT_LIBS:
+                return None, "DOCX processing libraries not installed."
+                
+            # Create a temporary file to work with
+            temp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp:
+                    # Handle various file object types
+                    print(f"Processing DOCX file: {type(file_obj)}")
+                    
+                    if isinstance(file_obj, bytes):
+                        print("Writing bytes directly to temp file")
+                        temp.write(file_obj)
+                    elif isinstance(file_obj, str):
+                        print("Opening file path and writing content")
+                        with open(file_obj, 'rb') as src:
+                            temp.write(src.read())
+                    elif hasattr(file_obj, 'read'):
+                        try:
+                            print("Using read() method on file object")
+                            content = file_obj.read()
+                            temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                        except Exception as read_err:
+                            print(f"Error reading file: {read_err}")
+                            # Try alternative approaches
+                            if hasattr(file_obj, 'file') and hasattr(file_obj.file, 'read'):
+                                print("Trying nested file.read()")
+                                content = file_obj.file.read()
+                                temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                            elif hasattr(file_obj, 'name') or isinstance(file_obj, dict) and 'name' in file_obj:
+                                # Try to open the file by name
+                                filename = getattr(file_obj, 'name', None) or file_obj.get('name')
+                                print(f"Opening file by name: {filename}")
+                                with open(filename, 'rb') as src:
+                                    temp.write(src.read())
+                            else:
+                                raise ValueError("Could not read file content")
+                    elif isinstance(file_obj, dict) and 'name' in file_obj:
+                        print(f"File is dictionary with name: {file_obj['name']}")
+                        if 'content' in file_obj:
+                            # Some APIs provide content directly
+                            content = file_obj['content']
+                            temp.write(content if isinstance(content, bytes) else content.encode('utf-8'))
+                        else:
+                            # Try to open the file by name
+                            with open(file_obj['name'], 'rb') as src:
+                                temp.write(src.read())
+                    elif hasattr(file_obj, 'filepath') and file_obj.filepath:
+                        # Handle the case where filepath is provided
+                        print(f"Using filepath attribute: {file_obj.filepath}")
+                        with open(file_obj.filepath, 'rb') as src:
+                            temp.write(src.read())
+                    else:
+                        # Try to extract information about the file
+                        filepath = None
+                        for attr_name in ['filepath', 'path', 'filename', 'name', 'orig_name']:
+                            if hasattr(file_obj, attr_name):
+                                filepath = getattr(file_obj, attr_name)
+                                if filepath:
+                                    print(f"Found path from attribute {attr_name}: {filepath}")
+                                    break
+                                    
+                        if filepath:
+                            # Read content from the filepath
+                            with open(filepath, 'rb') as src:
+                                temp.write(src.read())
+                        else:
+                            # Last resort - try to serialize the object itself
+                            temp.write(str(file_obj).encode('utf-8'))
+                            print("Warning: Could not extract file content properly")
+                            
+                    temp_path = temp.name
+                    print(f"Created temporary file: {temp_path}")
+                
+                # Extract text from DOCX
+                try:
+                    print(f"Opening DOCX with python-docx: {temp_path}")
+                    doc = docx.Document(temp_path)
+                    text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+                    print(f"Successfully extracted text from DOCX: {len(text)} chars")
+                    
+                    # Store text for script generation
+                    document_text = text
+                    
+                    # Analyze the document content if text was extracted successfully
+                    try:
+                        document_analysis = ensure_analyze_function(text)
+                        if isinstance(document_analysis, dict) and "error" in document_analysis:
+                            print(f"Warning: Document analysis error: {document_analysis['error']}")
+                    except Exception as e:
+                        print(f"Error during document analysis: {e}")
+                        document_analysis = None
+                    
+                    return text, None
+                except Exception as docx_error:
+                    error_msg = f"Error processing DOCX: {str(docx_error)}"
+                    print(error_msg)
+                    return None, error_msg
+            except Exception as e:
+                error_msg = f"Error preparing DOCX file: {str(e)}"
+                print(error_msg)
+                return None, error_msg
+            finally:
+                # Clean up temp file
+                if temp_path and os.path.exists(temp_path):
+                    try:
+                        os.unlink(temp_path)
+                        print(f"Cleaned up temporary file: {temp_path}")
+                    except Exception as clean_error:
+                        print(f"Error cleaning up temporary file: {clean_error}")
+                        pass
+        else:
+            return None, f"Unsupported file type: {ext}"
+            
+    except Exception as e:
+        return None, f"Error processing file: {str(e)}"
+
+def count_tokens(text):
+    """Count tokens in text using tiktoken"""
+    try:
+        encoding = tiktoken.get_encoding("cl100k_base")
+        return len(encoding.encode(text))
+    except Exception as e:
+        print(f"Error counting tokens: {e}")
+        # Fallback: estimate ~4 chars per token
+        return len(text) // 4
+
+def process_uploaded_document(file_obj):
+    """Process uploaded document, count tokens, and return warning if needed"""
+    global document_text, document_analysis
+    
+    if not file_obj:
+        return gr.update(visible=False)
+    
+    print(f"Processing uploaded document: {type(file_obj)}")
+    
+    # Extract text from file
+    try:
+        text, error = extract_text_from_file(file_obj)
+        print(f"Extracted text: {type(text)}, error: {error}")
+    except Exception as e:
+        print(f"Error in extract_text_from_file: {e}")
+        return gr.update(visible=True, value=f"⚠️ **Error:** Error extracting text: {str(e)}")
+    
+    if error:
+        return gr.update(visible=True, value=f"⚠️ **Error:** {error}")
+        
+    if not text:
+        return gr.update(visible=False)
+        
+    # Count tokens
+    try:
+        token_count = count_tokens(text)
+        word_count = len(text.split())
+        print(f"Token count: {token_count}, word count: {word_count}")
+    except Exception as e:
+        print(f"Error counting tokens: {e}")
+        return gr.update(visible=True, value=f"⚠️ **Error:** Error counting tokens: {str(e)}")
+    
+    # Check if file exceeds token limit
+    TOKEN_LIMIT = 75000
+    if token_count > TOKEN_LIMIT:
+        warning = (
+            f"⚠️ **Warning:** File size exceeds recommended limit of {TOKEN_LIMIT:,} tokens. "
+            f"Current size: {token_count:,} tokens / {word_count:,} words. "
+            "Processing may be slow or incomplete."
+        )
+        return gr.update(visible=True, value=warning)
+    
+    # File is within limits
+    info = f"📊 **File Statistics:** {token_count:,} tokens / {word_count:,} words"
+    return gr.update(visible=True, value=info)
+
+def process_web_url(url, use_alt_methods=False):
+    """Process web URL and extract content"""
+    global web_url_content
+    
+    if not url or not url.strip():
+        return gr.update(visible=False), gr.update(visible=False)
+        
+    # Basic URL validation
+    if not url.startswith(('http://', 'https://')):
+        return gr.update(visible=True, value="⚠️ **Error:** URL must start with http:// or https://"), gr.update(visible=False)
+    
+    # Check for required packages
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+    except ImportError:
+        return gr.update(visible=True, value="⚠️ **Error:** Missing required packages. Please install with: pip install requests beautifulsoup4 lxml"), gr.update(visible=False)
+        
+    try:
+        # Extract content from URL (we'll need to modify extract_web_content to accept a use_alt_methods parameter)
+        if use_alt_methods:
+            # Use more headers, aggressive methods, and a longer timeout
+            # We're simulating this here, but ideally you would add this parameter to the extract_web_content function
+            print(f"Using alternative methods to process URL: {url}")
+            content, error = extract_web_content(url)  # The updated function already uses alternative methods
+        else:
+            content, error = extract_web_content(url)
+        
+        if error:
+            # Show the alternative methods button if we get an error, especially 403
+            if "403" in error:
+                return gr.update(visible=True, value=f"⚠️ **Error:** {error}\n\nTry the 'Alternative Methods' button which uses different techniques."), gr.update(visible=True)
+            return gr.update(visible=True, value=f"⚠️ **Error:** {error}"), gr.update(visible=True)
+            
+        if not content:
+            return gr.update(visible=True, value="⚠️ **Error:** No content extracted from URL"), gr.update(visible=True)
+            
+        # Store content for script generation
+        web_url_content = content
+        
+        # Count tokens and words
+        token_count = count_tokens(content)
+        word_count = len(content.split())
+        
+        # Check if content exceeds token limit
+        TOKEN_LIMIT = 75000
+        if token_count > TOKEN_LIMIT:
+            warning = (
+                f"⚠️ **Warning:** Web content exceeds recommended limit of {TOKEN_LIMIT:,} tokens. "
+                f"Current size: {token_count:,} tokens / {word_count:,} words. "
+                "Content will be truncated for processing."
+            )
+            return gr.update(visible=True, value=warning), gr.update(visible=False)
+        
+        # Content is within limits
+        info = f"✅ **Success:** {token_count:,} tokens / {word_count:,} words extracted from website"
+        return gr.update(visible=True, value=info), gr.update(visible=False)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return gr.update(visible=True, value=f"⚠️ **Error:** Could not process URL: {str(e)}"), gr.update(visible=True)
+
+def process_youtube_url(url, yt_action="Use as style reference"):
+    """Process a YouTube URL and get its transcript"""
+    global youtube_transcript  # Use global variable to store transcript
+    
+    if not url or not url.strip():
+        return None, gr.update(visible=True, value="Please enter a valid YouTube URL")
+        
+    try:
+        # Import the content analyzer
+        from ..components.content_analyzer import analyze_youtube_url
+        
+        # Extract transcript using the content analyzer
+        result = analyze_youtube_url(url)
+        
+        if "error" in result:
+            return None, gr.update(visible=True, value=f"⚠️ Error: {result['error']}")
+            
+        # Get the transcript
+        transcript = result.get("transcript", "")
+        if not transcript:
+            return None, gr.update(visible=True, value="⚠️ No transcript content could be extracted.")
+        
+        # Calculate word count and token count
+        word_count = len(transcript.split())
+        try:
+            # Try to use the count_tokens function
+            token_count = count_tokens(transcript)
+        except Exception as e:
+            # Fallback to estimate if count_tokens fails
+            token_count = len(transcript) // 4  # Rough estimate
+            print(f"Error counting tokens: {e}, using estimate")
+        
+        # Store the transcript in global variable for reference but don't display it
+        youtube_transcript = transcript
+        video_id = result.get("video_id", "")
+        video_url = result.get("url", url)
+        
+        # Format based on requested action - but don't return for prompt field
+        if yt_action == "Use transcript as content":
+            # Store as content reference with full transcript
+            youtube_transcript = transcript
+            return None, gr.update(visible=True, value=f"✅ Successfully extracted transcript: {token_count:,} tokens / {word_count:,} words. The transcript content will be used as a reference for script generation but won't be displayed in the prompt field. You can now enter what your script is about.")
+        else:
+            # Store as style reference
+            youtube_transcript = transcript
+            return None, gr.update(visible=True, value=f"✅ Successfully extracted transcript: {token_count:,} tokens / {word_count:,} words. The transcript will influence the writing style of your script but won't be displayed. You can now enter what your script is about.")
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return None, gr.update(visible=True, value=f"⚠️ Error processing YouTube URL: {str(e)}")
+
+def create_script(prompt, subject, length, audience, tone, template="General", context="", reference_type="None"):
+    """Generate a script using the best available LLM"""
     try:
         if not prompt or not prompt.strip():
             return "Please provide a prompt for script generation.", None
         
-        # Initialize reference content
-        reference_context = ""
+        # Combine context with reference content if available
+        combined_context = context
         
-        # Process different reference types
-        if reference_type == "Document Upload" and uploaded_file is not None:
-            try:
-                # Read document content
-                with open(uploaded_file.name, 'r', encoding='utf-8') as f:
-                    document_content = f.read()
-                reference_context = f"\n\n--- Document Context ---\n{document_content}\n--- End Document Context ---"
-            except Exception as e:
-                print(f"Error reading uploaded file: {e}")
+        # Add reference content based on type
+        global document_text, document_analysis, web_url_content, youtube_transcript
         
-        elif reference_type == "Web URL Reference" and web_url and web_url.strip():
-            try:
-                # Extract content from the provided URL
-                print(f"Extracting content from URL: {web_url}")
-                extracted_data = extract_content_from_url(web_url)
-                
-                if extracted_data['success']:
-                    # Format the extracted content for the LLM
-                    formatted_content = format_web_content_for_llm(extracted_data)
-                    reference_context = f"\n\n--- Web Content Reference ---\nURL: {web_url}\n\n{formatted_content}\n--- End Web Content Reference ---"
+        print(f"Reference type: {reference_type}")
+        print(f"document_text type: {type(document_text)}")
+        # Make sure document_analysis is a dictionary or None before proceeding
+        if document_analysis is not None and not isinstance(document_analysis, dict):
+            print(f"Warning: document_analysis is not a dictionary: {type(document_analysis)}")
+            print(f"Resetting document_analysis to None")
+            document_analysis = None
+        print(f"document_analysis type: {type(document_analysis)}")
+        
+        if reference_type == "Document Upload":
+            if document_text is None:
+                print("Warning: Document Upload selected but document_text is None")
+                combined_context += "\n\nNote: No document content was available for analysis."
+            else:
+                print(f"Using document_text (length: {len(document_text)})")
+                # Use document analysis if available, otherwise use the raw text
+                if document_analysis is not None and isinstance(document_analysis, dict):
+                    try:
+                        print(f"Using document_analysis: {list(document_analysis.keys()) if document_analysis else None}")
+                        # Format the document analysis into a structured context
+                        doc_context = "Document Analysis:\n"
+                        if "summary" in document_analysis:
+                            doc_context += f"Summary: {document_analysis['summary']}\n\n"
+                        if "key_topics" in document_analysis and isinstance(document_analysis["key_topics"], list) and document_analysis['key_topics']:
+                            doc_context += f"Key Topics: {', '.join(document_analysis['key_topics'])}\n\n"
+                        if "structure_outline" in document_analysis and isinstance(document_analysis["structure_outline"], list) and document_analysis['structure_outline']:
+                            doc_context += f"Structure: {', '.join(document_analysis['structure_outline'])}\n\n"
+                        if "extracted_keywords" in document_analysis and isinstance(document_analysis["extracted_keywords"], list) and document_analysis['extracted_keywords']:
+                            doc_context += f"Key Terms: {', '.join(document_analysis['extracted_keywords'])}\n\n"
+                        
+                        # Append to existing context
+                        if combined_context:
+                            combined_context += "\n\n" + doc_context
+                        else:
+                            combined_context = doc_context
+                    except Exception as e:
+                        print(f"Error processing document analysis: {e}")
+                        # Fall back to using raw text
+                        MAX_CHARS = 10000  # Reasonable limit for context
+                        # Make sure document_text is not None
+                        if document_text is None:
+                            doc_text = "No document content available."
+                        else:
+                            doc_text = document_text[:MAX_CHARS]
+                            if len(document_text) > MAX_CHARS:
+                                doc_text += "... [Document truncated due to size]"
+                        
+                        if combined_context:
+                            combined_context += "\n\n" + "Document Content:\n" + doc_text
+                        else:
+                            combined_context = "Document Content:\n" + doc_text
                 else:
-                    print(f"Failed to extract web content: {extracted_data['error']}")
-                    reference_context = f"\n\n--- Web Reference ---\nURL: {web_url}\nNote: Could not extract content from this URL (Error: {extracted_data['error']})\n--- End Web Reference ---"
-            except Exception as e:
-                print(f"Error processing web URL: {e}")
-                reference_context = f"\n\n--- Web Reference ---\nURL: {web_url}\nNote: Error occurred while processing this URL\n--- End Web Reference ---"
-            
-        elif reference_type == "YouTube Link Reference" and youtube_url and youtube_url.strip():
-            try:
-                # Extract video ID from YouTube URL
-                print(f"Processing YouTube URL: {youtube_url}")
-                video_id = extract_video_id(youtube_url)
-                
-                if video_id:
-                    # Get transcript from YouTube
-                    transcript_data = get_transcript(video_id)
-                    
-                    if transcript_data['success']:
-                        # Format transcript for the LLM
-                        formatted_transcript = format_youtube_transcript_for_llm(video_id, transcript_data)
-                        reference_context = f"\n\n--- YouTube Transcript Reference ---\n{formatted_transcript}\n--- End YouTube Transcript Reference ---"
+                    # Use the raw document text (truncated if very large)
+                    MAX_CHARS = 10000  # Reasonable limit for context
+                    # Make sure document_text is not None
+                    if document_text is None:
+                        doc_text = "No document content available."
                     else:
-                        print(f"Failed to get YouTube transcript: {transcript_data['error']}")
-                        reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Could not extract transcript from this video (Error: {transcript_data['error']})\n--- End YouTube Reference ---"
-                else:
-                    print(f"Failed to extract video ID from URL: {youtube_url}")
-                    reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Could not extract video ID from this URL\n--- End YouTube Reference ---"
-            except Exception as e:
-                print(f"Error processing YouTube URL: {e}")
-                reference_context = f"\n\n--- YouTube Reference ---\nURL: {youtube_url}\nNote: Error occurred while processing this URL\n--- End YouTube Reference ---"
+                        doc_text = document_text[:MAX_CHARS]
+                        if len(document_text) > MAX_CHARS:
+                            doc_text += "... [Document truncated due to size]"
+                    
+                    if combined_context:
+                        combined_context += "\n\n" + "Document Content:\n" + doc_text
+                    else:
+                        combined_context = "Document Content:\n" + doc_text
         
-        # Combine all context sources
-        combined_context = context + reference_context
+        elif reference_type == "Web URL Reference" and web_url_content:
+            # Add web URL content to context
+            if combined_context:
+                combined_context += "\n\n" + "Web Content:\n" + web_url_content
+            else:
+                combined_context = "Web Content:\n" + web_url_content
+                
+        elif reference_type == "YouTube Link Reference" and youtube_transcript:
+            # Add YouTube transcript to context
+            if combined_context:
+                combined_context += "\n\n" + "Video Transcript:\n" + youtube_transcript
+            else:
+                combined_context = "Video Transcript:\n" + youtube_transcript
         
         # Generate the script using the primary function (which handles fallbacks)
         result = generate_script(
@@ -77,7 +865,7 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
             audience=audience, 
             tone=tone,
             template=template,
-            context=combined_context # Pass the combined context
+            context=combined_context
         )
         
         # Handle the new dict return format
@@ -113,55 +901,6 @@ def create_script(prompt, subject, length, audience, tone, template="General", c
     except Exception as e:
         return f"Error generating script: {str(e)}", None
 
-# --- Helper function for document size check ---
-def check_document_size(file_obj):
-    """Checks the token count of the uploaded file and returns a warning update."""
-    TOKEN_LIMIT_THRESHOLD = 75000  # Example threshold
-    WARNING_MESSAGE = f"""⚠️ **Large Document Warning**
-
-This document contains more than {TOKEN_LIMIT_THRESHOLD:,} tokens (approximately {TOKEN_LIMIT_THRESHOLD//1.5:,.0f} words).
-
-Processing may take longer and could incur higher costs. The document might be truncated during processing for optimal results."""
-    
-    if file_obj is None:
-        # No file uploaded or file cleared
-        return gr.update(value="", visible=False)
-
-    try:
-        # Initialize tiktoken encoder (cl100k_base is common for OpenAI/Anthropic)
-        encoding = tiktoken.get_encoding("cl100k_base")
-        
-        with open(file_obj.name, 'r', encoding='utf-8') as f:
-            content = f.read()
-            
-        token_count = len(encoding.encode(content))
-        print(f"Uploaded document token count: {token_count}") # Log the count
-        
-        if token_count > TOKEN_LIMIT_THRESHOLD:
-            # For very large documents, add extra warning
-            if token_count > TOKEN_LIMIT_THRESHOLD * 2:
-                WARNING_MESSAGE += "\n\n**VERY LARGE DOCUMENT:** This document is extremely large and will likely be truncated significantly."
-            
-            return gr.update(value=WARNING_MESSAGE, visible=True)
-        else:
-            # Show token count for smaller documents too
-            return gr.update(
-                value=f"✓ Document size: {token_count:,} tokens (approximately {token_count//1.5:,.0f} words)",
-                visible=True
-            )
-            
-    except FileNotFoundError:
-         print(f"Error: Temporary file not found: {file_obj.name}")
-         return gr.update(value="Error reading file.", visible=True) # Show error
-    except tiktoken.RegistryError:
-         print("Error: Tiktoken encoding 'cl100k_base' not found. Make sure tiktoken is installed correctly.")
-         # Cannot check size, return no warning
-         return gr.update(value="", visible=False) 
-    except Exception as e:
-        print(f"Error checking document size: {e}")
-        # Return a generic error or no warning
-        return gr.update(value="Error processing file.", visible=True)
-
 def create_script_generator_tab():
     with gr.TabItem("Generate Script"):
         with gr.Row():
@@ -181,132 +920,100 @@ def create_script_generator_tab():
                     info="Select an industry-specific template to guide script generation"
                 )
                 
-                # Context Reference Input section with radio buttons
-                gr.Markdown("### Context / Reference Input", elem_classes=["section-header"])
-                reference_type = gr.Radio(
-                    label="Input Type",
-                    choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
-                    value="None"
-                )
-                
-                # Document Upload - Conditionally visible
-                with gr.Column(visible=False) as doc_upload_group:
-                    # Move the existing document upload component here
-                    doc_size_warning = gr.Markdown(visible=False, value="", elem_classes=["warning-text"])
+                # Reference Input Section
+                with gr.Group():
+                    gr.Markdown("### Context / Reference Input")
                     
-                    # Create a horizontal layout with upload area and info side by side
-                    with gr.Row(elem_classes=["upload-info-container"]):
-                        # Left side: Upload area (smaller width)
-                        with gr.Column(scale=1, elem_classes=["upload-area-column"]):
-                            document_upload = gr.File(
-                                label="Upload Document (Optional)",
-                                file_count="single",
-                                file_types=[".txt", ".md", ".pdf", ".docx"] # Add more as needed
-                            )
+                    # Reference Type Selector
+                    reference_type = gr.Radio(
+                        label="Input Type",
+                        choices=["None", "Document Upload", "Web URL Reference", "YouTube Link Reference"],
+                        value="None"
+                    )
+                    
+                    # Display document upload area when 'Document Upload' is selected
+                    with gr.Column(visible=False, elem_id="document_upload_section") as document_upload_section:
+                        with gr.Column(elem_classes="doc-upload-wrapper"):
+                            with gr.Row():
+                                with gr.Column(): # Left column: File upload
+                                    file_upload = gr.File(
+                                        label="Upload Document (Optional)",
+                                        file_types=[".txt", ".md", ".pdf", ".docx"],
+                                        elem_classes=["file-upload-container"]
+                                    )
+                                
+                                with gr.Column(elem_classes=["file-info-container"]): # Right-side container
+                                    # Combined Supported File Types and Token Limit in one HTML component
+                                    gr.HTML("""
+                                        <div class="supported-file-types">
+                                            <h3 class="file-type-title">Supported File Types</h3>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> Text files (.txt)</div>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> Markdown files (.md)</div>
+                                            <div class="file-type-item"><span class="check-mark">✓</span> PDF documents (.pdf)</div>
+                                            <div class="file-type-item file-type-item-last"><span class="check-mark">✓</span> Word documents (.docx)</div>
+                                            <h4 class="file-size-limit-title-text">File Size Limit</h4>
+                                            <p class="token-limit-text">75,000 Tokens = 60,000 Words</p> 
+                                        </div>
+                                    """)
+                    
+                    # Web URL Input
+                    with gr.Column(visible=False) as url_input_group:
+                        url_reference_input = gr.Textbox(
+                            label="Web URL Reference",
+                            placeholder="Enter the full URL (e.g., https://www.example.com/article)"
+                        )
+                        # Add a placeholder for the web URL warning/info message
+                        web_url_warning = gr.Markdown(visible=False, elem_classes=["warning-text"])
                         
-                        # Right side: File information
-                        with gr.Column(scale=1, elem_classes=["file-info-column"]):
-                            gr.Markdown("""
-                            <div class="file-info-panel">
-                                <div class="file-type-section">
-                                    <h4>Supported File Types</h4>
-                                    <div class="file-types">
-                                        <p><span class="checkmark selected">✓</span>Text files (.txt)</p>
-                                        <p><span class="checkmark selected">✓</span>Markdown files (.md)</p>
-                                        <p><span class="checkmark selected">✓</span>PDF documents (.pdf)</p>
-                                        <p><span class="checkmark selected">✓</span>Word documents (.docx)</p>
-                                    </div>
-                                </div>
-                                <div class="file-size-section">
-                                    <h4>File Size Limit</h4>
-                                    <p>75,000 Tokens = 60,000 Words</p>
-                                </div>
-                            </div>
-                            """, elem_classes=["side-by-side-info"])
+                        # Add a button for explicit URL processing
+                        with gr.Row():
+                            process_url_btn = gr.Button("Process URL", elem_classes=["secondary-button"])
+                            
+                            # Add a new button for alternative processing methods
+                            process_url_alt_btn = gr.Button("Try Alternative Methods", visible=False, elem_classes=["secondary-button", "alt-method-btn"])
                     
-                    # Connect file upload to document size warning
-                    document_upload.change(
-                        fn=check_document_size,
-                        inputs=[document_upload],
-                        outputs=[doc_size_warning]
-                    )
-                
-                # Web URL Reference - Conditionally visible
-                with gr.Column(visible=False) as web_url_group:
-                    web_url_input = gr.Textbox(
-                        label="Web URL Reference",
-                        placeholder="Enter the full website URL (e.g., https://example.com/article)",
-                        info="Add a link to a web page to use as context for script generation"
-                    )
-                    web_url_status = gr.Markdown(visible=False, value="", elem_classes=["info-text"])
-                    
-                    # Add note about content extraction
-                    gr.Markdown("""
-                    <div class="url-note">
-                    <p>When you generate a script, the content from this URL will be automatically extracted 
-                    and used as context. For best results, use article pages with clear, relevant content.</p>
-                    </div>
-                    """, elem_classes=["url-extraction-note"])
-                
-                # YouTube Link Reference - Conditionally visible
-                with gr.Column(visible=False) as youtube_group:
-                    youtube_url_input = gr.Textbox(
-                        label="YouTube Link Reference",
-                        placeholder="Enter the full YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)",
-                        info="Add a YouTube video link to use its transcript as context for script generation"
-                    )
-                    youtube_url_status = gr.Markdown(visible=False, value="", elem_classes=["info-text"])
-                    
-                    # Add note about transcript extraction
-                    gr.Markdown("""
-                    <div class="youtube-note">
-                    <p>When you generate a script, the transcript from this YouTube video will be automatically extracted 
-                    and used as context. Only videos with transcripts/captions can be used.</p>
-                    </div>
-                    """, elem_classes=["youtube-extraction-note"])
-                
-                # Function to show/hide reference input based on selection
-                def update_reference_visibility(choice):
-                    if choice == "None":
-                        return {
-                            doc_upload_group: gr.update(visible=False),
-                            web_url_group: gr.update(visible=False),
-                            youtube_group: gr.update(visible=False)
-                        }
-                    elif choice == "Document Upload":
-                        return {
-                            doc_upload_group: gr.update(visible=True),
-                            web_url_group: gr.update(visible=False),
-                            youtube_group: gr.update(visible=False)
-                        }
-                    elif choice == "Web URL Reference":
-                        return {
-                            doc_upload_group: gr.update(visible=False),
-                            web_url_group: gr.update(visible=True),
-                            youtube_group: gr.update(visible=False)
-                        }
-                    elif choice == "YouTube Link Reference":
-                        return {
-                            doc_upload_group: gr.update(visible=False),
-                            web_url_group: gr.update(visible=False),
-                            youtube_group: gr.update(visible=True)
-                        }
-                
-                # Connect the radio buttons to the visibility function
-                reference_type.change(
-                    fn=update_reference_visibility,
-                    inputs=[reference_type],
-                    outputs=[doc_upload_group, web_url_group, youtube_group]
-                )
+                    # YouTube Link Input
+                    with gr.Column(visible=False) as youtube_input_group:
+                        youtube_reference_input = gr.Textbox(
+                            label="YouTube Link Reference",
+                            placeholder="Enter the full YouTube video URL"
+                        )
+                        # Add a placeholder for the YouTube warning/info message
+                        youtube_warning = gr.Markdown(visible=False, elem_classes=["warning-text"])
+                        
+                        # Add buttons for YouTube processing
+                        with gr.Row():
+                            process_youtube_btn = gr.Button("Use as Style Reference", elem_classes=["secondary-button"])
+                            process_youtube_alt_btn = gr.Button("Use as Content Source", visible=True, elem_classes=["secondary-button", "alt-method-btn"])
                 
                 prompt_input = gr.Textbox(
                     label="What is your script about?",
                     placeholder="E.g., Create a script about the importance of sustainability",
                     lines=3
                 )
+                
                 subject_input = gr.Textbox(
                     label="Subject",
                     placeholder="E.g., Environmental Science, Sustainable Practices, Conservation",
+                )
+                
+                # Reference Type change handler - define after all components exist
+                def update_reference_visibility(choice):
+                    """Update visibility of reference input components and store the current selection"""
+                    if choice == "Document Upload":
+                        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), choice
+                    elif choice == "Web URL Reference":
+                        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), choice
+                    elif choice == "YouTube Link Reference":
+                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True), choice
+                    else:  # "None"
+                        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), "None"
+                
+                # Connect the radio buttons to the visibility function
+                reference_type.change(
+                    fn=update_reference_visibility,
+                    inputs=[reference_type],
+                    outputs=[document_upload_section, url_input_group, youtube_input_group, reference_type]
                 )
                 
                 # Add context manager
@@ -382,22 +1089,6 @@ def create_script_generator_tab():
                 
         # Connect the generate button to the create_script function
         generate_btn.click(
-            fn=lambda url, ref_type: gr.update(
-                value="⏳ Extracting content from URL..." if ref_type == "Web URL Reference" and url else "",
-                visible=ref_type == "Web URL Reference" and bool(url),
-                elem_classes=["info-text"]
-            ),
-            inputs=[web_url_input, reference_type],
-            outputs=[web_url_status]
-        ).then(
-            fn=lambda url, ref_type: gr.update(
-                value="⏳ Extracting transcript from YouTube..." if ref_type == "YouTube Link Reference" and url else "",
-                visible=ref_type == "YouTube Link Reference" and bool(url),
-                elem_classes=["info-text"]
-            ),
-            inputs=[youtube_url_input, reference_type],
-            outputs=[youtube_url_status]
-        ).then(
             fn=create_script,
             inputs=[
                 prompt_input, 
@@ -407,80 +1098,9 @@ def create_script_generator_tab():
                 tone_input,
                 template_selector,
                 context_input,
-                document_upload,
-                web_url_input,
-                youtube_url_input,
-                reference_type
+                reference_type  # Add reference_type as input
             ],
             outputs=[script_output, script_file_output]
-        )
-        
-        # Add a URL validation check
-        def validate_url(url, ref_type):
-            if ref_type != "Web URL Reference" or not url:
-                return gr.update(visible=False)
-            
-            if is_valid_url(url):
-                return gr.update(value="✓ Valid URL format. Content will be extracted when you generate the script.", 
-                               visible=True,
-                               elem_classes=["success-text"])
-            else:
-                return gr.update(value="⚠️ Invalid URL format. Please enter a complete URL including http:// or https://", 
-                               visible=True,
-                               elem_classes=["warning-text"])
-        
-        # Validate URL when entered
-        web_url_input.change(
-            fn=validate_url,
-            inputs=[web_url_input, reference_type],
-            outputs=[web_url_status]
-        )
-        
-        # Update URL validation status when reference type changes
-        reference_type.change(
-            fn=lambda url, ref_type: validate_url(url, ref_type) if ref_type == "Web URL Reference" and url else gr.update(visible=False),
-            inputs=[web_url_input, reference_type],
-            outputs=[web_url_status],
-            queue=False
-        )
-        
-        # Add a YouTube URL validation check
-        def validate_youtube_url(url, ref_type):
-            if ref_type != "YouTube Link Reference" or not url:
-                return gr.update(visible=False)
-            
-            from app.utils.youtube_utils import extract_video_id
-            video_id = extract_video_id(url)
-            
-            if video_id:
-                return gr.update(value="✓ Valid YouTube URL format. Transcript will be extracted when you generate the script.", 
-                               visible=True,
-                               elem_classes=["success-text"])
-            else:
-                return gr.update(value="⚠️ Invalid YouTube URL format. Please enter a complete YouTube video URL.", 
-                               visible=True,
-                               elem_classes=["warning-text"])
-        
-        # Validate YouTube URL when entered
-        youtube_url_input.change(
-            fn=validate_youtube_url,
-            inputs=[youtube_url_input, reference_type],
-            outputs=[youtube_url_status]
-        )
-        
-        # Update YouTube validation status when reference type changes
-        reference_type.change(
-            fn=lambda url, ref_type: validate_youtube_url(url, ref_type) if ref_type == "YouTube Link Reference" and url else gr.update(visible=False),
-            inputs=[youtube_url_input, reference_type],
-            outputs=[youtube_url_status],
-            queue=False
-        )
-        
-        # Update reference visibility
-        reference_type.change(
-            fn=update_reference_visibility,
-            inputs=[reference_type],
-            outputs=[doc_upload_group, web_url_group, youtube_group]
         )
         
         # Display template-specific guidance when template is selected
@@ -488,8 +1108,8 @@ def create_script_generator_tab():
             if template == "Music Lesson":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain chord progressions for beginners",
-                        info="Focus on educational content about music theory, instrument techniques, or practice methods"
+                    placeholder="E.g., Explain chord progressions for beginners",
+                    info="Focus on educational content about music theory, instrument techniques, or practice methods"
                     ),
                     gr.update(
                         placeholder="E.g., Music Theory, Piano Technique, Jazz Improvisation"
@@ -529,8 +1149,8 @@ def create_script_generator_tab():
             elif template == "Corporate Training":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain effective communication strategies for team leaders",
-                        info="Focus on professional development, soft skills, or company procedures"
+                    placeholder="E.g., Explain effective communication strategies for team leaders",
+                    info="Focus on professional development, soft skills, or company procedures"
                     ),
                     gr.update(
                         placeholder="E.g., Leadership, Team Management, Communication Skills"
@@ -568,8 +1188,8 @@ def create_script_generator_tab():
             elif template == "Marketing":
                 return [
                     gr.update(
-                        placeholder="E.g., Create a script highlighting our product's key features",
-                        info="Focus on benefits, features, customer needs, and call-to-action elements"
+                    placeholder="E.g., Create a script highlighting our product's key features",
+                    info="Focus on benefits, features, customer needs, and call-to-action elements"
                     ),
                     gr.update(
                         placeholder="E.g., Product Launch, Brand Awareness, Customer Testimonial"
@@ -608,8 +1228,8 @@ def create_script_generator_tab():
             elif template == "General Education":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
-                        info="Focus on clear explanations of educational concepts for learning purposes"
+                    placeholder="E.g., Explain photosynthesis in a way that's easy to understand",
+                    info="Focus on clear explanations of educational concepts for learning purposes"
                     ),
                     gr.update(
                         placeholder="E.g., Biology, Chemistry, Physics, History, Mathematics"
@@ -647,8 +1267,8 @@ def create_script_generator_tab():
             elif template == "Technical Tutorial":
                 return [
                     gr.update(
-                        placeholder="E.g., Explain how to set up a development environment for Python",
-                        info="Focus on step-by-step instructions, technical details, and best practices"
+                    placeholder="E.g., Explain how to set up a development environment for Python",
+                    info="Focus on step-by-step instructions, technical details, and best practices"
                     ),
                     gr.update(
                         placeholder="E.g., Software Development, Data Analysis, System Administration"
@@ -685,8 +1305,8 @@ def create_script_generator_tab():
             else:  # General
                 return [
                     gr.update(
-                        placeholder="E.g., Create a script about the importance of sustainability",
-                        info="General purpose script without industry-specific formatting"
+                    placeholder="E.g., Create a script about the importance of sustainability",
+                    info="General purpose script without industry-specific formatting"
                     ),
                     gr.update(
                         placeholder="E.g., Environmental Science, Sustainable Practices, Conservation"
@@ -729,6 +1349,99 @@ def create_script_generator_tab():
             fn=update_template_fields,
             inputs=[template_selector],
             outputs=[prompt_input, subject_input, context_input, guide_markdown]
+        )
+        
+        # Add event handlers for document upload, web URL, and YouTube URL
+        file_upload.change(
+            fn=process_uploaded_document,
+            inputs=[file_upload],
+            outputs=[document_upload_section]
+        )
+        
+        # Add event handler for web URL input that works on both change and submit
+        url_reference_input.change(
+            fn=process_web_url,
+            inputs=[url_reference_input],
+            outputs=[web_url_warning, process_url_alt_btn]
+        )
+        
+        # Process URL button
+        process_url_btn.click(
+            fn=process_web_url,
+            inputs=[url_reference_input],
+            outputs=[web_url_warning, process_url_alt_btn]
+        )
+
+        # Add handler for the alternative methods button
+        process_url_alt_btn.click(
+            fn=lambda url: process_web_url(url, use_alt_methods=True),
+            inputs=[url_reference_input],
+            outputs=[web_url_warning, process_url_alt_btn]
+        )
+        
+        # Add event handler for YouTube URL input
+        youtube_reference_input.change(
+            fn=lambda url: process_youtube_url(url, "Use as style reference"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        # Process YouTube button with style reference option
+        process_youtube_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use as style reference"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        # Add handler for the alternative methods button for YouTube with content option
+        process_youtube_alt_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use transcript as content"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        return script_output, script_file_output         # Process YouTube button with style reference option
+        process_youtube_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use as style reference"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        # Add handler for the alternative methods button for YouTube with content option
+        process_youtube_alt_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use transcript as content"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        return script_output, script_file_output 
+        # Process YouTube button with style reference option
+        process_youtube_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use as style reference"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        # Add handler for the alternative methods button for YouTube with content option
+        process_youtube_alt_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use transcript as content"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        return script_output, script_file_output 
+        # Process YouTube button with style reference option
+        process_youtube_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use as style reference"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
+        )
+        
+        # Add handler for the alternative methods button for YouTube with content option
+        process_youtube_alt_btn.click(
+            fn=lambda url: process_youtube_url(url, "Use transcript as content"),
+            inputs=[youtube_reference_input],
+            outputs=[prompt_input, youtube_warning]
         )
         
         return script_output, script_file_output 

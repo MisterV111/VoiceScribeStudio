@@ -119,6 +119,13 @@ def load_voices():
 
 def get_css():
     """Get shared CSS for the application"""
+    # Load our custom CSS file if it exists
+    custom_css = ""
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "styles.css")
+    if os.path.exists(css_path):
+        with open(css_path, "r") as css_file:
+            custom_css = css_file.read()
+            
     return """
     .gradio-container {
         background-color: #f8faff !important;
@@ -177,14 +184,6 @@ def get_css():
     #admin-link-btn {
         margin-left: auto !important;
         display: block !important;
-    }
-    /* Info text styling */
-    .info-text {
-        font-size: 0.85rem !important;
-        color: #6c757d !important; /* Use Gradio's secondary text color */
-        margin-top: -10px !important; /* Adjust spacing relative to the File component */
-        margin-bottom: 10px !important;
-        padding-left: 1px !important; /* Align with other component labels */
     }
     /* Remove test suite button styling as it's defined inline now */
     button.primary {
@@ -323,133 +322,6 @@ def get_css():
         color: white !important;
     }
     
-    /* Humanize feature styling */
-    .humanize-container {
-        background-color: white !important;
-        border-radius: 10px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-        padding: 20px !important;
-        margin-bottom: 20px !important;
-    }
-    
-    .humanize-explainer {
-        background-color: #f8f9ff !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-        margin-bottom: 20px !important;
-        border-left: 4px solid #5e166a !important;
-    }
-    
-    .humanize-explainer h4 {
-        color: #5e166a !important;
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-        font-weight: 600 !important;
-    }
-    
-    .humanize-explainer p {
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .humanize-explainer ul {
-        margin-bottom: 0 !important;
-        padding-left: 20px !important;
-    }
-    
-    .humanize-explainer li {
-        margin-bottom: 5px !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .humanize-preview {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 20px !important;
-        margin-bottom: 0 !important;
-    }
-    
-    .humanize-original, .humanize-transformed {
-        flex: 1 !important;
-        padding: 15px !important;
-        border-radius: 8px !important;
-        background-color: #f8f9fb !important;
-    }
-    
-    .humanize-original h4, .humanize-transformed h4 {
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-        color: #3b355d !important;
-        font-weight: 600 !important;
-    }
-    
-    .script-content {
-        font-family: 'Roboto Mono', monospace !important;
-        font-size: 0.9rem !important;
-        line-height: 1.5 !important;
-        white-space: pre-wrap !important;
-        max-height: 500px !important;
-        overflow-y: auto !important;
-        padding: 10px !important;
-        background-color: white !important;
-        border-radius: 6px !important;
-        border: 1px solid #e0e4e9 !important;
-    }
-    
-    .humanize-transformed {
-        background-color: #f8f9ff !important;
-        border-left: 4px solid #5e166a !important;
-    }
-    
-    .humanize-pause {
-        background-color: #e5e7ff !important;
-        border-radius: 4px !important;
-        padding: 2px 4px !important;
-        color: #4338ca !important;
-        font-family: monospace !important;
-        font-size: 0.9em !important;
-    }
-    
-    .humanize-emphasis {
-        color: #5e166a !important;
-        font-weight: bold !important;
-    }
-    
-    .humanize-strong-emphasis {
-        color: #5e166a !important;
-        font-weight: bold !important;
-        background-color: rgba(94, 22, 106, 0.1) !important;
-        border-radius: 4px !important;
-        padding: 1px 3px !important;
-    }
-    
-    .humanize-warning {
-        background-color: #fee2e2 !important;
-        color: #b91c1c !important;
-        border-radius: 4px !important;
-        padding: 2px 4px !important;
-        font-family: monospace !important;
-        font-size: 0.9em !important;
-    }
-    
-    .humanize-narration {
-        background-color: #ecfdf5 !important;
-        color: #047857 !important;
-        border-radius: 4px !important;
-        padding: 2px 4px !important;
-        font-style: italic !important;
-    }
-    
-    .humanize-emotion {
-        background-color: #fef3c7 !important;
-        color: #92400e !important;
-        border-radius: 4px !important;
-        padding: 2px 4px !important;
-        font-family: monospace !important;
-        font-size: 0.9em !important;
-    }
-    
     /* Generated audio files styling */
     .generated-formats-container {
         background-color: white !important;
@@ -457,189 +329,6 @@ def get_css():
         margin: 0 !important;
         border-radius: 12px !important;
         overflow: hidden !important;
-    }
-    
-    /* File types info styling */
-    .file-types-info {
-        background-color: #f8f9fb !important;
-        border: 1px solid #e0e4e9 !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-        margin-bottom: 15px !important;
-        font-size: 0.9rem !important;
-    }
-    
-    /* File info box styling for side-by-side layout */
-    .file-info-box {
-        background-color: #f8f9fb !important;
-        border: 1px solid #e0e4e9 !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-        margin: 10px 5px 15px 5px !important;
-        height: 100% !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .file-info-box h3 {
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-        color: #3b355d !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Compact file info styling */
-    .compact-info-row {
-        margin-top: 5px !important;
-        margin-bottom: 5px !important;
-    }
-    
-    .compact-file-info {
-        background-color: #f8f9fb !important;
-        border: 1px solid #e0e4e9 !important;
-        border-radius: 8px !important;
-        padding: 10px !important;
-        margin: 2px !important;
-        font-size: 0.85rem !important;
-    }
-    
-    .compact-file-info h3 {
-        margin-top: 0 !important;
-        margin-bottom: 5px !important;
-        color: #3b355d !important;
-        font-size: 0.95rem !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Ultra-compact file info styling to match example */
-    .file-info-container {
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
-    }
-    
-    .ultra-compact-info {
-        width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    
-    .file-info-wrapper {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        background-color: #f8f9fb !important;
-        border: 1px solid #e0e4e9 !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-    }
-    
-    .file-type-section, .file-limit-section {
-        padding: 0 10px !important;
-    }
-    
-    .file-type-section {
-        flex: 3 !important;
-        border-right: 1px solid #e0e4e9 !important;
-    }
-    
-    .file-limit-section {
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        text-align: center !important;
-    }
-    
-    .file-info-wrapper h4 {
-        margin-top: 0 !important;
-        margin-bottom: 8px !important;
-        color: #3b355d !important;
-        font-size: 0.95rem !important;
-        font-weight: 600 !important;
-    }
-    
-    .file-info-wrapper p {
-        margin: 0 !important;
-        font-size: 0.85rem !important;
-        line-height: 1.4 !important;
-    }
-    
-    .file-types-info h3 {
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-        color: #3b355d !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-    }
-    
-    .file-types-info ul, .file-types-info li {
-        margin-bottom: 5px !important;
-    }
-    
-    .warning-text {
-        background-color: #fff7ed !important;
-        border-left: 4px solid #f59e0b !important;
-        padding: 10px 15px !important;
-        margin-bottom: 15px !important;
-        color: #92400e !important;
-        font-weight: 500 !important;
-    }
-    
-    .success-text {
-        background-color: #ecfdf5 !important;
-        border-left: 4px solid #10b981 !important;
-        padding: 10px 15px !important;
-        margin-bottom: 15px !important;
-        color: #065f46 !important;
-        font-weight: 500 !important;
-    }
-    
-    .info-text {
-        background-color: #f0f9ff !important;
-        border-left: 4px solid #3b82f6 !important;
-        padding: 10px 15px !important;
-        margin-bottom: 15px !important;
-        color: #1e40af !important;
-        font-weight: 500 !important;
-    }
-    
-    .url-extraction-note {
-        margin-top: 5px !important;
-        margin-bottom: 15px !important;
-    }
-    
-    .url-note {
-        padding: 8px 12px !important;
-        background-color: #f8fafc !important;
-        border: 1px dashed #cbd5e1 !important;
-        border-radius: 6px !important;
-    }
-    
-    .url-note p {
-        margin: 0 !important;
-        font-size: 0.85rem !important;
-        color: #475569 !important;
-        line-height: 1.4 !important;
-    }
-    
-    .youtube-extraction-note {
-        margin-top: 5px !important;
-        margin-bottom: 15px !important;
-    }
-    
-    .youtube-note {
-        padding: 8px 12px !important;
-        background-color: #fdf2f8 !important;
-        border: 1px dashed #f472b6 !important;
-        border-radius: 6px !important;
-    }
-    
-    .youtube-note p {
-        margin: 0 !important;
-        font-size: 0.85rem !important;
-        color: #9d174d !important;
-        line-height: 1.4 !important;
     }
     
     .generated-files-header {
@@ -780,115 +469,70 @@ def get_css():
         border-radius: 50% !important;
     }
     
-    /* Compact File Upload Component */
-    #document-upload-input,
-    #document-upload-input .file-preview-holder {
-        min-height: 80px !important; /* Reduce minimum height */
-        height: auto !important;
-    }
-    #document-upload-input .upload-button,
-    #document-upload-input .upload-button p {
-        padding: 8px 12px !important; /* Reduce button padding */
-        font-size: 0.9rem !important; /* Slightly smaller font */
-    }
-    #document-upload-input .upload-button svg {
-        width: 20px !important; /* Smaller icon */
-        height: 20px !important;
-    }
-    #document-upload-input .file-preview-holder .grid-wrap {
-        gap: 5px !important;
-    }
-    #document-upload-input .file-preview-holder .file {
-        padding: 5px !important;
-    }
-    /* Side-by-side upload and info styling */
-    .upload-info-container {
-        gap: 15px !important;
-        margin-bottom: 15px !important;
+    /* Humanize preview styling */
+    .humanize-preview {
+        font-family: 'Courier New', monospace !important;
+        line-height: 1.5 !important;
     }
     
-    .upload-area-column {
-        min-width: 0 !important; /* Allow column to shrink */
-    }
-    
-    .file-info-column {
-        min-width: 0 !important; /* Allow column to shrink */
-    }
-    
-    .side-by-side-info {
-        height: 100% !important;
-        width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    
-    .file-info-panel {
-        background-color: #f8f9fb !important;
-        border: 1px solid #e0e4e9 !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    
-    .file-type-section h4, .file-size-section h4 {
-        margin-top: 0 !important;
-        margin-bottom: 8px !important;
-        color: #3b355d !important;
-        font-size: 0.95rem !important;
-        font-weight: 600 !important;
-    }
-    
-    .file-types {
-        margin: 0 !important;
-        padding-left: 0 !important;
-    }
-    
-    .file-types p {
-        margin: 0 0 3px 0 !important;
-        font-size: 0.85rem !important;
-        line-height: 1.4 !important;
-    }
-    
-    /* Checkmark styling */
-    .checkmark {
-        display: inline-block !important;
-        width: 20px !important;
-        height: 20px !important;
-        border-radius: 50% !important;
-        text-align: center !important;
-        line-height: 18px !important;
-        margin-right: 8px !important;
+    .humanize-pause {
+        background-color: #e6f7ff !important;
+        color: #0066cc !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
         font-weight: bold !important;
-        background-color: #f0f0f0 !important;
-        color: #666 !important;
-        border: 1px solid #ddd !important;
     }
     
-    .checkmark.selected {
-        background-color: #ff7b31 !important;
-        color: white !important;
-        border-color: #ff7b31 !important;
+    .humanize-emphasis {
+        background-color: #fff3e0 !important;
+        color: #e65100 !important;
+        font-weight: bold !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
     }
     
-    .file-size-section {
-        margin-top: 15px !important;
+    .humanize-strong-emphasis {
+        background-color: #ffebee !important;
+        color: #c62828 !important;
+        font-weight: bold !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
     }
     
-    .file-size-section p {
-        margin: 0 !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
-        color: #5e166a !important;
+    .humanize-rising, .humanize-falling {
+        background-color: #f3e5f5 !important;
+        color: #6a1b9a !important;
+        font-weight: bold !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
     }
     
-    /* Make file upload component more compact */
-    .upload-area-column [data-testid="file"] {
-        min-height: 150px !important;
-        height: auto !important;
+    .humanize-narration {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32 !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
+        font-style: italic !important;
     }
-    """
+    
+    .humanize-emotion {
+        background-color: #ede7f6 !important;
+        color: #4527a0 !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
+        font-weight: bold !important;
+    }
+    
+    .humanize-warning {
+        background-color: #ffebee !important;
+        color: #d50000 !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
+        font-weight: bold !important;
+        border: 1px solid #d50000 !important;
+        text-decoration: line-through !important;
+    }
+    """ + custom_css
 
 def create_banner(base64_banner):
     """Create the banner component with the given base64 encoded image"""
@@ -903,189 +547,189 @@ def main():
         print(f"Starting application...")
         print(f"Using DeepSeek model: {DEEPSEEK_MODEL}")
         print(f"Using Claude model: {CLAUDE_MODEL}")
+    except Exception as e:
+        print(f"Error during startup: {e}")
         
         # Validate configuration
         validate_config()
         
-        # Setup necessary directories
-        setup_directories()
+    # Setup necessary directories
+    setup_directories()
     
-        # Load voices
-        preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
-        set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
-        
-        # Load the banner image as base64 to avoid any file path issues
-        banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
-        with open(banner_path, "rb") as img_file:
+    # Load voices
+    preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
+    set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
+    
+    # Load the banner image as base64 to avoid any file path issues
+    banner_path = os.path.join(os.path.dirname(__file__), "assets", "VoiceScribe Studio Banner.png")
+    with open(banner_path, "rb") as img_file:
             banner_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-        
+    
+    try:
         # Create a single Gradio app with interface switching
         with gr.Blocks(title="VoiceScribe Studio", css=get_css()) as app:
             # Create a state variable to track the current interface
             current_interface = gr.State("public")
             is_authenticated = gr.State(False)
-            
             # Public interface components
             with gr.Column(visible=True) as public_interface:
                 # Create the banner
                 create_banner(banner_base64)
-                
                 # Add admin login link
                 with gr.Row():
                     admin_link = gr.Button(
                         "Admin Login", 
                         elem_id="admin-link-btn",
                         elem_classes=["link-button"],
-                        scale=0,
-                        size="sm"
-                    )
-                
-                # Create the main tabs
-                with gr.Tabs():
-                    # Create tabs using the component functions
-                    script_output, script_file_output = create_script_generator_tab()
-                    edit_script_input, edited_script_output = create_script_editor_tab()
-                    voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
+                            scale=0,
+                            size="sm"
+                        )
                     
-                    # Connect script generator to script editor
-                    script_output.change(
-                        fn=lambda x: x,
-                        inputs=[script_output],
-                        outputs=[edit_script_input]
-                    )
-                    
-                    # Connect script editor to voiceover generator
-                    edited_script_output.change(
-                        fn=lambda x: x,
-                        inputs=[edited_script_output],
-                        outputs=[voiceover_script]
-                    )
-            
-            # Admin login form
-            with gr.Column(visible=False) as login_form:
-                # Create the banner
-                create_banner(banner_base64)
+                    # Create the main tabs INSIDE the public_interface column
+            with gr.Tabs():
+                # Create tabs using the component functions
+                script_output, script_file_output = create_script_generator_tab()
+                edit_script_input, edited_script_output = create_script_editor_tab()
+                voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
                 
-                with gr.Column(elem_classes=["login-container"]):
-                    gr.Markdown("# 🔒 Admin Authentication", elem_classes=["login-title"])
-                    gr.Markdown("Please enter your credentials to access the admin dashboard.")
-                    username = gr.Textbox(label="Username", placeholder="Enter your username")
-                    password = gr.Textbox(label="Password", placeholder="Enter your password", type="password")
-                    error_message = gr.Markdown(visible=False, value="⚠️ Incorrect username or password", elem_classes=["error-message"])
+                # Connect script generator to script editor
+                script_output.change(
+                    fn=lambda x: x,
+                    inputs=[script_output],
+                    outputs=[edit_script_input]
+                )
+                
+                # Connect script editor to voiceover generator
+                edited_script_output.change(
+                    fn=lambda x: x,
+                    inputs=[edited_script_output],
+                    outputs=[voiceover_script]
+                )
+        
+                # Admin login form (Keep this at the same level as public_interface)
+                with gr.Column(visible=False) as login_form:
+                    # Create the banner
+                    create_banner(banner_base64)
+                    
+                    with gr.Column(elem_classes=["login-container"]):
+                        gr.Markdown("# 🔒 Admin Authentication", elem_classes=["login-title"])
+                        gr.Markdown("Please enter your credentials to access the admin dashboard.")
+                        username = gr.Textbox(label="Username", placeholder="Enter your username")
+                        password = gr.Textbox(label="Password", placeholder="Enter your password", type="password")
+                        error_message = gr.Markdown(visible=False, value="⚠️ Incorrect username or password", elem_classes=["error-message"])
+                        
+                        with gr.Row():
+                            login_button = gr.Button("Login", variant="primary", elem_classes=["login-button"])
+                            back_button = gr.Button("Back to Main App")
+                
+                # Admin dashboard (Keep this at the same level as public_interface)
+                with gr.Column(visible=False) as admin_dashboard:
+                    # Create the banner
+                    create_banner(banner_base64)
+                    
+                    # Admin title bar
+                    with gr.Column(elem_classes=["admin-bar-container"]):
+                        gr.Markdown("# Admin Dashboard", elem_classes=["admin-bar"])
                     
                     with gr.Row():
-                        login_button = gr.Button("Login", variant="primary", elem_classes=["login-button"])
-                        back_button = gr.Button("Back to Main App")
-            
-            # Admin dashboard
-            with gr.Column(visible=False) as admin_dashboard:
-                # Create the banner
-                create_banner(banner_base64)
-                
-                # Admin title bar
-                with gr.Column(elem_classes=["admin-bar-container"]):
-                    gr.Markdown("# Admin Dashboard", elem_classes=["admin-bar"])
-                
-                with gr.Row():
-                    with gr.Column(scale=10):
-                        gr.Markdown("")  # Spacer
-                    with gr.Column(scale=1):
-                        return_btn = gr.Button("Return to Public Interface", size="sm", elem_classes=["link-button"])
-                    with gr.Column(scale=1):
-                        logout_btn = gr.Button("Logout", size="sm", elem_classes=["link-button"])
-                
-                # Create the admin tabs
-                with gr.Tabs():
-                    # Add analytics tab for token usage tracking
-                    with gr.TabItem("Token Analytics"):
-                        gr.Markdown("## Token Usage Analytics")
-                        gr.Markdown("Track API usage and costs for DeepSeek and Claude models.")
-                        create_token_dashboard()
+                        with gr.Column(scale=10):
+                            gr.Markdown("")  # Spacer
+                        with gr.Column(scale=1):
+                            return_btn = gr.Button("Return to Public Interface", size="sm", elem_classes=["link-button"])
+                        with gr.Column(scale=1):
+                            logout_btn = gr.Button("Logout", size="sm", elem_classes=["link-button"])
                     
-                    # Add testing dashboard
-                    with gr.TabItem("Testing Suite"):
-                        create_testing_dashboard()
-            
-            # Function to switch to login form
-            def switch_to_login():
-                return {
-                    public_interface: gr.update(visible=False),
-                    login_form: gr.update(visible=True),
-                    admin_dashboard: gr.update(visible=False),
-                    current_interface: "login"
-                }
-            
-            # Function to switch to public interface
-            def switch_to_public():
-                return {
-                    public_interface: gr.update(visible=True),
-                    login_form: gr.update(visible=False),
-                    admin_dashboard: gr.update(visible=False),
-                    current_interface: "public",
-                    is_authenticated: False
-                }
-            
-            # Function to check login credentials
-            def check_login(username_value, password_value):
-                print(f"Checking login for username: {username_value}")
-                if username_value == ADMIN_USERNAME and password_value == ADMIN_PASSWORD:
-                    print("Authentication successful")
+                    # Create the admin tabs
+                    with gr.Tabs():
+                        # Add analytics tab for token usage tracking
+                        with gr.TabItem("Token Analytics"):
+                            gr.Markdown("## Token Usage Analytics")
+                            gr.Markdown("Track API usage and costs for DeepSeek and Claude models.")
+                            token_dashboard = create_token_dashboard()
+                        
+                        # Add testing dashboard
+                        with gr.TabItem("Testing Suite"):
+                            create_testing_dashboard()
+                
+                # Function to switch to login form
+                def switch_to_login():
                     return {
                         public_interface: gr.update(visible=False),
-                        login_form: gr.update(visible=False),
-                        admin_dashboard: gr.update(visible=True),
-                        error_message: gr.update(visible=False),
-                        current_interface: "admin",
-                        is_authenticated: True
+                        login_form: gr.update(visible=True),
+                        admin_dashboard: gr.update(visible=False),
+                        current_interface: "login"
                     }
-                else:
-                    print("Authentication failed")
+                
+                # Function to switch to public interface
+                def switch_to_public():
                     return {
-                        error_message: gr.update(visible=True),
+                        public_interface: gr.update(visible=True),
+                        login_form: gr.update(visible=False),
+                        admin_dashboard: gr.update(visible=False),
+                        current_interface: "public",
                         is_authenticated: False
                     }
-            
-            # Connect admin link directly
-            admin_link.click(
-                fn=switch_to_login,
-                inputs=[],
-                outputs=[public_interface, login_form, admin_dashboard, current_interface]
+                
+                # Function to check login credentials
+                def check_login(username_value, password_value):
+                    print(f"Checking login for username: {username_value}")
+                    if username_value == ADMIN_USERNAME and password_value == ADMIN_PASSWORD:
+                        print("Authentication successful")
+                        return {
+                            public_interface: gr.update(visible=False),
+                            login_form: gr.update(visible=False),
+                            admin_dashboard: gr.update(visible=True),
+                            error_message: gr.update(visible=False),
+                            current_interface: "admin",
+                            is_authenticated: True
+                        }
+                    else:
+                        print("Authentication failed")
+                        return {
+                            error_message: gr.update(visible=True),
+                            is_authenticated: False
+                        }
+                
+                # Connect admin link directly
+                admin_link.click(
+                    fn=switch_to_login,
+                    inputs=[],
+                    outputs=[public_interface, login_form, admin_dashboard, current_interface]
+                )
+                
+                # Connect the login form buttons
+                login_button.click(
+                    fn=check_login,
+                    inputs=[username, password],
+                    outputs=[public_interface, login_form, admin_dashboard, error_message, current_interface, is_authenticated]
+                )
+                
+                back_button.click(
+                    fn=switch_to_public,
+                    inputs=[],
+                    outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+                )
+                
+                # Connect return and logout buttons
+                return_btn.click(
+                    fn=switch_to_public,
+                    inputs=[],
+                    outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+                )
+                
+                logout_btn.click(
+                    fn=switch_to_login,
+                    inputs=[],
+                    outputs=[public_interface, login_form, admin_dashboard, current_interface]
+                )
+                
+            # Launch the app
+            print("Starting VoiceScribe Studio on http://0.0.0.0:7860")
+            app.launch(
+                server_name="0.0.0.0",
+                server_port=7860,
+                share=False
             )
-            
-            # Connect the login form buttons
-            login_button.click(
-                fn=check_login,
-                inputs=[username, password],
-                outputs=[public_interface, login_form, admin_dashboard, error_message, current_interface, is_authenticated]
-            )
-            
-            back_button.click(
-                fn=switch_to_public,
-                inputs=[],
-                outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
-            )
-            
-            # Connect return and logout buttons
-            return_btn.click(
-                fn=switch_to_public,
-                inputs=[],
-                outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
-            )
-            
-            logout_btn.click(
-                fn=switch_to_login,
-                inputs=[],
-                outputs=[public_interface, login_form, admin_dashboard, current_interface]
-            )
-        
-        # Launch the app
-        print("Starting VoiceScribe Studio on http://0.0.0.0:7862")
-        app.launch(
-            server_name="0.0.0.0",
-            server_port=7862,
-            share=False
-        )
-        
     except ValueError as e:
         print(f"Configuration error: {str(e)}")
         print("Please update your .env file with the required API keys.")

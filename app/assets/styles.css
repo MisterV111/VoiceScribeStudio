@@ -1,0 +1,261 @@
+/* VoiceScribe Studio Custom Styles */
+
+/* Warning messages */
+.warning-text {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+/* Add border for file info/warning messages */
+.warning-text p {
+    border-left: 3px solid #ff9800;
+    padding-left: 10px;
+}
+
+/* Token count info messages */
+.warning-text p:not([class*="warning"]) {
+    border-left: 3px solid #4CAF50;
+}
+
+/* Style for the file upload area */
+.file-upload-container {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+}
+
+.file-upload-container:hover {
+    border-color: #2196F3;
+}
+
+/* Right-side info container styling */
+.file-info-container {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+}
+
+/* Supported file types section styling */
+.supported-file-types {
+    margin: 0;
+    padding: 12px 20px 12px;
+}
+
+/* File type title styling */
+.file-type-title {
+    text-align: center;
+    margin: 0 0 8px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #333;
+    padding-bottom: 4px;
+}
+
+.file-type-item {
+    padding: 4px 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.file-type-item-last {
+    border-bottom: none;
+}
+
+.check-mark {
+    color: #ff9800; /* Orange color for check marks */
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+/* Added styling for File Size Limit title text */
+.file-size-limit-title-text {
+    text-align: center;
+    font-size: 16px; /* Slightly larger than token text */
+    font-weight: 600; /* Bolder */
+    color: #333;    /* Darker color */
+    margin-top: 20px; /* More space above */
+    margin-bottom: 5px; /* Space below before token text */
+    padding: 0;
+}
+
+/* Style for the token limit text */
+.token-limit-text {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    margin-top: 0; /* Remove top margin as it's handled by title */
+    padding: 0;
+    font-weight: normal;
+}
+
+/* Document processing status indicator */
+.processing-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.processing-indicator.success {
+    background-color: #4CAF50;
+}
+
+.processing-indicator.warning {
+    background-color: #ff9800;
+}
+
+.processing-indicator.error {
+    background-color: #f44336;
+}
+
+/* Document upload container wrapper */
+.doc-upload-wrapper {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Custom radio button styling */
+.custom-radio .gr-radio-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+.custom-radio label {
+    margin-bottom: 5px !important;
+}
+
+/* Humanize feature styles */
+.humanize-button {
+    background-color: #8e44ad !important; /* Purple color */
+    color: white !important;
+    margin-top: 10px !important;
+    font-weight: 600 !important;
+}
+
+.humanize-description {
+    font-size: 0.9em !important;
+    color: #666 !important;
+    margin-bottom: 10px !important;
+}
+
+/* Preview area styling */
+.humanize-preview {
+    font-family: "Source Sans Pro", sans-serif !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    margin-top: 15px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.humanize-preview h4 {
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+.humanize-original, .humanize-transformed {
+    padding: 15px !important;
+}
+
+.humanize-original {
+    background-color: #f9f9f9 !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.humanize-transformed {
+    background-color: #f0f7ff !important; /* Light blue background */
+}
+
+.humanize-preview pre {
+    white-space: pre-wrap !important;
+    font-family: "Source Code Pro", monospace !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+/* Markup highlighting styles */
+.humanize-pause {
+    color: #e67e22 !important; /* Orange for pauses */
+    font-weight: bold !important;
+    background-color: rgba(230, 126, 34, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-emphasis {
+    color: #2980b9 !important; /* Blue for emphasis */
+    font-weight: bold !important;
+    background-color: rgba(41, 128, 185, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-strong-emphasis {
+    color: #c0392b !important; /* Red for strong emphasis */
+    font-weight: bold !important;
+    background-color: rgba(192, 57, 43, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-rising {
+    color: #27ae60 !important; /* Green for rising intonation */
+    font-weight: bold !important;
+    background-color: rgba(39, 174, 96, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-falling {
+    color: #8e44ad !important; /* Purple for falling intonation */
+    font-weight: bold !important;
+    background-color: rgba(142, 68, 173, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-warning {
+    color: #c0392b !important; /* Red for warning */
+    font-weight: bold !important;
+    background-color: rgba(192, 57, 43, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+    text-decoration: line-through !important; /* Strike through problematic characters */
+}
+
+.humanize-emotion {
+    color: #8e44ad !important; /* Purple for emotion tags */
+    font-weight: bold !important;
+    background-color: rgba(142, 68, 173, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+}
+
+.humanize-narration {
+    color: #2980b9 !important; /* Blue for narration */
+    font-style: italic !important;
+    background-color: rgba(41, 128, 185, 0.1) !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+} 

@@ -2,7 +2,6 @@ aiofiles==23.2.1
 annotated-types==0.7.0
 anyio==4.9.0
 audioop-lts==0.2.1
-beautifulsoup4==4.13.3
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
@@ -52,14 +51,23 @@ starlette==0.46.1
 tiktoken==0.7.0
 tomlkit==0.13.2
 tqdm==4.67.1
-trafilatura==2.0.0
 typer==0.15.2
 typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
 websockets==15.0.1
-youtube-transcript-api==1.0.3
 anthropic
 matplotlib==3.7.4
 plotly==5.21.0
+
+# Document processing
+PyMuPDF==1.24.3  # For PDF processing
+python-docx==1.1.0  # For DOCX processing
+
+# Web content extraction
+beautifulsoup4==4.12.3  # For web scraping
+lxml==5.2.1  # XML/HTML parser for BeautifulSoup
+
+# YouTube transcript extraction
+youtube-transcript-api==0.6.2  # For extracting YouTube transcripts

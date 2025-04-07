@@ -14,7 +14,6 @@ All notable changes to the VoiceScribe Studio project will be documented in this
 - Example script showcasing all techniques in `examples/optimized_elevenlabs_script.txt`
 - Warning system in preview to highlight problematic characters causing artifacts
 - CSS styling for better visualizing different markup types
-- Token Analytics dashboard in admin interface for monitoring API usage costs
 
 ### Fixed
 - Removed intonation arrow markers (↗↘) that were causing artifacts in ElevenLabs output

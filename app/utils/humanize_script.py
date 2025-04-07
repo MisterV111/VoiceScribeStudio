@@ -8,7 +8,7 @@ voiceover best practices.
 
 import re
 from ..config import CLAUDE_MODEL
-from .llm_clients import anthropic_client
+from .llm_clients import anthropic_client, call_anthropic_with_retry
 from .token_counter import token_tracker
 
 # Standardized markup symbols for voiceover guidance
@@ -164,18 +164,61 @@ def humanize_script(script_text):
                 "error": "Claude API not available"
             }
         
-        # Call Claude to humanize the script
-        response = anthropic_client.messages.create(
-            model=CLAUDE_MODEL,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-            temperature=0.3,  # Lower temperature for more consistent results
-            max_tokens=3000
-        )
-        
+        # Call Claude to humanize the script with retry logic
+        try:
+            response = call_anthropic_with_retry(
+                anthropic_client.messages.create,
+                model=CLAUDE_MODEL,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+                temperature=0.3,  # Lower temperature for more consistent results
+                max_tokens=3000,
+                max_retries=3
+            )
+        except Exception as api_error:
+            # Handle API errors gracefully
+            print(f"Claude API call failed for humanize after retries: {type(api_error).__name__}: {str(api_error)}")
+            # Check for specific error types that should be handled gracefully
+            status_code = getattr(api_error, 'status_code', None)
+            if status_code:
+                print(f"Status code from Claude API: {status_code}")
+                error_msg = f"Claude API error (HTTP {status_code})"
+                if status_code == 529:
+                    error_msg = "Claude API is currently overloaded. Please try again in a few minutes."
+            else:
+                error_msg = f"Claude API error: {str(api_error)}"
+                
+            return {
+                "content": script_text,  # Return original script on error
+                "token_metrics": {},
+                "model_used": "none",
+                "error": error_msg
+            }
+            
         # Extract content
         if response.content and isinstance(response.content, list) and response.content[0].text:
             humanized_script = response.content[0].text.strip()
+            
+            # Check if the response contains HTTP error codes that might indicate Claude API issues
+            error_patterns = [
+                r'error (\d+)',
+                r'(\d{3})[\s-]+(overloaded|unavailable|error)',
+                r'<\s*h\d\s*>\s*(\d{3})\s*',
+                r'```\s*(\d{3})',
+                r'^\s*(\d{3})\s*$'
+            ]
+            
+            for pattern in error_patterns:
+                error_match = re.search(pattern, humanized_script, re.IGNORECASE)
+                if error_match:
+                    error_code = error_match.group(1)
+                    print(f"Detected possible error code in response: {error_code}")
+                    return {
+                        "content": script_text,  # Return original script text
+                        "token_metrics": {},
+                        "model_used": "none",
+                        "error": f"Claude API returned an error (code: {error_code}). Please try again later."
+                    }
             
             # Remove any code blocks that Claude might have added
             humanized_script = re.sub(r'```.*?```', '', humanized_script, flags=re.DOTALL)
@@ -183,6 +226,19 @@ def humanize_script(script_text):
             
             # Remove any "Formatted script:" or "Here is the formatted script:" text
             humanized_script = re.sub(r'^(Formatted script:|Here is the formatted script:)', '', humanized_script, flags=re.IGNORECASE).strip()
+            
+            # Check if the humanized script is empty or significantly shorter than input
+            if not humanized_script or len(humanized_script) < len(script_text) * 0.5:
+                print(f"Warning: Humanized script is suspiciously short. Original: {len(script_text)}, Humanized: {len(humanized_script)}")
+                
+                # Check if there's any indication of an error in the content
+                if "error" in humanized_script.lower() or "unavailable" in humanized_script.lower() or "overloaded" in humanized_script.lower():
+                    return {
+                        "content": script_text,  # Return original script text
+                        "token_metrics": {},
+                        "model_used": "none",
+                        "error": f"Claude API returned an error message: '{humanized_script[:100]}...'. Please try again later."
+                    }
             
             # Track token usage
             token_metrics = token_tracker.track_generation(
@@ -250,7 +306,7 @@ def humanize_script(script_text):
 
 def preview_humanized_markup(original_text, humanized_text):
     """
-    Create a detailed HTML preview showing the differences between the original
+    Create a simple HTML preview showing the differences between the original
     and humanized text with markup highlighted.
     
     Args:
@@ -260,21 +316,15 @@ def preview_humanized_markup(original_text, humanized_text):
     Returns:
         str: HTML string showing the differences with highlighted markup
     """
-    # Gracefully handle null input
-    if not original_text:
-        original_text = "No original text provided."
-    if not humanized_text:
-        humanized_text = "No humanized text available."
-        
-    # Pre-process text for display
-    original_text_display = original_text.replace('<', '&lt;').replace('>', '&gt;')
+    # This is a simple implementation for now
+    # In a more advanced version, we could do a proper diff and highlight the changes
     
-    # Create a working copy of humanized text for highlighting
-    highlighted_text = humanized_text.replace('<', '&lt;').replace('>', '&gt;')
+    # Highlight the markup in the humanized text
+    highlighted_text = humanized_text
     
-    # Highlight SSML break tags (must handle escaped characters)
+    # Highlight SSML break tags
     highlighted_text = re.sub(
-        r'(&lt;break\s+time="([0-9\.]+)s"\s+/&gt;)',
+        r'(<break\s+time="([0-9\.]+)s"\s+/>)',
         r'<span class="humanize-pause">\1</span>',
         highlighted_text
     )
@@ -295,53 +345,45 @@ def preview_humanized_markup(original_text, humanized_text):
         highlighted_text
     )
     
-    # Highlight book-style narration (must look for punctuation variations)
+    # Highlight intonation markers with clear warning
+    highlighted_text = highlighted_text.replace(RISING_INTONATION, f'<span class="humanize-warning">{RISING_INTONATION}</span><span style="color:red;font-weight:bold;"> ⚠️ WARNING: Causes audio artifacts!</span>')
+    highlighted_text = highlighted_text.replace(FALLING_INTONATION, f'<span class="humanize-warning">{FALLING_INTONATION}</span><span style="color:red;font-weight:bold;"> ⚠️ WARNING: Causes audio artifacts!</span>')
+    
+    # Highlight book-style narration
     highlighted_text = re.sub(
-        r'("[^"]+",\s+\w+\s+said\s+\w+\.)',
-        r'<span class="humanize-narration">\1</span>',
-        highlighted_text
-    )
-    highlighted_text = re.sub(
-        r'("[^"]+",\s+\w+\s+\w+\s+\w+\.)',
+        r'(".*?", \w+ said \w+\.)',
         r'<span class="humanize-narration">\1</span>',
         highlighted_text
     )
     
-    # Highlight emotion tags (must handle escaped characters)
+    # Highlight emotion tags
     highlighted_text = re.sub(
-        r'(&lt;[a-z, ]+&gt;)(.*?)(&lt;/[a-z, ]+&gt;)',
+        r'(<[a-z, ]+>)(.*?)(</[a-z, ]+>)',
         r'<span class="humanize-emotion">\1\2\3</span>',
         highlighted_text
     )
     
-    # Add line breaks to improve readability
-    highlighted_text = highlighted_text.replace('\n', '<br>')
-    original_text_display = original_text_display.replace('\n', '<br>')
-    
-    # Create the HTML preview with added explanation
-    html = f"""
-    <div class="humanize-container">
-        <div class="humanize-explainer">
-            <h4>Script Humanization for Voiceover</h4>
-            <p>Humanized scripts include special markup to help voice actors and text-to-speech systems produce more natural sounding audio:</p>
-            <ul>
-                <li><span class="humanize-pause">&lt;break time="1s" /&gt;</span> - Pauses of various lengths</li>
-                <li><span class="humanize-emphasis">*emphasized words*</span> - Words that should be emphasized</li>
-                <li><span class="humanize-strong-emphasis">**strongly emphasized**</span> - Words that need strong emphasis</li>
-                <li><span class="humanize-narration">"Text", he said softly.</span> - Book-style narration for emotional context</li>
-                <li><span class="humanize-emotion">&lt;emotion&gt;Text&lt;/emotion&gt;</span> - Explicit emotion indicators</li>
-            </ul>
+    # Add a warning header if problematic characters are found
+    warning_header = ""
+    if RISING_INTONATION in humanized_text or FALLING_INTONATION in humanized_text:
+        warning_header = """
+        <div style="background-color:#ffebee;border-left:4px solid #f44336;padding:10px;margin-bottom:15px;">
+            <h4 style="color:#d32f2f;margin-top:0;">⚠️ Warning: Problematic Characters Detected</h4>
+            <p>This script contains intonation arrows (↗↘) that cause audio artifacts in ElevenLabs. Please remove them before generating audio.</p>
         </div>
-        
-        <div class="humanize-preview">
-            <div class="humanize-original">
-                <h4>Original Script</h4>
-                <div class="script-content">{original_text_display}</div>
-            </div>
-            <div class="humanize-transformed">
-                <h4>Humanized Script</h4>
-                <div class="script-content">{highlighted_text}</div>
-            </div>
+        """
+    
+    # Create the HTML preview
+    html = f"""
+    <div class="humanize-preview">
+        {warning_header}
+        <div class="humanize-original">
+            <h4>Original Script</h4>
+            <pre>{original_text}</pre>
+        </div>
+        <div class="humanize-transformed">
+            <h4>Humanized Script</h4>
+            <pre>{highlighted_text}</pre>
         </div>
     </div>
     """

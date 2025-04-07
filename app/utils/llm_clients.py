@@ -7,6 +7,7 @@ from ..config import (
     ANTHROPIC_API_KEY, CLAUDE_MODEL
 )
 from .token_counter import token_tracker
+import re
 
 # --- Client Initialization --- 
 
@@ -26,7 +27,108 @@ else:
 
 # Anthropic Client
 if ANTHROPIC_API_KEY:
-    anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    try:
+        import time
+        import random
+        # Import base anthropic package first
+        import anthropic
+        
+        # Determine which error types to import based on what's available in the package
+        if hasattr(anthropic, 'types') and hasattr(anthropic.types, 'APIStatusError'):
+            # Newer version structure
+            from anthropic.types import RateLimitError, APIStatusError, APITimeoutError, APIConnectionError
+        elif hasattr(anthropic, 'RateLimitError'):
+            # Older version structure
+            from anthropic import RateLimitError, APIError as APIStatusError
+            # Create aliases for missing error types
+            APITimeoutError = APIStatusError
+            APIConnectionError = APIStatusError
+            print("Using older anthropic library error types")
+        else:
+            # Create fallback error types if none are available
+            print("Unable to import specific Anthropic error types - using generic exceptions")
+            RateLimitError = Exception
+            APIStatusError = Exception
+            APITimeoutError = Exception
+            APIConnectionError = Exception
+        
+        # Create a session with retry logic
+        anthropic_client = Anthropic(
+            api_key=ANTHROPIC_API_KEY,
+            # Default timeout settings
+            timeout=60.0  # 60 second timeout
+        )
+        
+        # Wrapper function for anthropic calls with retries
+        def call_anthropic_with_retry(func, *args, max_retries=3, initial_retry_delay=2, **kwargs):
+            """
+            Execute an Anthropic API call with exponential backoff retry logic.
+            
+            Args:
+                func: The anthropic client function to call
+                *args: Arguments to pass to the function
+                max_retries: Maximum number of retries
+                initial_retry_delay: Initial delay in seconds before retry (will increase exponentially)
+                **kwargs: Keyword arguments to pass to the function
+                
+            Returns:
+                The function result or raises the last exception after retries
+            """
+            retry_count = 0
+            retry_delay = initial_retry_delay
+            
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except (RateLimitError, APIStatusError, APITimeoutError, APIConnectionError) as e:
+                    retry_count += 1
+                    status_code = getattr(e, 'status_code', None)
+                    
+                    # Log the error
+                    print(f"Anthropic API error (attempt {retry_count}/{max_retries}): {type(e).__name__}")
+                    if status_code:
+                        print(f"Status code: {status_code}")
+                    
+                    # If we hit max retries or it's not a retriable error, raise
+                    if retry_count >= max_retries or not (
+                        isinstance(e, RateLimitError) or  # Rate limits (429)
+                        (isinstance(e, APIStatusError) and status_code in (429, 500, 502, 503, 504, 529)) or  # Server errors
+                        isinstance(e, APITimeoutError) or  # Timeouts
+                        isinstance(e, APIConnectionError)  # Connection issues
+                    ):
+                        raise
+                    
+                    # Calculate jittered exponential backoff
+                    jitter = random.uniform(0.8, 1.2)
+                    sleep_time = retry_delay * jitter
+                    print(f"Retrying in {sleep_time:.2f} seconds...")
+                    time.sleep(sleep_time)
+                    
+                    # Increase the delay for next time
+                    retry_delay = min(retry_delay * 2, 30)  # Cap at 30 seconds
+                except Exception as e:
+                    # For any other exceptions, don't retry
+                    print(f"Unretriable error in Anthropic API call: {type(e).__name__}: {str(e)}")
+                    raise
+        
+        # Test the client with a simple request
+        print("Testing Anthropic client connection...")
+        try:
+            call_anthropic_with_retry(
+                anthropic_client.messages.create,
+                model="claude-3-haiku-20240307",
+                messages=[{"role": "user", "content": "Hello, this is a connection test."}],
+                system="You are a helpful AI.",
+                max_tokens=10
+            )
+            print("Anthropic client connection successful.")
+        except Exception as e:
+            print(f"Warning: Anthropic client test failed: {str(e)}")
+            print("Claude functionality may be limited.")
+    except Exception as init_error:
+        anthropic_client = None
+        print(f"Warning: Failed to initialize Anthropic client: {str(init_error)}")
+        print("Claude functionality disabled due to initialization error.")
 else:
     anthropic_client = None
     print("Warning: ANTHROPIC_API_KEY not found. Claude functionality disabled.")
@@ -127,16 +229,33 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
     try:
         print(f"Attempting script generation with Claude model: {model}")
         
-        # Create the API call
-        message = anthropic_client.messages.create(
-            model=model,
-            system=system_message, 
-            messages=[
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7,
-            max_tokens=3000 
-        )
+        # Use our retry wrapper function instead of direct API call
+        try:
+            message = call_anthropic_with_retry(
+                anthropic_client.messages.create,
+                model=model,
+                system=system_message, 
+                messages=[{"role": "user", "content": user_message}],
+                temperature=0.7,
+                max_tokens=3000,
+                max_retries=3  # Retry up to 3 times
+            )
+        except Exception as api_error:
+            print(f"Claude API call failed after retries: {type(api_error).__name__}: {str(api_error)}")
+            # Check for specific error types that should be handled gracefully
+            status_code = getattr(api_error, 'status_code', None)
+            if status_code:
+                print(f"Status code from Claude API: {status_code}")
+                if status_code == 529:
+                    return {
+                        "content": "Sorry, the Claude API is currently overloaded. Please try again in a few minutes.",
+                        "token_metrics": {},
+                        "model_used": "claude",
+                        "is_fallback": is_fallback,
+                        "error": "Claude API overloaded (HTTP 529). Please try again later."
+                    }
+            # Re-raise if we didn't handle it specifically
+            raise
         
         # --- Token Tracking --- 
         input_tokens = 0
@@ -152,6 +271,28 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
         # Content retrieval
         if message.content and isinstance(message.content, list) and message.content[0].text:
             generated_content = message.content[0].text
+            
+            # Check for error messages in the content itself
+            error_patterns = [
+                r'error (\d+)',
+                r'(\d{3})[\s-]+(overloaded|unavailable|error)',
+                r'<\s*h\d\s*>\s*(\d{3})\s*',
+                r'```\s*(\d{3})'
+            ]
+            
+            for pattern in error_patterns:
+                error_match = re.search(pattern, generated_content, re.IGNORECASE)
+                if error_match:
+                    error_code = error_match.group(1)
+                    print(f"Detected possible error code in content: {error_code}")
+                    return {
+                        "content": "Sorry, the Claude API returned an error response. Please try again in a few minutes.",
+                        "token_metrics": {},
+                        "model_used": "claude",
+                        "is_fallback": is_fallback,
+                        "error": f"Claude API returned an error in content (code: {error_code}). Please try again later."
+                    }
+            
             print(f"Claude model {model} generated {len(generated_content.split())} words.")
             
             # Enhanced token tracking with our system
@@ -177,7 +318,13 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
             }
         else:
             print(f"Claude model {model} response did not contain expected content structure.")
-            return None
+            return {
+                "content": "Sorry, the response from Claude API was not in the expected format. Please try again.",
+                "token_metrics": {},
+                "model_used": "claude",
+                "is_fallback": is_fallback,
+                "error": "Invalid response format from Claude API."
+            }
             
     except Exception as e:
         print(f"Error generating script with Claude model {model}: {str(e)}")
@@ -198,7 +345,13 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
                 success=False
             )
             
-        return None
+        return {
+            "content": f"Error generating script: {str(e)}",
+            "token_metrics": {},
+            "model_used": "claude",
+            "is_fallback": is_fallback,
+            "error": str(e)
+        }
 
 # --- New Claude Helper for Analysis --- 
 def call_claude_sonnet_for_analysis(system_prompt: str, user_prompt: str, model: str = CLAUDE_MODEL) -> str | None:
@@ -308,7 +461,7 @@ def generate_script(prompt: str,
     - Medium: 300-500 words
     - Long: 600-900 words
     """
-
+    
     # --- Incorporate Analysis Results into System Message (if available) --- 
     system_message = system_message_base
     if analysis_results and isinstance(analysis_results, dict):
@@ -332,7 +485,7 @@ def generate_script(prompt: str,
     if context:
         # Special handling for Music Lesson context, append analysis after it
         if template == "Music Lesson":
-             user_message = f"""
+            user_message = f"""
 {prompt}
 
 BACKGROUND KNOWLEDGE (Do not reference this directly in your script):
