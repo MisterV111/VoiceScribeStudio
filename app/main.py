@@ -71,95 +71,79 @@ def load_voices():
     try:
         # ElevenLabs Preset Voices (always available)
         preset_voice_names = [
-            "Adam - Deep & Authoritative",
-            "Antoni - Polish American Male",
-            "Arnold - Crisp & Rough",
-            "Bella - Soft & Breathy",
-            "Callum - British Male",
-            "Charlie - Casual American",
-            "Clyde - Friendly & Engaging",
+            # Custom Dan Teacher voices at the top (as requested)
             "Dan Teacher - Hybrid",
             "Dan Teacher - Neutral",
             "Dan Teacher - Upbeat",
-            "Daniel - British Male",
-            "Dorothy - Mature & Warm",
-            "Ella - Conversational American",
-            "Emily - Professional & Helpful",
-            "Ethan - Young American",
-            "Fin - Irish Male",
-            "Freya - Professional Female",
-            "Giovanni - Italian Male",
-            "Glinda - Southern US Accent",
-            "Grace - Gentle & Soft",
-            "Harry - British Teen",
-            "James - Australian Male",
-            "Jeremy - British Butler",
-            "Joseph - Deep & Resonant",
-            "Josh - Gentle & Calm",
-            "Knightley - British Male",
+            # Current ElevenLabs voices with correct names and descriptions
+            "Aria - Expressive & Versatile",
+            "Roger - Deep & Thoughtful",
+            "Sarah - Soft & Breathy",
+            "Laura - Natural & Professional",
+            "Charlie - Casual American",
+            "George - British Male",
+            "Callum - British Male Youth",
+            "River - Young American Female",
             "Liam - North American Male",
-            "Lily - British Received Pronunciation",
-            "Lucy - American Teen",
-            "Mark - Natural",
-            "Matilda - British Teen",
-            "Michael - British Male",
-            "Nicole - Expressive & Emotional",
-            "Oswald - Old American Male",
-            "Patrick - Friendly American",
-            "Rachel - Expressive American",
-            "Rebecca - British Female",
-            "Sam - Raspy & Gritty",
-            "Sarah - NPR Presenter",
-            "Serena - British Female",
-            "Thomas - British Male",
-            "Victoria - British Female",
-            "Wright - Broadcast Male"
+            "Charlotte - Mature European",
+            "Alice - British Female",
+            "Matilda - Young British Female",
+            "Will - Professional Male",
+            "Jessica - Upbeat American",
+            "Eric - Authoritative Male",
+            "Chris - Clear & Friendly",
+            "Brian - Deep & Mature",
+            "Daniel - British Male",
+            "Lily - Soft & Gentle",
+            "Bill - Friendly Narrator",
+            # Specialized voices
+            "Cassidy - Conversational Female",
+            "Austin - Good ol' Texas boy",
+            "Russell - Dramatic British TV",
+            "Lori - Happy and sweet",
+            "Mark - Natural Conversations",
+            "Jessica Anne Bogart - Conversations",
+            "John Doe Gentle",
+            "Rob - Casual & Relaxed",
+            "Finn - Young & Energetic"
         ]
         
         preset_voice_ids = [
-            "pFZP5JQG7iQjIQuC4Bku", # Adam
-            "ErXwobaYiN019PkySvjV", # Antoni
-            "VR6AewLTigWG4xSOukaG", # Arnold
-            "EXAVITQu4vr4xnSDxMaL", # Bella
-            "N2lVS1w4EtoT3dr4eOWO", # Callum
-            "IKne3meq5aSn9XLyUdCD", # Charlie
-            "2EiwWnXFnvU5JabPnv8n", # Clyde
+            # Custom Dan Teacher voices at the top (as requested)
             "jn5Dym9tbXQdxJRlyYzZ", # Dan Teacher - Hybrid
             "CMtJJeUfoLE6mZYBmsFl", # Dan Teacher - Neutral
             "W14NZHmEOKlltX7Dhrac", # Dan Teacher - Upbeat
-            "GBv7mTt0atIp3Br8iCZE", # Daniel
-            "ThT5KcBeYPX3keUQqHPh", # Dorothy
-            "gFuV3ljmkQVQYLUJcCbO", # Ella
-            "LcfcDJNUP1GQjkzn1xUU", # Emily
-            "g5CIjZEefAph4nQFvHAz", # Ethan
-            "D38z5RcWu1voky8WS1ja", # Fin
-            "jsCqWAovK2LkecY7zXl4", # Freya
-            "XB0fDUnXU5powFXDhCwa", # Giovanni
-            "z2wEauNq9b0ctFbrcTFE", # Glinda
-            "oWAxZDx7w5VEj9dCyTzz", # Grace
-            "SOYHLrjzK2X1ezoPC6cr", # Harry
-            "cRxenIsyVFC4PgXxZuqY", # James
-            "tLot2LU7XsMWxMiaYlTj", # Jeremy
-            "Zlb1dXrM653N07WRdFW3", # Joseph
-            "TxGEqnHWrfWFTfGW9XjX", # Josh
-            "mEZ8l3OV7WjuIQNpgAgh", # Knightley
-            "TX3LPaxmHKxFdv7VOQHJ", # Liam
-            "zrHiDhphv9ZnVXBqCLjz", # Lily
-            "ZQe5CZNOzWyzPSCn5a3c", # Lucy
-            "edV7AwEvM221Q5TSuK34", # Mark
-            "MF3mGyEYCl7XYWbV9V6O", # Matilda
-            "flq6f7yk4E4fJM5XTYuZ", # Michael
-            "piTKgcLEGmPE4e6mEKli", # Nicole
-            "zcAOhNBS3c14rBihAFp1", # Oswald
-            "ODkYq3NQQYMi4q8qDG8T", # Patrick
-            "Gr2MWxYOyJcofZYbZuxH", # Rachel
-            "t0jbNlBVZ17f02VDIeMI", # Rebecca
-            "yoZ06aMxZJJ28mfd3POQ", # Sam
-            "pMsXgVXv3BLzUgSXRplE", # Sarah
-            "onwK4e9ZLuTAKqWW03F9", # Serena
-            "UYNp4YBX644gGKaV0dkt", # Thomas
-            "C83I4qVd8osJAgbtpYv", # Victoria
-            "dE5zNjJBUgVOCxHuKFSJ", # Wright
+            # Current ElevenLabs voices with correct IDs
+            "9BWtsMINqrJLrRacOk9x", # Aria - Expressive & Versatile
+            "CwhRBWXzGAHq8TQ4Fs17", # Roger - Deep & Thoughtful
+            "EXAVITQu4vr4xnSDxMaL", # Sarah - Soft & Breathy
+            "FGY2WhTYpPnrIDTdsKH5", # Laura - Natural & Professional
+            "IKne3meq5aSn9XLyUdCD", # Charlie - Casual American
+            "JBFqnCBsd6RMkjVDRZzb", # George - British Male
+            "N2lVS1w4EtoT3dr4eOWO", # Callum - British Male Youth
+            "SAz9YHcvj6GT2YYXdXww", # River - Young American Female
+            "TX3LPaxmHKxFdv7VOQHJ", # Liam - North American Male
+            "XB0fDUnXU5powFXDhCwa", # Charlotte - Mature European
+            "Xb7hH8MSUJpSbSDYk0k2", # Alice - British Female
+            "XrExE9yKIg1WjnnlVkGX", # Matilda - Young British Female
+            "bIHbv24MWmeRgasZH58o", # Will - Professional Male
+            "cgSgspJ2msm6clMCkdW9", # Jessica - Upbeat American
+            "cjVigY5qzO86Huf0OWal", # Eric - Authoritative Male
+            "iP95p4xoKVk53GoZ742B", # Chris - Clear & Friendly
+            "nPczCjzI2devNBz1zQrb", # Brian - Deep & Mature
+            "onwK4e9ZLuTAKqWW03F9", # Daniel - British Male
+            "pFZP5JQG7iQjIQuC4Bku", # Lily - Soft & Gentle
+            "pqHfZKP75CvOlQylNhV4", # Bill - Friendly Narrator
+            # Specialized voices
+            "56AoDkrOh6qfVPDXZ7Pt", # Cassidy - Conversational Female
+            "Bj9UqZbhQsanLzgalpEG", # Austin - Good ol' Texas boy
+            "NYC9WEgkq1u4jiqBseQ9", # Russell - Dramatic British TV
+            "TbMNBJ27fH2U0VgpSNko", # Lori - Happy and sweet
+            "UgBBYS2sOqTuMpoF3BR0", # Mark - Natural Conversations
+            "g6xIsTj2HwM6VR4iXFCw", # Jessica Anne Bogart - Conversations
+            "iLzHtPh0bW6RGWRG0Xo5", # John Doe Gentle
+            "mkZwO4JCm0yEo6WmjZjA", # Rob - Casual & Relaxed
+            "vBKc2FfBKJfcZNyEt1n6", # Finn - Young & Energetic
         ]
                 
         return preset_voice_names, preset_voice_ids, preset_voice_names, preset_voice_ids
