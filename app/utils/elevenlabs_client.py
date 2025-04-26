@@ -81,6 +81,150 @@ def get_voices():
         print(f"Error in get_voices: {str(e)}")
         return []
 
+def load_all_voices():
+    """
+    Primary function to load all voice options for the application.
+    
+    Returns consistent voice data for the UI with hardcoded preset voices for reliability,
+    combined with any available API-fetched voices. Ensures Dan Teacher voices are always
+    at the top of the list.
+    
+    Returns:
+        tuple: (preset_voice_names, preset_voice_ids, all_voice_names, all_voice_ids)
+    """
+    # 1. Hardcoded preset voices (always available for reliability)
+    preset_voice_names = [
+        # Dan Teacher voices at the top (as requested)
+        "Dan Teacher - Hybrid",
+        "Dan Teacher - Neutral", 
+        "Dan Teacher - Upbeat",
+        # Current ElevenLabs voices with correct names and descriptions
+        "Aria - Expressive & Versatile",
+        "Roger - Deep & Thoughtful",
+        "Sarah - Soft & Breathy",
+        "Laura - Natural & Professional",
+        "Charlie - Casual American",
+        "George - British Male",
+        "Callum - British Male Youth",
+        "River - Young American Female",
+        "Liam - North American Male",
+        "Charlotte - Mature European",
+        "Alice - British Female",
+        "Matilda - Young British Female",
+        "Will - Professional Male",
+        "Jessica - Upbeat American",
+        "Eric - Authoritative Male",
+        "Chris - Clear & Friendly",
+        "Brian - Deep & Mature",
+        "Daniel - British Male",
+        "Lily - Soft & Gentle",
+        "Bill - Friendly Narrator",
+        # Specialized voices
+        "Cassidy - Conversational Female",
+        "Austin - Good ol' Texas boy",
+        "Russell - Dramatic British TV",
+        "Lori - Happy and sweet",
+        "Mark - Natural Conversations",
+        "Jessica Anne Bogart - Conversations",
+        "John Doe Gentle",
+        "Rob - Casual & Relaxed",
+        "Finn - Young & Energetic"
+    ]
+    
+    preset_voice_ids = [
+        # Dan Teacher voices at the top (as requested)
+        "jn5Dym9tbXQdxJRlyYzZ", # Dan Teacher - Hybrid
+        "CMtJJeUfoLE6mZYBmsFl", # Dan Teacher - Neutral
+        "W14NZHmEOKlltX7Dhrac", # Dan Teacher - Upbeat
+        # Current ElevenLabs voices with correct IDs
+        "9BWtsMINqrJLrRacOk9x", # Aria - Expressive & Versatile
+        "CwhRBWXzGAHq8TQ4Fs17", # Roger - Deep & Thoughtful
+        "EXAVITQu4vr4xnSDxMaL", # Sarah - Soft & Breathy
+        "FGY2WhTYpPnrIDTdsKH5", # Laura - Natural & Professional
+        "IKne3meq5aSn9XLyUdCD", # Charlie - Casual American
+        "JBFqnCBsd6RMkjVDRZzb", # George - British Male
+        "N2lVS1w4EtoT3dr4eOWO", # Callum - British Male Youth
+        "SAz9YHcvj6GT2YYXdXww", # River - Young American Female
+        "TX3LPaxmHKxFdv7VOQHJ", # Liam - North American Male
+        "XB0fDUnXU5powFXDhCwa", # Charlotte - Mature European
+        "Xb7hH8MSUJpSbSDYk0k2", # Alice - British Female
+        "XrExE9yKIg1WjnnlVkGX", # Matilda - Young British Female
+        "bIHbv24MWmeRgasZH58o", # Will - Professional Male
+        "cgSgspJ2msm6clMCkdW9", # Jessica - Upbeat American
+        "cjVigY5qzO86Huf0OWal", # Eric - Authoritative Male
+        "iP95p4xoKVk53GoZ742B", # Chris - Clear & Friendly
+        "nPczCjzI2devNBz1zQrb", # Brian - Deep & Mature
+        "onwK4e9ZLuTAKqWW03F9", # Daniel - British Male
+        "pFZP5JQG7iQjIQuC4Bku", # Lily - Soft & Gentle
+        "pqHfZKP75CvOlQylNhV4", # Bill - Friendly Narrator
+        # Specialized voices
+        "56AoDkrOh6qfVPDXZ7Pt", # Cassidy - Conversational Female
+        "Bj9UqZbhQsanLzgalpEG", # Austin - Good ol' Texas boy
+        "NYC9WEgkq1u4jiqBseQ9", # Russell - Dramatic British TV
+        "TbMNBJ27fH2U0VgpSNko", # Lori - Happy and sweet
+        "UgBBYS2sOqTuMpoF3BR0", # Mark - Natural Conversations
+        "g6xIsTj2HwM6VR4iXFCw", # Jessica Anne Bogart - Conversations
+        "iLzHtPh0bW6RGWRG0Xo5", # John Doe Gentle
+        "mkZwO4JCm0yEo6WmjZjA", # Rob - Casual & Relaxed
+        "vBKc2FfBKJfcZNyEt1n6", # Finn - Young & Energetic
+    ]
+    
+    # Always start with preset voices for all_voices (full list)
+    all_voice_names = list(preset_voice_names)
+    all_voice_ids = list(preset_voice_ids)
+    
+    # 2. Try to get additional voices from API (if possible, with a short timeout)
+    try:
+        print("Attempting to fetch additional voices from ElevenLabs API...")
+        # Get account-specific voices with a timeout to prevent startup delays
+        import threading
+        import time
+        
+        api_voices = []
+        api_fetch_complete = False
+        
+        def fetch_api_voices():
+            nonlocal api_voices, api_fetch_complete
+            try:
+                api_voices = get_voices()
+            except Exception as e:
+                print(f"Error fetching API voices: {str(e)}")
+            finally:
+                api_fetch_complete = True
+        
+        # Start API fetch in a separate thread
+        api_thread = threading.Thread(target=fetch_api_voices)
+        api_thread.daemon = True
+        api_thread.start()
+        
+        # Wait for API response with a timeout
+        timeout = 3.0  # seconds
+        start_time = time.time()
+        while not api_fetch_complete and (time.time() - start_time) < timeout:
+            time.sleep(0.1)
+        
+        if api_fetch_complete:
+            # Process API voices and add them to the all_voices list if not already in presets
+            preset_ids = set(preset_voice_ids)
+            for voice in api_voices:
+                voice_id = voice.get("voice_id")
+                voice_name = voice.get("name")
+                
+                if voice_id and voice_name and voice_id not in preset_ids:
+                    all_voice_names.append(voice_name)
+                    all_voice_ids.append(voice_id)
+                    
+            print(f"Successfully added {len(all_voice_names) - len(preset_voice_names)} additional voices from API")
+        else:
+            print(f"API voice fetch timed out after {timeout}s, proceeding with preset voices only")
+    
+    except Exception as e:
+        print(f"Error while adding API voices: {str(e)}")
+        print("Continuing with preset voices only")
+    
+    # Return both preset voices and the full combined list
+    return preset_voice_names, preset_voice_ids, all_voice_names, all_voice_ids
+
 def generate_voiceover(script, voice_id=VOICE_ID, output_path=None, model="eleven_multilingual_v2", 
                        stability=0.5, similarity=0.75, style=0.0, speed=1.0, use_speaker_boost=False,
                        output_format="mp3_44100_128"):

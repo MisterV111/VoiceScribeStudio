@@ -1,7 +1,6 @@
 import gradio as gr
 import os
 from app.utils.elevenlabs_client import generate_voiceover, convert_mp3_to_ogg, convert_wav_to_format, convert_to_wav, convert_to_high_quality_wav
-import time
 
 # These will be set from main.py
 preset_voice_names = []
@@ -16,8 +15,6 @@ def set_voice_data(p_names, p_ids, v_names, v_ids):
     preset_voice_ids = p_ids
     voice_names = v_names
     voice_ids = v_ids
-    print(f"set_voice_data received {len(preset_voice_names)} preset voices")
-    print(f"Voice data in component: {preset_voice_names[:3]}")
 
 def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voice_id="", output_format="ogg",
                     stability=0.5, similarity=0.75, style=0.0, speed=1.0, speaker_boost=False,
@@ -49,13 +46,10 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
             voice_id = preset_voice_ids[0] if preset_voice_ids else "default"
             print(f"Using default voice ID: {voice_id}")
         
-        # Define the base directory
-        base_output_dir = "output/audio"
-        timestamp_str = str(int(time.time())) # Use current time for uniqueness
-
         # Generate the voiceover
-        # output_path = f"output/audio/voiceover_{timestamp}" # Old path generation
-
+        timestamp = int(os.path.getmtime(__file__)) if os.path.exists(__file__) else 0
+        output_path = f"output/audio/voiceover_{timestamp}"
+        
         # Map UI format to API format
         format_mapping = {
             "wav": "pcm_44100",         # Highest quality - broadcast standard (requires Pro subscription)
@@ -75,15 +69,10 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         if generate_all_formats or output_format.lower() == "wav":
             # Try to generate WAV first (highest quality)
             api_format = format_mapping["wav"]
-            wav_output_dir = os.path.join(base_output_dir, "wav")
-            wav_output_filename = f"voiceover_{timestamp_str}.wav"
-            wav_full_path = os.path.join(wav_output_dir, wav_output_filename)
-
             audio_data, file_path, is_premium = generate_voiceover(
                 script=script,
                 voice_id=voice_id,
-                # output_path=f"{output_path}.wav", # Old path
-                output_path=wav_full_path, # New path
+                output_path=f"{output_path}.wav",
                 stability=stability,
                 similarity=similarity,
                 style=style,
@@ -98,41 +87,30 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
                 
                 # If we got WAV, we can derive other formats from it for best quality
                 if generate_all_formats or output_format.lower() == "ogg":
-                    # ogg_path = wav_path.replace(".wav", ".ogg") # Old path derivation
-                    ogg_output_dir = os.path.join(base_output_dir, "ogg")
-                    ogg_filename = wav_output_filename.replace(".wav", ".ogg")
-                    ogg_path = os.path.join(ogg_output_dir, ogg_filename)
+                    ogg_path = wav_path.replace(".wav", ".ogg")
                     ogg_result = convert_wav_to_format(wav_path, ogg_path, format_type="ogg", quality="high")
                     if ogg_result:
-                        ogg_path = ogg_result # convert_wav_to_format returns the full path
+                        ogg_path = ogg_result
                         all_generated_files.append(("OGG (Game Audio Quality)", ogg_path))
                 
                 if generate_all_formats or output_format.lower() == "mp3":
-                    # mp3_path = wav_path.replace(".wav", ".mp3") # Old path derivation
-                    mp3_output_dir = os.path.join(base_output_dir, "mp3")
-                    mp3_filename = wav_output_filename.replace(".wav", ".mp3")
-                    mp3_path = os.path.join(mp3_output_dir, mp3_filename)
+                    mp3_path = wav_path.replace(".wav", ".mp3")
                     mp3_result = convert_wav_to_format(wav_path, mp3_path, format_type="mp3", quality="high")
                     if mp3_result:
-                        mp3_path = mp3_result # convert_wav_to_format returns the full path
+                        mp3_path = mp3_result
                         all_generated_files.append(("MP3 (High Quality 192kbps)", mp3_path))
             elif output_format.lower() == "wav" and not generate_all_formats:
                 # WAV generation failed and it was the primary format
                 return f"Failed to generate WAV format. Your ElevenLabs subscription plan may not support WAV output. Try MP3, High Quality WAV, or OGG instead.", None, None, None, []
         
         # Generate MP3 for standard formats or if WAV failed
-        if (not wav_path and (generate_all_formats or "mp3" in output_format.lower() or "ogg" in output_format.lower() or "wav" in output_format.lower())) or "high quality wav" in output_format.lower():
+        if (not wav_path and (generate_all_formats or output_format.lower() in ["mp3", "ogg", "high quality wav"])) or output_format.lower() == "high quality wav":
             # For MP3 format, use the higher quality 192kbps
             api_format = format_mapping["mp3"]
-            mp3_output_dir = os.path.join(base_output_dir, "mp3")
-            mp3_output_filename = f"voiceover_{timestamp_str}.mp3"
-            mp3_full_path = os.path.join(mp3_output_dir, mp3_output_filename)
-
             audio_data, file_path, is_premium = generate_voiceover(
                 script=script,
                 voice_id=voice_id,
-                # output_path=f"{output_path}.mp3", # Old path
-                output_path=mp3_full_path, # New path
+                output_path=f"{output_path}.mp3",
                 stability=stability,
                 similarity=similarity,
                 style=style,
@@ -142,57 +120,52 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
             )
             
             if not audio_data or not file_path:
-                print(f"Failed to generate voiceover for voice ID: {voice_id}. Please check your API key and try again.")
                 return f"Failed to generate voiceover with voice: {voice_selection}. Please check your API key and try again.", None, None, None, []
             
             mp3_path = file_path
             all_generated_files.append(("MP3 (High Quality 192kbps)", mp3_path))
             
             # Convert to OGG if needed
-            if generate_all_formats or "ogg" in output_format.lower():
-                # ogg_path = mp3_path.replace(".mp3", ".ogg") # Old path derivation
-                ogg_output_dir = os.path.join(base_output_dir, "ogg")
-                ogg_filename = mp3_output_filename.replace(".mp3", ".ogg")
-                ogg_path = os.path.join(ogg_output_dir, ogg_filename)
+            if generate_all_formats or output_format.lower() == "ogg":
+                ogg_path = mp3_path.replace(".mp3", ".ogg")
                 _, ogg_file = convert_mp3_to_ogg(mp3_path, ogg_path, quality="high")
                 if ogg_file:
-                    ogg_path = ogg_file # convert_mp3_to_ogg returns the full path
+                    ogg_path = ogg_file
                     all_generated_files.append(("OGG (Game Audio Quality)", ogg_path))
                 else:
                     # If OGG conversion failed but we still need OGG output, use MP3 as fallback
                     print("OGG conversion failed, using MP3 as fallback for OGG")
-                    if "ogg" in output_format.lower() and not generate_all_formats:
+                    if output_format.lower() == "ogg" and not generate_all_formats:
                         ogg_path = mp3_path
             
             # Convert to high quality WAV if needed
-            if generate_all_formats or "wav" in output_format.lower():
-                # high_quality_wav_path = mp3_path.replace(".mp3", "_hq.wav") # Old path derivation
-                wav_output_dir = os.path.join(base_output_dir, "wav")
-                wav_filename = mp3_output_filename.replace(".mp3", "_hq.wav")
-                high_quality_wav_path = os.path.join(wav_output_dir, wav_filename)
+            if generate_all_formats or output_format.lower() == "high quality wav":
+                high_quality_wav_path = mp3_path.replace(".mp3", "_hq.wav")
                 wav_result = convert_to_high_quality_wav(mp3_path, high_quality_wav_path)
                 if wav_result:
-                    high_quality_wav_path = wav_result # convert_to_high_quality_wav returns the full path
+                    high_quality_wav_path = wav_result
                     all_generated_files.append(("WAV (High Quality 48kHz/24-bit)", high_quality_wav_path))
         
         # Determine which outputs to show based on the primary format
         if generate_all_formats:
-            status_message = "**<span style='color: #f86815;'>Voiceover generated successfully in multiple formats!</span>**"
+            status_message = "Voiceover generated successfully in multiple formats!"
             if len(all_generated_files) < 2:
                 status_message += " (Note: Some formats may not have been generated due to conversion errors)"
             return status_message, ogg_path, mp3_path, wav_path or high_quality_wav_path, all_generated_files
-        elif "ogg" in output_format.lower():
+        elif output_format.lower() == "ogg":
             if ogg_path:
-                return "**<span style='color: #f86815;'>Voiceover generated successfully!</span>**", ogg_path, None, None, all_generated_files
+                return "Voiceover generated successfully!", ogg_path, None, None, all_generated_files
             elif mp3_path:  # Fallback if OGG conversion failed
-                return "**<span style='color: #f86815;'>Voiceover generated successfully!</span>** (Note: OGG conversion failed, using MP3 instead)", mp3_path, mp3_path, None, all_generated_files
-        elif "mp3" in output_format.lower():
-            return "**<span style='color: #f86815;'>Voiceover generated successfully!</span>**", None, mp3_path, None, all_generated_files
-        elif "wav" in output_format.lower():
-            return "**<span style='color: #f86815;'>Voiceover generated successfully!</span>**", None, None, high_quality_wav_path, all_generated_files
+                return "Voiceover generated successfully! (Note: OGG conversion failed, using MP3 instead)", mp3_path, mp3_path, None, all_generated_files
+        elif output_format.lower() == "mp3":
+            return "Voiceover generated successfully!", None, mp3_path, None, all_generated_files
+        elif output_format.lower() == "wav":
+            return "Voiceover generated successfully!", None, None, wav_path, all_generated_files
+        elif output_format.lower() == "high quality wav":
+            return "Voiceover generated successfully!", None, None, high_quality_wav_path, all_generated_files
         else:
             # Default fallback to OGG
-            return "**<span style='color: #f86815;'>Voiceover generated successfully!</span>**", ogg_path or mp3_path, None, None, all_generated_files
+            return "Voiceover generated successfully!", ogg_path or mp3_path, None, None, all_generated_files
             
     except Exception as e:
         print(f"Error generating voiceover: {str(e)}")
@@ -201,15 +174,6 @@ def create_voiceover(script, voice_selection="Dan Teacher - Natural", custom_voi
         return f"Error generating voiceover: {str(e)}", None, None, None, []
 
 def create_voiceover_tab():
-    """Create the voiceover generation tab"""
-    # Make sure we can access the global voice data
-    global preset_voice_names, preset_voice_ids, voice_names, voice_ids
-    print(f"create_voiceover_tab has access to {len(preset_voice_names)} preset voices")
-    
-    # Make a local copy to ensure it's available during component creation
-    local_preset_voice_names = list(preset_voice_names)
-    print(f"Local copy contains {len(local_preset_voice_names)} voice names")
-    
     with gr.TabItem("Generate Voiceover"):
         with gr.Row():
             # Left column - Script input and basic controls
@@ -286,11 +250,10 @@ def create_voiceover_tab():
                     
                     # Preset voices selection
                     with gr.Group(visible=True) as preset_group:
-                        print(f"Creating dropdown with {len(local_preset_voice_names)} voices")
                         preset_voice_selector = gr.Dropdown(
                             label="Select Voice",
-                            choices=local_preset_voice_names,
-                            value=local_preset_voice_names[0] if local_preset_voice_names else None,
+                            choices=preset_voice_names,
+                            value=preset_voice_names[0] if preset_voice_names else None,
                             info="These voices will work with a valid ElevenLabs API key"
                         )
                     
@@ -317,16 +280,43 @@ def create_voiceover_tab():
                     gr.Markdown("### Audio Settings")
                     format_selector = gr.Dropdown(
                         label="Audio Format",
-                        choices=["MP3 (44.1kHz, 192kbps)", "OGG (Game Audio Quality)", "High Quality WAV (48kHz/24-bit)"],
-                        value="OGG (Game Audio Quality)",
+                        choices=["MP3", "OGG", "High Quality WAV (48kHz/24-bit)"],
+                        value="OGG",
                         info="Select output format based on your needs"
                     )
+                    
+                    # Format information guide
+                    with gr.Accordion("Audio Format Guide", open=False) as format_info:
+                        gr.Markdown("""
+                        ## Audio Format Guide
+                        
+                        ### High Quality WAV (48kHz/24-bit)
+                        - **Quality:** Professional quality WAV converted from MP3 (48kHz, 24-bit)
+                        - **Use for:** Audio/video editing, DAW projects, professional workflows
+                        - **Advantages:** Compatible with professional audio software, uncompressed
+                        - **Disadvantages:** Very large file size, no quality improvement over source MP3
+                        - **Note:** Available with any subscription tier
+                        
+                        ### MP3 (High Quality)
+                        - **Quality:** High quality compressed audio (44.1kHz, 192kbps)
+                        - **Use for:** Music, podcasts, professional streaming
+                        - **Advantages:** Good balance of quality and file size, universal compatibility
+                        - **Disadvantages:** Slight quality loss due to compression
+                        - **Note:** Available with your Creator tier subscription
+                        
+                        ### OGG (Game Audio Quality)
+                        - **Quality:** Good quality compressed audio with transparent sound
+                        - **Use for:** Video games, web applications, streaming
+                        - **Advantages:** Better quality-to-size ratio than MP3, open format
+                        - **Disadvantages:** Less universal compatibility than MP3
+                        - **Note:** Created from MP3 through conversion
+                        """)
                     
                     # Add batch generation checkbox
                     batch_generation = gr.Checkbox(
                         label="Generate All Formats",
                         value=False,
-                        info="Generate all available formats at once (MP3, OGG, High Quality WAV with their specifications)"
+                        info="Generate all available formats at once (MP3, OGG, High Quality WAV)"
                     )
                 
                 # Add some spacing before the button
@@ -336,8 +326,9 @@ def create_voiceover_tab():
             # Right column - Output and voice settings
             with gr.Column(scale=1):
                 # Status and output
-                voiceover_status = gr.Markdown(
-                    value="**<span style='color: #3e2656;'>Input a script > select a voice > select the audio format > generate voiceover.</span>**"
+                voiceover_status = gr.Textbox(
+                    label="Status",
+                    value="Input a script > select a voice > select the audio format > generate voiceover."
                 )
                 
                 with gr.Group():
@@ -359,11 +350,10 @@ def create_voiceover_tab():
                     )
                     
                     # Add batch output display for when multiple formats are generated
-                    batch_output = gr.HTML(
+                    batch_output = gr.Markdown(
                         value="",
-                        label="Generated Audio Formats",
-                        visible=False,
-                        elem_classes=["generated-formats-container"]
+                        label="All Generated Formats",
+                        visible=False
                     )
                 
                 # Voice Settings in a group with better visual structure
@@ -477,6 +467,17 @@ def create_voiceover_tab():
             outputs=[settings_help]
         )
         
+        # Function to toggle format info visibility
+        def toggle_format_info():
+            return gr.update(visible=not format_info.visible, open=True)
+        
+        # Connect format info button to toggle function
+        format_guide_btn.click(
+            fn=toggle_format_info,
+            inputs=[],
+            outputs=[format_info]
+        )
+        
         # Toggle between preset and custom voice input
         def toggle_voice_input(voice_type):
             if voice_type == "Preset Voices":
@@ -503,54 +504,16 @@ def create_voiceover_tab():
         
         # Connect the voiceover button to the create_voiceover function with output formatter
         def create_voiceover_with_markdown(*args):
-            """Wrapper function that converts file list output to HTML"""
+            """Wrapper function that converts file list output to markdown"""
             status, ogg, mp3, wav, file_list = create_voiceover(*args)
             
-            # Convert file list to styled HTML
+            # Convert file list to markdown
             if isinstance(file_list, list) and len(file_list) > 0:
-                html = """
-                <div class="generated-files-header">
-                    <h3 style="color: white;">🎵 Generated Audio Files</h3>
-                    <p style="color: white;">All formats are ready for download. Click the links below to access your files:</p>
-                </div>
-                <div class="generated-files-grid">
-                """
-                
+                markdown = "### Generated Audio Files\n\n"
                 for format_name, file_path in file_list:
                     file_name = os.path.basename(file_path)
-                    
-                    try:
-                        file_size_mb = round(os.path.getsize(file_path) / (1024 * 1024), 2)
-                    except:
-                        file_size_mb = 0
-                    
-                    # Determine icon based on format
-                    icon = "🎧"  # Default
-                    if "WAV" in format_name:
-                        icon = "🔊"
-                    elif "MP3" in format_name:
-                        icon = "🎵"
-                    elif "OGG" in format_name:
-                        icon = "🎮"
-                    
-                    # Ensure file path is correctly formatted for browser
-                    file_path = file_path.replace("\\\\", "/")
-                    # Construct the Gradio file URL
-                    gradio_file_url = f"/file={file_path}"
-                    
-                    html += f'''
-                    <div class="audio-file-card">
-                        <div class="format-icon">{icon}</div>
-                        <div class="format-details">
-                            <div class="format-name">{format_name}</div>
-                            <div class="file-info">{file_name} ({file_size_mb} MB)</div>
-                            <a href="{gradio_file_url}" class="download-link" download="{file_name}">Download</a>
-                        </div>
-                    </div>
-                    '''
-                
-                html += "</div>"
-                return status, ogg, mp3, wav, html
+                    markdown += f"- **{format_name}**: [{file_name}]({file_path})\n"
+                return status, ogg, mp3, wav, markdown
             else:
                 return status, ogg, mp3, wav, ""
         
@@ -576,25 +539,17 @@ def create_voiceover_tab():
         def update_format_visibility(fmt, batch_mode):
             """Update the visibility of audio output components based on format and batch mode"""
             fmt = fmt.lower()
-            is_ogg = "ogg" in fmt
-            is_mp3 = "mp3" in fmt
-            is_wav = "wav" in fmt
+            is_ogg = fmt == "ogg"
+            is_mp3 = fmt == "mp3"
+            is_wav = fmt in ["wav", "high quality wav"]
             
             if batch_mode:
-                # In batch mode, show the MP3 player by default (or another format if MP3 isn't selected)
-                # Also show the batch output with all download links
-                if "mp3" in fmt:
-                    return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True, value="")
-                elif "ogg" in fmt:
-                    return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True, value="")
-                elif "wav" in fmt:
-                    return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True), gr.update(visible=True, value="")
-                else:
-                    # Default to MP3 if no specific format
-                    return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True, value="")
+                # In batch mode, show the batch output and hide individual outputs
+                # Individual playback will be available through the batch output table
+                return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
             else:
                 # In single format mode, only show the selected format
-                return gr.update(visible=is_ogg), gr.update(visible=is_mp3), gr.update(visible=is_wav), gr.update(visible=False, value="")
+                return gr.update(visible=is_ogg), gr.update(visible=is_mp3), gr.update(visible=is_wav), gr.update(visible=False)
         
         # Connect format selector and batch generation checkbox
         format_selector.change(

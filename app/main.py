@@ -1,155 +1,80 @@
 import os
-import base64
-import gradio as gr
-import time
+import sys
 import json
-import tempfile
+import base64
 import traceback
-from datetime import datetime
+import gradio as gr
 from dotenv import load_dotenv
-from typing import List, Dict, Tuple, Optional, Any
+
+# Load environment variables
+load_dotenv()
+
+# Import constants from config (should happen after load_dotenv)
+from app.config import (
+    ELEVENLABS_API_KEY, DEEPSEEK_API_KEY, ANTHROPIC_API_KEY,
+    DEEPSEEK_MODEL, CLAUDE_MODEL, VOICE_ID, PRESET_VOICES,
+    validate_config
+)
+
+# Admin credentials - should be in environment variables
+# For security, these should be moved to the config file later
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password")
 
 # Import utility functions
-from app.utils.config import (
-    CLAUDE_MODEL, 
-    DEEPSEEK_MODEL, 
-    ADMIN_USERNAME, 
-    ADMIN_PASSWORD,
-    validate_config,
-    save_config_to_env
-)
 from app.utils.token_counter import token_tracker
-from app.utils.llm_clients import generate_script, analyze_content
-from app.utils.tts_clients import (
-    generate_audio, 
-    load_voices,
-    humanize_audio
-)
+
+# Import elevenlabs client functions
+from app.utils.elevenlabs_client import load_all_voices
+from app.components.voiceover_generator import set_voice_data as voiceover_set_voice_data
+
+# Import script generation functions
+from app.utils.llm_clients import generate_script
 
 # Import components
-from app.components.voiceover_generator import set_voice_data as voiceover_set_voice_data, create_voiceover_tab
 from app.components.script_generator import create_script_generator_tab
 from app.components.script_editor import create_script_editor_tab
+from app.components.voiceover_generator import create_voiceover_tab
 from app.components.token_dashboard import create_token_dashboard
 from app.components.testing_dashboard import create_testing_dashboard
 
-# Global voice data
-voice_data = {
-    "preset_voice_names": [],
-    "preset_voice_ids": [],
-    "voice_names": [],
-    "voice_ids": []
-}
+# Global variables for voice data
+preset_voice_names = []
+preset_voice_ids = []
+voice_names = []
+voice_ids = []
 
-def set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids):
-    """Set the global voice data"""
-    voice_data["preset_voice_names"] = preset_voice_names
-    voice_data["preset_voice_ids"] = preset_voice_ids
-    voice_data["voice_names"] = voice_names
-    voice_data["voice_ids"] = voice_ids
+# Initialize token tracker
+# token_tracker = TokenTracker()  # Already initialized in token_counter.py
+
+def set_voice_data(p_names, p_ids, v_names, v_ids):
+    """Set global voice data variables"""
+    global preset_voice_names, preset_voice_ids, voice_names, voice_ids
+    preset_voice_names = p_names
+    preset_voice_ids = p_ids
+    voice_names = v_names
+    voice_ids = v_ids
+    print(f"set_voice_data set {len(preset_voice_names)} preset voices")
 
 def setup_directories():
-    """Create necessary directories if they don't exist"""
-    os.makedirs("outputs", exist_ok=True)
-    os.makedirs("outputs/scripts", exist_ok=True)
-    os.makedirs("outputs/audio", exist_ok=True)
-    os.makedirs("outputs/audio/ogg", exist_ok=True)
-    os.makedirs("outputs/audio/mp3", exist_ok=True)
-    os.makedirs("outputs/audio/wav", exist_ok=True)
-    os.makedirs("outputs/batch", exist_ok=True)
+    """Make sure required directories exist"""
+    # Core directories
     os.makedirs("logs", exist_ok=True)
     os.makedirs("data", exist_ok=True)
+    
+    # Output directories with improved organization
+    os.makedirs("output/scripts", exist_ok=True)
+    os.makedirs("output/audio", exist_ok=True)
+    os.makedirs("output/audio/ogg", exist_ok=True)
+    os.makedirs("output/audio/mp3", exist_ok=True)
+    os.makedirs("output/audio/wav", exist_ok=True)
+    os.makedirs("output/batch", exist_ok=True)
     
     # Create token log if it doesn't exist
     token_log_path = os.path.join("data", "token_log.json")
     if not os.path.exists(token_log_path):
         with open(token_log_path, "w") as f:
             json.dump([], f)
-
-def load_voices():
-    """Load voice options for the dropdown menus"""
-    try:
-        # ElevenLabs Preset Voices (always available)
-        preset_voice_names = [
-            # Custom Dan Teacher voices at the top (as requested)
-            "Dan Teacher - Hybrid",
-            "Dan Teacher - Neutral",
-            "Dan Teacher - Upbeat",
-            # Current ElevenLabs voices with correct names and descriptions
-            "Aria - Expressive & Versatile",
-            "Roger - Deep & Thoughtful",
-            "Sarah - Soft & Breathy",
-            "Laura - Natural & Professional",
-            "Charlie - Casual American",
-            "George - British Male",
-            "Callum - British Male Youth",
-            "River - Young American Female",
-            "Liam - North American Male",
-            "Charlotte - Mature European",
-            "Alice - British Female",
-            "Matilda - Young British Female",
-            "Will - Professional Male",
-            "Jessica - Upbeat American",
-            "Eric - Authoritative Male",
-            "Chris - Clear & Friendly",
-            "Brian - Deep & Mature",
-            "Daniel - British Male",
-            "Lily - Soft & Gentle",
-            "Bill - Friendly Narrator",
-            # Specialized voices
-            "Cassidy - Conversational Female",
-            "Austin - Good ol' Texas boy",
-            "Russell - Dramatic British TV",
-            "Lori - Happy and sweet",
-            "Mark - Natural Conversations",
-            "Jessica Anne Bogart - Conversations",
-            "John Doe Gentle",
-            "Rob - Casual & Relaxed",
-            "Finn - Young & Energetic"
-        ]
-        
-        preset_voice_ids = [
-            # Custom Dan Teacher voices at the top (as requested)
-            "jn5Dym9tbXQdxJRlyYzZ", # Dan Teacher - Hybrid
-            "CMtJJeUfoLE6mZYBmsFl", # Dan Teacher - Neutral
-            "W14NZHmEOKlltX7Dhrac", # Dan Teacher - Upbeat
-            # Current ElevenLabs voices with correct IDs
-            "9BWtsMINqrJLrRacOk9x", # Aria - Expressive & Versatile
-            "CwhRBWXzGAHq8TQ4Fs17", # Roger - Deep & Thoughtful
-            "EXAVITQu4vr4xnSDxMaL", # Sarah - Soft & Breathy
-            "FGY2WhTYpPnrIDTdsKH5", # Laura - Natural & Professional
-            "IKne3meq5aSn9XLyUdCD", # Charlie - Casual American
-            "JBFqnCBsd6RMkjVDRZzb", # George - British Male
-            "N2lVS1w4EtoT3dr4eOWO", # Callum - British Male Youth
-            "SAz9YHcvj6GT2YYXdXww", # River - Young American Female
-            "TX3LPaxmHKxFdv7VOQHJ", # Liam - North American Male
-            "XB0fDUnXU5powFXDhCwa", # Charlotte - Mature European
-            "Xb7hH8MSUJpSbSDYk0k2", # Alice - British Female
-            "XrExE9yKIg1WjnnlVkGX", # Matilda - Young British Female
-            "bIHbv24MWmeRgasZH58o", # Will - Professional Male
-            "cgSgspJ2msm6clMCkdW9", # Jessica - Upbeat American
-            "cjVigY5qzO86Huf0OWal", # Eric - Authoritative Male
-            "iP95p4xoKVk53GoZ742B", # Chris - Clear & Friendly
-            "nPczCjzI2devNBz1zQrb", # Brian - Deep & Mature
-            "onwK4e9ZLuTAKqWW03F9", # Daniel - British Male
-            "pFZP5JQG7iQjIQuC4Bku", # Lily - Soft & Gentle
-            "pqHfZKP75CvOlQylNhV4", # Bill - Friendly Narrator
-            # Specialized voices
-            "56AoDkrOh6qfVPDXZ7Pt", # Cassidy - Conversational Female
-            "Bj9UqZbhQsanLzgalpEG", # Austin - Good ol' Texas boy
-            "NYC9WEgkq1u4jiqBseQ9", # Russell - Dramatic British TV
-            "TbMNBJ27fH2U0VgpSNko", # Lori - Happy and sweet
-            "UgBBYS2sOqTuMpoF3BR0", # Mark - Natural Conversations
-            "g6xIsTj2HwM6VR4iXFCw", # Jessica Anne Bogart - Conversations
-            "iLzHtPh0bW6RGWRG0Xo5", # John Doe Gentle
-            "mkZwO4JCm0yEo6WmjZjA", # Rob - Casual & Relaxed
-            "vBKc2FfBKJfcZNyEt1n6", # Finn - Young & Energetic
-        ]
-                
-        return preset_voice_names, preset_voice_ids, preset_voice_names, preset_voice_ids
-    except Exception as e:
-        print(f"Error loading voices: {e}")
-        return [], [], [], []
 
 def get_css():
     """Get custom CSS for the Gradio app"""
@@ -247,8 +172,8 @@ def setup_app_environment():
     """Set up all prerequisites for the app"""
     setup_directories()
     
-    # Load voices
-    preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_voices()
+    # Load voices using the consolidated function from elevenlabs_client.py
+    preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_all_voices()
     print(f"Loaded {len(preset_voice_names)} preset voices")
     print(f"First few voice names: {preset_voice_names[:3]}")
     
