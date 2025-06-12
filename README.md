@@ -1,7 +1,10 @@
-# (Version 0.1.0)
+# VoiceScribe Studio (Version 0.1.0)
 
 <div align="center">
   <img src="app/assets/VoiceScribe Studio Banner.png" alt="VoiceScribe Studio Banner" width="800">
+  
+  **Professional AI-Powered Content Creation Suite**  
+  *Proprietary Software by INSPIRED CREATIVE GROUP INC.*
 </div>
 
 ## About
@@ -74,7 +77,9 @@ Development for upcoming features occurs on dedicated branches (like `phase-2-fe
 
 ### Setup
 
-1. Clone the repository:
+1. **Licensed Access Required**: Contact INSPIRED CREATIVE GROUP INC. for repository access.
+   
+   Once access is granted, clone the repository:
    ```
    git clone https://github.com/MisterV111/VoiceScribeStudio.git
    cd VoiceScribeStudio
@@ -142,11 +147,21 @@ VoiceScribe Studio offers several specialized templates:
 
 ## Contributing
 
-Contributions are welcome! Please follow standard GitHub fork & pull request procedures, targeting the relevant development branch (e.g., `phase-2-features`).
+**VoiceScribe Studio** is proprietary software owned by INSPIRED CREATIVE GROUP INC. 
+
+Contributions are only accepted from authorized collaborators. If you're interested in contributing to the project, please contact INSPIRED CREATIVE GROUP INC. to discuss partnership opportunities.
+
+For authorized contributors, please follow standard GitHub procedures, targeting the relevant development branch (e.g., `phase-2-features`).
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This software is proprietary and owned by **INSPIRED CREATIVE GROUP INC.** All rights reserved.
+
+**VoiceScribe Studio** is licensed under a proprietary license agreement. Unauthorized copying, distribution, modification, or commercial use is strictly prohibited without explicit written permission from INSPIRED CREATIVE GROUP INC.
+
+For licensing inquiries, please contact INSPIRED CREATIVE GROUP INC.
+
+See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 ## Acknowledgments
 
