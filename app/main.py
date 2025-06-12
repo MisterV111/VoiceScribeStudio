@@ -3,8 +3,20 @@ import sys
 import json
 import base64
 import traceback
+import logging
 import gradio as gr
 from dotenv import load_dotenv
+
+# Configure logging for production
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('logs/app.log', mode='a') if os.path.exists('logs') else logging.NullHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -19,7 +31,11 @@ from app.config import (
 # Admin credentials - should be in environment variables
 # For security, these should be moved to the config file later
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+
+# Tester credentials for shared testing access
+TESTER_USERNAME = os.getenv("TESTER_USERNAME", "voicescribe_tester") 
+TESTER_PASSWORD = os.getenv("TESTER_PASSWORD", "demo2024_vs")
 
 # Import utility functions
 from app.utils.token_counter import token_tracker
@@ -170,19 +186,38 @@ def create_banner(base64_banner):
 
 def setup_app_environment():
     """Set up all prerequisites for the app"""
-    setup_directories()
-    
-    # Load voices using the consolidated function from elevenlabs_client.py
-    preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_all_voices()
-    print(f"Loaded {len(preset_voice_names)} preset voices")
-    print(f"First few voice names: {preset_voice_names[:3]}")
-    
-    # Set voice data in both the main app and the voiceover component
-    set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
-    voiceover_set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
-    print(f"Voice data passed to voiceover component")
-    
-    return load_banner()
+    try:
+        logger.info("Setting up directories...")
+        setup_directories()
+        
+        # Load voices using the consolidated function from elevenlabs_client.py
+        logger.info("Loading voice configurations...")
+        preset_voice_names, preset_voice_ids, voice_names, voice_ids = load_all_voices()
+        logger.info(f"Loaded {len(preset_voice_names)} preset voices and {len(voice_names)} total voices")
+        print(f"Loaded {len(preset_voice_names)} preset voices")
+        print(f"First few voice names: {preset_voice_names[:3] if preset_voice_names else []}")
+        
+        # Set voice data in both the main app and the voiceover component
+        set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
+        voiceover_set_voice_data(preset_voice_names, preset_voice_ids, voice_names, voice_ids)
+        logger.info("Voice data configured successfully")
+        print(f"Voice data passed to voiceover component")
+        
+        return load_banner()
+        
+    except Exception as e:
+        logger.error(f"Error setting up app environment: {str(e)}", exc_info=True)
+        # Continue with minimal setup if voice loading fails
+        print(f"Warning: Some features may not work properly due to setup error: {str(e)}")
+        return load_banner()
+
+def verify_credentials(username, password, user_type="tester"):
+    """Verify user credentials based on user type"""
+    if user_type == "admin":
+        return (username == ADMIN_USERNAME and password == ADMIN_PASSWORD)
+    elif user_type == "tester":
+        return (username == TESTER_USERNAME and password == TESTER_PASSWORD)
+    return False
 
 def create_gradio_app():
     """Create the Gradio app with all components"""
@@ -193,56 +228,63 @@ def create_gradio_app():
         current_interface = gr.State("public")
         is_authenticated = gr.State(False)
         
-        # Public interface components
+        # Public interface components (shown when authenticated as tester or when not authenticated)
         with gr.Column(visible=True) as public_interface:
             # Create the banner
             create_banner(banner_base64)
-            # Add admin login link
-            with gr.Row():
-                admin_link = gr.Button(
-                    "🔒 Admin Login", 
-                    elem_id="admin-link-btn",
-                    elem_classes=["admin-button"],
-                    scale=0,
-                    size="sm"
-                )
             
-            # Create the main tabs
-            with gr.Tabs():
-                # Create tabs using the component functions
-                script_output, script_file_output = create_script_generator_tab()
-                edit_script_input, edited_script_output = create_script_editor_tab()
-                voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
-                
-                # Connect script generator to script editor
-                script_output.change(
-                    fn=lambda x: x,
-                    inputs=[script_output],
-                    outputs=[edit_script_input]
-                )
-                
-                # Connect script editor to voiceover generator
-                edited_script_output.change(
-                    fn=lambda x: x,
-                    inputs=[edited_script_output],
-                    outputs=[voiceover_script]
-                )
+            # Authentication status and login link
+            with gr.Row():
+                with gr.Column(scale=10):
+                    auth_status = gr.Markdown("Please login to access VoiceScribe Studio features.", visible=True)
+                with gr.Column(scale=1):
+                    login_link = gr.Button(
+                        "🔒 Login", 
+                        elem_classes=["admin-button"],
+                        scale=0,
+                        size="sm"
+                    )
+            
+            # Main application content (hidden until authenticated)
+            main_content = gr.Column(visible=False)
+            with main_content:
+                # Create the main tabs
+                with gr.Tabs():
+                    # Create tabs using the component functions
+                    script_output, script_file_output = create_script_generator_tab()
+                    edit_script_input, edited_script_output = create_script_editor_tab()
+                    voiceover_script, voiceover_status, ogg_output, mp3_output, wav_output, batch_output = create_voiceover_tab()
+                    
+                    # Connect script generator to script editor
+                    script_output.change(
+                        fn=lambda x: x,
+                        inputs=[script_output],
+                        outputs=[edit_script_input]
+                    )
+                    
+                    # Connect script editor to voiceover generator
+                    edited_script_output.change(
+                        fn=lambda x: x,
+                        inputs=[edited_script_output],
+                        outputs=[voiceover_script]
+                    )
         
-        # Admin login form
+        # Login form (for both testers and admins)
         with gr.Column(visible=False) as login_form:
             # Create the banner
             create_banner(banner_base64)
             
             with gr.Column(elem_classes=["login-container"]):
-                gr.Markdown("# 🔒 Admin Authentication", elem_classes=["login-title"])
-                gr.Markdown("Please enter your credentials to access the admin dashboard.")
+                gr.Markdown("# 🔒 VoiceScribe Studio Login", elem_classes=["login-title"])
+                gr.Markdown("Please enter your credentials to access VoiceScribe Studio.")
+                gr.Markdown("*Testers will have full access to all features. Admins will have access to analytics and testing tools.*")
                 username = gr.Textbox(label="Username", placeholder="Enter your username")
                 password = gr.Textbox(label="Password", placeholder="Enter your password", type="password")
                 error_message = gr.Markdown(visible=False, value="⚠️ Incorrect username or password", elem_classes=["error-message"])
                 
                 with gr.Row(equal_height=True):
                     login_button = gr.Button("Login", variant="primary", size="lg")
-                    back_button = gr.Button("Back to Main App", size="lg")
+                    back_button = gr.Button("Back to Public View", size="lg")
         
         # Admin dashboard
         with gr.Column(visible=False) as admin_dashboard:
@@ -278,7 +320,9 @@ def create_gradio_app():
             return {
                 public_interface: gr.update(visible=False),  
                 login_form: gr.update(visible=True),   
-                admin_dashboard: gr.update(visible=False),  
+                admin_dashboard: gr.update(visible=False),
+                auth_status: gr.update(visible=True),
+                main_content: gr.update(visible=False),
                 current_interface: "login",                   
                 is_authenticated: False                      
             }
@@ -287,21 +331,40 @@ def create_gradio_app():
             return {
                 public_interface: gr.update(visible=True),   
                 login_form: gr.update(visible=False),  
-                admin_dashboard: gr.update(visible=False),  
+                admin_dashboard: gr.update(visible=False),
+                auth_status: gr.update(visible=True),
+                main_content: gr.update(visible=False),
                 current_interface: "public",                   
                 is_authenticated: False                      
             }
         
         def check_login(username_value, password_value):
             print(f"Checking login for username: {username_value}")
-            if username_value == ADMIN_USERNAME and password_value == ADMIN_PASSWORD:
-                print("Authentication successful")
+            
+            # Check admin credentials first
+            if verify_credentials(username_value, password_value, "admin"):
+                print("Admin authentication successful")
                 return {
                     public_interface: gr.update(visible=False),  
                     login_form: gr.update(visible=False),  
                     admin_dashboard: gr.update(visible=True),   
-                    error_message: gr.update(visible=False),  
+                    error_message: gr.update(visible=False),
+                    auth_status: gr.update(visible=False),
+                    main_content: gr.update(visible=False),
                     current_interface: "admin",                   
+                    is_authenticated: True                      
+                }
+            # Check tester credentials
+            elif verify_credentials(username_value, password_value, "tester"):
+                print("Tester authentication successful")
+                return {
+                    public_interface: gr.update(visible=True),   
+                    login_form: gr.update(visible=False),  
+                    admin_dashboard: gr.update(visible=False),   
+                    error_message: gr.update(visible=False),
+                    auth_status: gr.update(visible=False),
+                    main_content: gr.update(visible=True),
+                    current_interface: "public",                   
                     is_authenticated: True                      
                 }
             else:
@@ -310,17 +373,19 @@ def create_gradio_app():
                     public_interface: gr.update(visible=False),  
                     login_form: gr.update(visible=True),  
                     admin_dashboard: gr.update(visible=False),  
-                    error_message: gr.update(visible=True),  
+                    error_message: gr.update(visible=True),
+                    auth_status: gr.update(visible=True),
+                    main_content: gr.update(visible=False),
                     current_interface: "login",                   
                     is_authenticated: False                      
                 }
         
         # Connect all the event handlers
-        admin_link.click(
+        login_link.click(
             fn=lambda: None,
             inputs=[],
             outputs=[],
-            js="() => { window.open(window.location.href + '?view=admin', '_blank'); return []; }"
+            js="() => { window.location.href = window.location.origin + '?view=login'; }"
         )
         
         # We need to wrap the dictionary-returning functions to convert to list format
@@ -331,6 +396,8 @@ def create_gradio_app():
                 result[login_form],
                 result[admin_dashboard],
                 result[error_message],
+                result[auth_status],
+                result[main_content],
                 result[current_interface],
                 result[is_authenticated]
             ]
@@ -341,6 +408,8 @@ def create_gradio_app():
                 result[public_interface],
                 result[login_form],
                 result[admin_dashboard],
+                result[auth_status],
+                result[main_content],
                 result[current_interface],
                 result[is_authenticated]
             ]
@@ -351,6 +420,8 @@ def create_gradio_app():
                 result[public_interface],
                 result[login_form],
                 result[admin_dashboard],
+                result[auth_status],
+                result[main_content],
                 result[current_interface],
                 result[is_authenticated]
             ]
@@ -358,35 +429,37 @@ def create_gradio_app():
         login_button.click(
             fn=wrap_check_login,
             inputs=[username, password],
-            outputs=[public_interface, login_form, admin_dashboard, error_message, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, error_message, auth_status, main_content, current_interface, is_authenticated]
         )
         
         back_button.click(
             fn=wrap_switch_to_public,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
         )
         
         return_btn.click(
             fn=wrap_switch_to_public,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
         )
         
         logout_btn.click(
             fn=wrap_switch_to_login,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
         )
         
         # Add load handler
-        @app.load(outputs=[public_interface, login_form, admin_dashboard, current_interface, is_authenticated], api_name=False)
+        @app.load(outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated], api_name=False)
         def on_load(request: gr.Request):
-            if request and hasattr(request, "query_params") and request.query_params.get("view") == "admin":
+            if request and hasattr(request, "query_params") and (request.query_params.get("view") == "login" or request.query_params.get("view") == "admin"):
                 return [
                     gr.update(visible=False),  # public_interface
                     gr.update(visible=True),   # login_form
                     gr.update(visible=False),  # admin_dashboard
+                    gr.update(visible=True),   # auth_status (not used in login form)
+                    gr.update(visible=False),  # main_content
                     "login",                   # current_interface
                     False                      # is_authenticated
                 ]
@@ -394,6 +467,8 @@ def create_gradio_app():
                 gr.update(visible=True),    # public_interface
                 gr.update(visible=False),   # login_form
                 gr.update(visible=False),   # admin_dashboard
+                gr.update(visible=True),    # auth_status (show login message)
+                gr.update(visible=False),   # main_content (hidden until login)
                 "public",                   # current_interface
                 False                       # is_authenticated
             ]
@@ -402,46 +477,78 @@ def create_gradio_app():
 
 def launch_app(app):
     """Launch the application"""
-    # Try a range of ports starting from 7862
-    for port in range(7862, 7872):
-        try:
-            print(f"Starting VoiceScribe Studio on http://0.0.0.0:{port}")
-            app.launch(
-                server_name="0.0.0.0",
-                server_port=port,
-                share=False
-            )
-            # If launch is successful, break out of the loop
-            break
-        except OSError as e:
-            if "address already in use" in str(e).lower() and port < 7871:
-                print(f"Port {port} is in use, trying {port+1}...")
-                continue
-            else:
-                # If we've tried all ports in our range
-                if port >= 7871:
-                    print("All ports in range 7862-7871 are in use. Please free up a port and try again.")
-                # Otherwise it's some other error
-                print(f"Error starting server: {str(e)}")
-                raise
+    # Use Railway's PORT environment variable if available, otherwise fallback to local development ports
+    railway_port = os.getenv("PORT")
+    
+    if railway_port:
+        # Railway deployment - use the provided port
+        port = int(railway_port)
+        print(f"Starting VoiceScribe Studio on Railway port: {port}")
+        app.launch(
+            server_name="0.0.0.0",
+            server_port=port,
+            share=False,
+            show_error=True
+        )
+    else:
+        # Local development - try a range of ports starting from 7862
+        for port in range(7862, 7872):
+            try:
+                print(f"Starting VoiceScribe Studio on http://0.0.0.0:{port}")
+                app.launch(
+                    server_name="0.0.0.0",
+                    server_port=port,
+                    share=False,
+                    show_error=True
+                )
+                # If launch is successful, break out of the loop
+                break
+            except OSError as e:
+                if "address already in use" in str(e).lower() and port < 7871:
+                    print(f"Port {port} is in use, trying {port+1}...")
+                    continue
+                else:
+                    # If we've tried all ports in our range
+                    if port >= 7871:
+                        print("All ports in range 7862-7871 are in use. Please free up a port and try again.")
+                    # Otherwise it's some other error
+                    print(f"Error starting server: {str(e)}")
+                    raise
 
 def main():
     """Main function to run the application with multiple interfaces"""
     try:
         # Setup steps
+        logger.info("Starting VoiceScribe Studio...")
         print("Starting VoiceScribe Studio...")
+        
+        # Validate configuration first
+        logger.info("Validating configuration...")
+        validate_config()
+        
+        # Setup app environment
         setup_app_environment()
         
         # Create and launch app
+        logger.info("Creating Gradio application...")
         app = create_gradio_app()
+        
+        logger.info("Launching application...")
         launch_app(app)
         
     except ValueError as e:
-        print(f"Configuration error: {str(e)}")
-        print("Please update your .env file with the required API keys.")
+        error_msg = f"Configuration error: {str(e)}"
+        logger.error(error_msg)
+        print(error_msg)
+        print("Please check your API keys in the environment variables.")
+        print("For Railway deployment, set these in your Railway dashboard.")
+        sys.exit(1)
     except Exception as e:
-        print(f"Application error: {str(e)}")
+        error_msg = f"Application error: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        print(error_msg)
         traceback.print_exc()
+        sys.exit(1)
 
 # Main application entry point
 if __name__ == "__main__":

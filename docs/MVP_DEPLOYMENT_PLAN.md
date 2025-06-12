@@ -27,6 +27,17 @@
 - **Testing Duration:** 1 month initial phase
 - **Target Users:** Small group of colleagues and friends (handful of testers)
 
+## Deployment Credentials Reference (For Internal Use Only)
+
+> **Note:** These credentials are for MVP testing and should NOT be used in production. Change all passwords before public or client deployment.
+
+- **Tester Username:** `voicescribe_tester`
+- **Tester Password:** `mvptest`
+- **Admin Username:** `admin`
+- **Admin Password:** `adminpassword`
+
+---
+
 ## Requirements Analysis
 
 ### Functional Requirements
