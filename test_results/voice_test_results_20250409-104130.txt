@@ -1,0 +1,54 @@
+VOICE TEST RESULTS - 2025-04-09 10:44:36
+================================================================================
+
+Total voices tested: 42
+Successful: 32 (76.2%)
+Failed: 10 (23.8%)
+
+SUCCESSFUL VOICES:
+--------------------------------------------------------------------------------
+✅ Adam - Deep & Authoritative
+✅ Antoni - Polish American Male
+✅ Arnold - Crisp & Rough
+✅ Bella - Soft & Breathy
+✅ Callum - British Male
+✅ Charlie - Casual American
+✅ Clyde - Friendly & Engaging
+✅ Dan Teacher - Hybrid
+✅ Dan Teacher - Neutral
+✅ Dan Teacher - Upbeat
+✅ Daniel - British Male
+✅ Dorothy - Mature & Warm
+✅ Emily - Professional & Helpful
+✅ Ethan - Young American
+✅ Fin - Irish Male
+✅ Freya - Professional Female
+✅ Giovanni - Italian Male
+✅ Grace - Gentle & Soft
+✅ Harry - British Teen
+✅ Joseph - Deep & Resonant
+✅ Josh - Gentle & Calm
+✅ Liam - North American Male
+✅ Lily - British Received Pronunciation
+✅ Lucy - American Teen
+✅ Matilda - British Teen
+✅ Michael - British Male
+✅ Nicole - Expressive & Emotional
+✅ Oswald - Old American Male
+✅ Rebecca - British Female
+✅ Sam - Raspy & Gritty
+✅ Sarah - NPR Presenter
+✅ Serena - British Female
+
+FAILED VOICES:
+--------------------------------------------------------------------------------
+❌ Glinda - Southern US Accent: ❌ FAILED: Glinda - Southern US Accent - No audio generated
+❌ James - Australian Male: ❌ FAILED: James - Australian Male - No audio generated
+❌ Jeremy - British Butler: ❌ FAILED: Jeremy - British Butler - No audio generated
+❌ Knightley - British Male: ❌ FAILED: Knightley - British Male - No audio generated
+❌ Mark - Natural: ❌ FAILED: Mark - Natural - No audio generated
+❌ Patrick - Friendly American: ❌ FAILED: Patrick - Friendly American - No audio generated
+❌ Rachel - Expressive American: ❌ FAILED: Rachel - Expressive American - No audio generated
+❌ Thomas - British Male: ❌ FAILED: Thomas - British Male - No audio generated
+❌ Victoria - British Female: ❌ FAILED: Victoria - British Female - No audio generated
+❌ Wright - Broadcast Male: ❌ FAILED: Wright - Broadcast Male - No audio generated

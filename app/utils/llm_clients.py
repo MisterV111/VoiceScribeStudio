@@ -7,6 +7,7 @@ from ..config import (
     ANTHROPIC_API_KEY, CLAUDE_MODEL
 )
 from .token_counter import token_tracker
+import re
 
 # --- Client Initialization --- 
 
@@ -26,7 +27,108 @@ else:
 
 # Anthropic Client
 if ANTHROPIC_API_KEY:
-    anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    try:
+        import time
+        import random
+        # Import base anthropic package first
+        import anthropic
+        
+        # Determine which error types to import based on what's available in the package
+        if hasattr(anthropic, 'types') and hasattr(anthropic.types, 'APIStatusError'):
+            # Newer version structure
+            from anthropic.types import RateLimitError, APIStatusError, APITimeoutError, APIConnectionError
+        elif hasattr(anthropic, 'RateLimitError'):
+            # Older version structure
+            from anthropic import RateLimitError, APIError as APIStatusError
+            # Create aliases for missing error types
+            APITimeoutError = APIStatusError
+            APIConnectionError = APIStatusError
+            print("Using older anthropic library error types")
+        else:
+            # Create fallback error types if none are available
+            print("Unable to import specific Anthropic error types - using generic exceptions")
+            RateLimitError = Exception
+            APIStatusError = Exception
+            APITimeoutError = Exception
+            APIConnectionError = Exception
+        
+        # Create a session with retry logic
+        anthropic_client = Anthropic(
+            api_key=ANTHROPIC_API_KEY,
+            # Default timeout settings
+            timeout=60.0  # 60 second timeout
+        )
+        
+        # Wrapper function for anthropic calls with retries
+        def call_anthropic_with_retry(func, *args, max_retries=3, initial_retry_delay=2, **kwargs):
+            """
+            Execute an Anthropic API call with exponential backoff retry logic.
+            
+            Args:
+                func: The anthropic client function to call
+                *args: Arguments to pass to the function
+                max_retries: Maximum number of retries
+                initial_retry_delay: Initial delay in seconds before retry (will increase exponentially)
+                **kwargs: Keyword arguments to pass to the function
+                
+            Returns:
+                The function result or raises the last exception after retries
+            """
+            retry_count = 0
+            retry_delay = initial_retry_delay
+            
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except (RateLimitError, APIStatusError, APITimeoutError, APIConnectionError) as e:
+                    retry_count += 1
+                    status_code = getattr(e, 'status_code', None)
+                    
+                    # Log the error
+                    print(f"Anthropic API error (attempt {retry_count}/{max_retries}): {type(e).__name__}")
+                    if status_code:
+                        print(f"Status code: {status_code}")
+                    
+                    # If we hit max retries or it's not a retriable error, raise
+                    if retry_count >= max_retries or not (
+                        isinstance(e, RateLimitError) or  # Rate limits (429)
+                        (isinstance(e, APIStatusError) and status_code in (429, 500, 502, 503, 504, 529)) or  # Server errors
+                        isinstance(e, APITimeoutError) or  # Timeouts
+                        isinstance(e, APIConnectionError)  # Connection issues
+                    ):
+                        raise
+                    
+                    # Calculate jittered exponential backoff
+                    jitter = random.uniform(0.8, 1.2)
+                    sleep_time = retry_delay * jitter
+                    print(f"Retrying in {sleep_time:.2f} seconds...")
+                    time.sleep(sleep_time)
+                    
+                    # Increase the delay for next time
+                    retry_delay = min(retry_delay * 2, 30)  # Cap at 30 seconds
+                except Exception as e:
+                    # For any other exceptions, don't retry
+                    print(f"Unretriable error in Anthropic API call: {type(e).__name__}: {str(e)}")
+                    raise
+        
+        # Test the client with a simple request
+        print("Testing Anthropic client connection...")
+        try:
+            call_anthropic_with_retry(
+                anthropic_client.messages.create,
+                model="claude-3-haiku-20240307",
+                messages=[{"role": "user", "content": "Hello, this is a connection test."}],
+                system="You are a helpful AI.",
+                max_tokens=10
+            )
+            print("Anthropic client connection successful.")
+        except Exception as e:
+            print(f"Warning: Anthropic client test failed: {str(e)}")
+            print("Claude functionality may be limited.")
+    except Exception as init_error:
+        anthropic_client = None
+        print(f"Warning: Failed to initialize Anthropic client: {str(init_error)}")
+        print("Claude functionality disabled due to initialization error.")
 else:
     anthropic_client = None
     print("Warning: ANTHROPIC_API_KEY not found. Claude functionality disabled.")
@@ -127,16 +229,33 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
     try:
         print(f"Attempting script generation with Claude model: {model}")
         
-        # Create the API call
-        message = anthropic_client.messages.create(
-            model=model,
-            system=system_message, 
-            messages=[
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7,
-            max_tokens=3000 
-        )
+        # Use our retry wrapper function instead of direct API call
+        try:
+            message = call_anthropic_with_retry(
+                anthropic_client.messages.create,
+                model=model,
+                system=system_message, 
+                messages=[{"role": "user", "content": user_message}],
+                temperature=0.7,
+                max_tokens=3000,
+                max_retries=3  # Retry up to 3 times
+            )
+        except Exception as api_error:
+            print(f"Claude API call failed after retries: {type(api_error).__name__}: {str(api_error)}")
+            # Check for specific error types that should be handled gracefully
+            status_code = getattr(api_error, 'status_code', None)
+            if status_code:
+                print(f"Status code from Claude API: {status_code}")
+                if status_code == 529:
+                    return {
+                        "content": "Sorry, the Claude API is currently overloaded. Please try again in a few minutes.",
+                        "token_metrics": {},
+                        "model_used": "claude",
+                        "is_fallback": is_fallback,
+                        "error": "Claude API overloaded (HTTP 529). Please try again later."
+                    }
+            # Re-raise if we didn't handle it specifically
+            raise
         
         # --- Token Tracking --- 
         input_tokens = 0
@@ -152,6 +271,28 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
         # Content retrieval
         if message.content and isinstance(message.content, list) and message.content[0].text:
             generated_content = message.content[0].text
+            
+            # Check for error messages in the content itself
+            error_patterns = [
+                r'error (\d+)',
+                r'(\d{3})[\s-]+(overloaded|unavailable|error)',
+                r'<\s*h\d\s*>\s*(\d{3})\s*',
+                r'```\s*(\d{3})'
+            ]
+            
+            for pattern in error_patterns:
+                error_match = re.search(pattern, generated_content, re.IGNORECASE)
+                if error_match:
+                    error_code = error_match.group(1)
+                    print(f"Detected possible error code in content: {error_code}")
+                    return {
+                        "content": "Sorry, the Claude API returned an error response. Please try again in a few minutes.",
+                        "token_metrics": {},
+                        "model_used": "claude",
+                        "is_fallback": is_fallback,
+                        "error": f"Claude API returned an error in content (code: {error_code}). Please try again later."
+                    }
+            
             print(f"Claude model {model} generated {len(generated_content.split())} words.")
             
             # Enhanced token tracking with our system
@@ -177,7 +318,13 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
             }
         else:
             print(f"Claude model {model} response did not contain expected content structure.")
-            return None
+            return {
+                "content": "Sorry, the response from Claude API was not in the expected format. Please try again.",
+                "token_metrics": {},
+                "model_used": "claude",
+                "is_fallback": is_fallback,
+                "error": "Invalid response format from Claude API."
+            }
             
     except Exception as e:
         print(f"Error generating script with Claude model {model}: {str(e)}")
@@ -198,22 +345,138 @@ def _generate_with_claude(system_message, user_message, model=CLAUDE_MODEL, temp
                 success=False
             )
             
+        return {
+            "content": f"Error generating script: {str(e)}",
+            "token_metrics": {},
+            "model_used": "claude",
+            "is_fallback": is_fallback,
+            "error": str(e)
+        }
+
+# --- New Claude Helper for Analysis --- 
+def call_claude_sonnet_for_analysis(system_prompt: str, user_prompt: str, model: str = CLAUDE_MODEL) -> str | None:
+    """
+    Calls the Claude Sonnet API specifically for analysis tasks that expect a structured response (like JSON).
+    
+    This is a specialized helper for analysis tasks, more focused than the general generation function.
+    
+    Args:
+        system_prompt: The system prompt guiding the analysis task.
+        user_prompt: The user prompt containing the content to analyze and structure instructions.
+        model: The Claude model to use (defaults to the one in config.py).
+        
+    Returns:
+        str: The raw model output if successful, or None if there's an error.
+    """
+    if not anthropic_client:
+        print(f"Anthropic client not available. Skipping Claude analysis call.")
         return None
+        
+    try:
+        print(f"Attempting analysis with Claude model: {model}")
+        
+        # Call the Claude API with retry logic
+        message = call_anthropic_with_retry(
+            anthropic_client.messages.create,
+            model=model,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.0,  # Use 0 temperature for analytical tasks for consistency
+            max_tokens=2000  # Adjust max_tokens based on expected analysis size
+        )
+        
+        # Handle token usage reporting
+        if hasattr(message, 'usage'):
+            print(f"Token Usage (Analysis - {model}): Input={message.usage.input_tokens}, Output={message.usage.output_tokens}")
+        else:
+            print(f"Token usage data not available for analysis call ({model}).")
+            
+        # Extract content from the response
+        if message.content and isinstance(message.content, list) and len(message.content) > 0 and hasattr(message.content[0], 'text'):
+            content = message.content[0].text
+            print(f"Claude model {model} returned analysis content.")
+            return content
+        else:
+            print(f"Claude model {model} analysis response did not contain expected text content.")
+            return None
+    except Exception as e:
+        print(f"Error during Claude analysis API call with model {model}: {str(e)}")
+        return None
+
+# ---------------
+# Content Analysis
+# ---------------
+
+def analyze_content(content_type, content, **kwargs):
+    """
+    Analyzes content from different sources and returns structured data.
+    
+    This function acts as a central dispatcher for content analysis
+    features, selecting the appropriate analyzer based on content_type.
+    
+    Args:
+        content_type (str): The type of content to analyze:
+            - "document": Direct text content from a document
+            - "youtube": A YouTube URL for transcript analysis
+            - "web": A general web URL for content analysis
+        content (str): The actual content to analyze (text or URL)
+        **kwargs: Additional parameters specific to different content types
+    
+    Returns:
+        dict: Structured analysis results or error information
+    """
+    try:
+        from ..components.content_analyzer import (
+            analyze_document_content,
+            analyze_youtube_url,
+            analyze_web_url
+        )
+        
+        # Log the analysis request
+        print(f"Analyzing content of type: {content_type}")
+        
+        # Validate basic inputs
+        if not content or not isinstance(content, str):
+            return {"error": "No content provided for analysis"}
+            
+        if content_type == "document":
+            # Direct document text analysis
+            return analyze_document_content(content)
+            
+        elif content_type == "youtube":
+            # YouTube URL analysis
+            return analyze_youtube_url(content)
+            
+        elif content_type == "web":
+            # General web URL analysis
+            return analyze_web_url(content)
+            
+        else:
+            return {"error": f"Unsupported content type: {content_type}"}
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Error in content analysis: {str(e)}"}
 
 # --- Main Generation Function --- 
 
-def generate_script(prompt, 
-                   subject="", 
-                   length="medium", 
-                   audience="general", 
-                   tone="informative",
-                   template="General",
-                   context="",
-                   force_fallback=False,
-                   is_test=False):
+def generate_script(prompt: str, 
+                   subject: str ="", 
+                   length: str ="medium", 
+                   audience: str ="general", 
+                   tone: str ="informative",
+                   template: str ="General",
+                   context: str ="",
+                   analysis_results: dict | None = None,
+                   force_fallback: bool =False,
+                   is_test: bool =False):
     """
     Generate an educational script using the best available LLM 
     (DeepSeek primary via OpenAI SDK, Claude fallback).
+    Optionally uses pre-computed analysis results to enhance generation.
     
     Args:
         prompt (str): The main script generation prompt
@@ -222,12 +485,13 @@ def generate_script(prompt,
         audience (str): Target audience - general, beginner, advanced, etc.
         tone (str): Tone of the script - informative, conversational, etc.
         template (str): Industry-specific template to use
-        context (str): Additional context information
+        context (str): Additional context information (e.g., background knowledge)
+        analysis_results (dict | None): Structured analysis from content_analyzer (optional)
         force_fallback (bool): If True, skip primary model and use Claude directly.
         is_test (bool): Whether this is a test generation
         
     Returns:
-        str or dict: The generated script (str) or dict with script and metadata
+        dict or None: Dictionary containing generated content and metadata, or None if failed.
     """
     # Generate session ID for tracking this generation across models
     session_id = str(uuid.uuid4())
@@ -235,8 +499,8 @@ def generate_script(prompt,
     # Get template-specific guidance
     template_guidance = get_template_guidance(template)
     
-    # Prepare a system message
-    system_message = f"""
+    # Prepare base system message
+    system_message_base = f"""
     You are an expert educational script writer. Create a well-structured {length} script 
     about {subject} for a {audience} audience with a {tone} tone.
     
@@ -251,15 +515,33 @@ def generate_script(prompt,
     - Long: 600-900 words
     """
     
-    # Prepare user message
+    # --- Incorporate Analysis Results into System Message (if available) --- 
+    system_message = system_message_base
+    if analysis_results and isinstance(analysis_results, dict):
+        print("Incorporating analysis results into generation prompt...")
+        analysis_context = "\n\nCONTEXTUAL ANALYSIS (Use this information to enhance the script's accuracy and relevance):\n"
+        if "summary" in analysis_results:
+            analysis_context += f"- Summary: {analysis_results['summary']}\n"
+        if "key_topics" in analysis_results and analysis_results['key_topics']:
+            analysis_context += f"- Key Topics: {', '.join(analysis_results['key_topics'])}\n"
+        if "structure_outline" in analysis_results and analysis_results['structure_outline']:
+            analysis_context += f"- Suggested Structure: {', '.join(analysis_results['structure_outline'])}\n"
+        if "extracted_keywords" in analysis_results and analysis_results['extracted_keywords']:
+            analysis_context += f"- Keywords: {', '.join(analysis_results['extracted_keywords'])}\n"
+        
+        system_message += analysis_context
+        system_message += "\nGenerate the script based on the user's main prompt, ensuring it aligns with and incorporates insights from this contextual analysis. Focus on accuracy based on the context provided."
+    # --- End Analysis Incorporation ---
+
+    # Prepare user message (handle existing context field)
     user_message = prompt
     if context:
+        # Special handling for Music Lesson context, append analysis after it
         if template == "Music Lesson":
             user_message = f"""
 {prompt}
 
 BACKGROUND KNOWLEDGE (Do not reference this directly in your script):
-The student has the following background and capabilities. Use this information to tailor the content appropriately without explicitly mentioning what they already know or have learned:
 {context}
 
 Remember to build naturally on this background without phrases like "as you've learned before" or "now that you know X". Simply assume this knowledge is present and create a natural progression.
@@ -272,12 +554,12 @@ Remember to build naturally on this background without phrases like "as you've l
         "subject": subject,
         "length": length,
         "audience": audience,
-        "tone": tone
+        "tone": tone,
+        "analysis_provided": bool(analysis_results) # Track if analysis was used
     }
     
-    # --- Modified Generation Logic --- 
+    # --- Generation Logic --- 
     print("--- Starting Script Generation --- ")
-    
     result = None
     
     # Check if fallback is forced
@@ -288,7 +570,7 @@ Remember to build naturally on this background without phrases like "as you've l
         if deepseek_client_via_openai_sdk:
             result = _generate_with_openai_sdk(
                 deepseek_client_via_openai_sdk, 
-                system_message, 
+                system_message, # Use potentially modified system_message
                 user_message, 
                 model=DEEPSEEK_MODEL,
                 template=template,
@@ -299,12 +581,7 @@ Remember to build naturally on this background without phrases like "as you've l
             
             if result:
                 print("--- Script generated successfully with DeepSeek (via OpenAI SDK) --- ")
-                if isinstance(result, dict) and "content" in result:
-                    # If called with metadata=True, return the full result
-                    return result
-                else:
-                    # Otherwise, maintain backward compatibility by returning just the script
-                    return result["content"]
+                return result # Always return the dict now
             else:
                  print("--- DeepSeek (via OpenAI SDK) failed, attempting Claude fallback --- ")
         else:
@@ -312,8 +589,10 @@ Remember to build naturally on this background without phrases like "as you've l
 
     # 2. Try Claude Model (either as fallback or forced)
     if anthropic_client:
+        # Note: Claude fallback currently uses the *original* system message without analysis context
+        # We might want to reconsider if Claude should also use the analysis context in fallback scenarios
         result = _generate_with_claude(
-            system_message, 
+            system_message_base, # Use original system message for fallback for now
             user_message, 
             model=CLAUDE_MODEL,
             template=template,
@@ -324,13 +603,8 @@ Remember to build naturally on this background without phrases like "as you've l
         )
         
         if result:
-             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}){' (forced fallback)' if force_fallback else ''} --- ")
-             if isinstance(result, dict) and "content" in result:
-                # If called with metadata=True, return the full result
-                return result
-             else:
-                # Otherwise, maintain backward compatibility by returning just the script
-                return result["content"]
+             print(f"--- Script generated successfully with Claude ({CLAUDE_MODEL}){' (forced fallback)' if force_fallback else ' (fallback)'} --- ")
+             return result # Always return the dict
         else:
             print(f"--- Claude ({CLAUDE_MODEL}) also failed. --- ")
     else:
@@ -338,7 +612,19 @@ Remember to build naturally on this background without phrases like "as you've l
             
     # 3. If all configured models fail
     print("--- All configured models failed to generate the script. --- ")
-    return None
+    # Track complete failure (maybe needed in token_tracker?)
+    token_tracker.track_generation(
+        model="none",
+        input_text=system_message + "\n" + user_message,
+        output_text="GENERATION FAILED",
+        template=template,
+        is_fallback=False,
+        parameters=params,
+        session_id=session_id,
+        is_test=is_test,
+        success=False
+    )
+    return None # Return None on complete failure
 
 # --- Editing Function (Now using Claude) --- 
 def edit_script_with_claude(original_script, edit_instructions, context="", is_test=False):

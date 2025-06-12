@@ -21,6 +21,10 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
   - **Format Preview**: See which formats will be generated when selecting "Generate All Formats".
   - **Professional Download Interface**: Clean, responsive cards with format-specific icons and file details.
   - **Styled Status Messages**: Clear visual feedback (e.g., colored success messages) for generation status.
+- 📄 **Reference Input Options** (In Development - Phase 2): Multiple ways to provide context:
+  - **Document Upload**: Support for various file formats (.txt, .md, .pdf, .docx)
+  - **Web URL Reference**: Extract context directly from web pages
+  - **YouTube Reference**: Use YouTube videos as style or content references
 - 🔧 **Voice Customization**: Fine-tune voice parameters (stability, similarity, style, speed).
 - ✏️ **Script Editing**: Built-in editor to refine generated scripts.
 - 🔀 **Multiple Templates**: Specialized templates (General Education, Technical Tutorial, Marketing, Business Training, Music Lesson).
@@ -29,12 +33,15 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 - 🧪 **Admin & Testing Tools**:
   - **Secure Admin Dashboard**: Separate interface for testing and analytics (Login: `admin`/`admin123`).
   - **Cross-Template Testing Suite**: Ensures reliability and quality across templates.
+  - **Token Analytics Dashboard**: Track token usage, costs, and model efficiency for both DeepSeek and Claude models.
 
 ### Future Vision (Planned Enhancements)
 
 The roadmap includes transforming VoiceScribe into a full AI content **production** partner through phased development:
 
-- **Phase 2: Smarter Context & Content Processing**: AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
+- **Phase 2: Smarter Context & Content Processing**: 
+  - AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
+  - **Humanize Feature**: Intelligent script formatting that automatically adds natural pauses, emotional emphasis, and timing cues to optimize voiceover delivery.
 - **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
 - **Phase 4: AI Research Assistant**: Web browsing (FireCrawl) and fact-verification (Perplexity MCP) capabilities for accurate, informed scripts.
 - **Phase 5: Multimedia Production**: AI-generated background music (Suno AI), visual content (EverArt MCP), and professional document exports.
@@ -147,4 +154,33 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Anthropic](https://www.anthropic.com/) for the Claude 3.7 Sonnet model
 - [ElevenLabs](https://elevenlabs.io/) for the text-to-speech technology
 - [Gradio](https://gradio.app/) for the web interface
-- Future Acknowledgments: Suno AI, Perplexity AI, YouTube Data API, FireCrawl, EverArt, etc. 
+- Future Acknowledgments: Suno AI, Perplexity AI, YouTube Data API, FireCrawl, EverArt, etc.
+
+## New Humanize Feature
+
+The Humanize feature transforms your scripts to sound more natural with ElevenLabs by adding optimized markup based on research from experienced users:
+
+- **Enhanced Pause Markers**: 
+  - `<break time="0.2s" />` for minor phrase breaks
+  - `<break time="0.5s" />` for pauses between sentences
+  - `<break time="0.8s" />` for emphasis points
+  - `<break time="1s" />` for paragraph breaks
+
+- **Artifact Prevention**:
+  - `. <break time="1s" /> [text starts here...]` at the beginning
+  - `[...text ends here] <break time="1s" /> .` at the end
+
+- **Emotional Expression**:
+  - Book-style narration: `"Our options are limited", he said angrily.`
+  - Emotion tags: `<cheerful, happily>Great news!</cheerful, happily>`
+
+- **Emphasis Markers**:
+  - `*word*` for emphasis
+  - `**word**` for strong emphasis
+
+- **Known Issues**:
+  - Avoid using arrow symbols like `↗` or `↘` as they cause artifacts in ElevenLabs voiceovers
+
+See `docs/ELEVENLABS_OPTIMIZATION.md` for detailed documentation and `examples/optimized_elevenlabs_script.txt` for a complete demonstration of these techniques.
+
+These optimizations make ElevenLabs voices sound more natural, with better emotional range and fewer artifacts. The Humanize feature applies these techniques automatically to any script. 

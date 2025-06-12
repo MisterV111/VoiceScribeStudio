@@ -60,3 +60,14 @@ websockets==15.0.1
 anthropic
 matplotlib==3.7.4
 plotly==5.21.0
+
+# Document processing
+PyMuPDF==1.24.3  # For PDF processing
+python-docx==1.1.0  # For DOCX processing
+
+# Web content extraction
+beautifulsoup4==4.12.3  # For web scraping
+lxml==5.2.1  # XML/HTML parser for BeautifulSoup
+
+# YouTube transcript extraction
+youtube-transcript-api==0.6.2  # For extracting YouTube transcripts

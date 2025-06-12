@@ -47,6 +47,16 @@ tests/*
 !tests/archived_tests/
 !tests/archived_tests/*.py
 !tests/archived_tests/*.md
+# Allow new test directory structure
+!tests/__init__.py
+!tests/unit/
+!tests/unit/**
+!tests/integration/
+!tests/integration/**
+!tests/components/
+!tests/components/**
+!tests/scripts/
+!tests/scripts/**
 
 # IDE specific files
 .idea/

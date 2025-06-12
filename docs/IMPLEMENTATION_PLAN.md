@@ -1,7 +1,7 @@
 # VoiceScribe Studio - Enhanced Implementation Plan
 
 **Project Start Date:** March 23, 2025  
-**Estimated Completion:** August 26, 2025 (Updated for Translation Feature)
+**Estimated Completion:** September 30, 2025 (Updated for Advanced Reference Processing)
 **Current Status:** Planning Phase
 
 ## Project Overview
@@ -22,6 +22,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
    - **Claude 3.7 Sonnet**: Document/web content analysis, **Translation Service**
    - **Memory MCP**: User preference and context retention
    - **Content verification system**: Cross-referencing and fact validation
+   - **Humanize Processing**: Script optimization for natural voiceover delivery
 
 3. **Script Generation Layer**
    - **DeepSeek R1**: High-quality script creation across all templates
@@ -36,6 +37,11 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
    - **File System MCP**: Content organization and metadata
    - **Version control**: Script iteration management
    - **Export system**: Multi-format document generation
+
+6. **Advanced Reference Processing** (New Layer)
+   - **Semantic Pinpointing System**: Precisely locate topics in reference materials
+   - **Style Matching System**: Extract and apply writing styles from references
+   - **Reference Visualization**: Preview and interact with reference content
 
 ## Implementation Phases & Milestones
 
@@ -65,31 +71,39 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 **Milestone:** Basic DeepSeek script generation functional with MCP framework and enhanced UI/UX
 
-### Phase 2: Content Processing Enhancement
+### Phase 2: Content Processing & Humanize Feature
 **Timeline: 3-4 weeks**
 
 - [✓] **Backend:** Create content processing module (`content_analyzer.py`)
 - [✓] **Backend:** Implement Claude 3.7 API integration for document analysis
 - [✓] **Backend:** Design initial structured content format (JSON) for analysis output
 - [✓] **Backend:** Develop Claude-DeepSeek handoff protocol (Update DeepSeek prompt)
-- [ ] **UI:** Implement Gradio file upload component for documents
-- [ ] **Integration:** Connect file upload UI to the backend analysis module
-- [ ] **Backend:** Direct YouTube API integration for style reference
-- [ ] **Backend:** Style reference processing module
-- [ ] **UI:** Implement Gradio input component for YouTube URLs
-- [ ] **Integration:** Connect YouTube URL UI to backend processing
-- [ ] **Backend:** Implement *basic* URL content fetching (Note: Robust MCP-based fetching in Phase 4)
-- [ ] **UI:** Implement Gradio input component for general URLs
-- [ ] **Integration:** Connect general URL UI to basic fetching & analysis pipeline
-- [ ] **Backend:** Implement source tracking system development
-- [ ] **Backend:** Token usage storage implementation for analysis steps
-- [ ] **Backend:** Memory MCP integration for context retention
-- [ ] **Testing:** Test document, YouTube, and basic URL analysis pipelines
+- [✓] **UI:** Implement Gradio file upload component for documents
+  - [✓] Add token counting logic for uploaded files (`tiktoken`)
+  - [✓] Implement `.upload()` event handler to check file size
+  - [✓] Add UI warning message for large documents (>75k tokens)
+- [✓] **UI:** Implement Gradio input component for YouTube URLs
+- [✓] **UI:** Implement Gradio input component for general URLs
+- [✓] **UI:** Create unified reference input UI with conditional visibility
+- [✓] **Integration:** Connect file upload UI to the backend analysis module
+- [✓] **Backend:** Implement YouTube API integration for transcript extraction
+- [✓] **Integration:** Connect YouTube URL UI to backend processing
+- [✓] **Backend:** Implement web URL content fetching
+- [✓] **Integration:** Connect general URL UI to fetching & analysis pipeline
+- [✓] **Testing:** Test document, YouTube, and URL analysis pipelines
 
-**Milestone:** Enhanced content processing pipeline functional with Document Upload, YouTube URL, and Basic General URL input interfaces.
+### Prioritized Addition: Humanize Feature
+- [✓] **Research:** Study professional voiceover timing & emphasis techniques
+- [✓] **Design:** Develop standardized markup syntax for pauses, emphasis, and emotion
+- [✓] **Backend:** Create LLM prompt template with voiceover best practices
+- [✓] **Implementation:** Build backend processing module for script transformation
+- [✓] **UI:** Design and implement single-click "Humanize" button in script editor
+- [✓] **Testing:** Validate across various script types and templates
+
+**Milestone:** Basic reference input functionality available with Humanize feature for optimized voiceover delivery.
 
 ### Phase 3: Translation Feature Implementation
-**Timeline: 4-5 weeks** (New Phase)
+**Timeline: 4-5 weeks**
 
 - [ ] Design `TranslationService` backend module
 - [ ] Implement Claude 3.7 prompt templates for translation (context-aware)
@@ -104,24 +118,53 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 **Milestone:** Core translation functionality operational with initial glossaries
 
-### Phase 4: Multi-Source Data Acquisition
-**Timeline: 3-4 weeks**
+### Phase 4: Multi-Source Data & Initial Reference Enhancement
+**Timeline: 4-5 weeks**
 
 - [ ] FireCrawl MCP server integration
 - [ ] Perplexity MCP integration for fact verification
-- [ ] Browser Tools MCP for **robust** URL processing (Enhances Phase 2 basic fetching)
-- [ ] Source selection logic implementation
-- [ ] Unified data pipeline development
-- [ ] FireCrawl-Claude-Perplexity workflow
+- [ ] Browser Tools MCP for robust URL processing (Enhances Phase 2 basic fetching)
+- [ ] **Initial Reference Enhancement:**
+  - [ ] Basic semantic search for document content
+  - [ ] Simple prompt templates for focusing on specific topics
+  - [ ] Improved error handling for reference processing
+- [ ] Memory MCP integration for context retention
 - [ ] Source metadata collection implementation
 - [ ] Analytics framework development
 - [ ] Premium feature access control system
 - [ ] Multi-source testing
 
-**Milestone:** Comprehensive data acquisition system functional with robust URL processing.
+**Milestone:** Improved data acquisition and initial reference enhancement capabilities
 
-### Phase 5: Media Enhancement & Output Management
-**Timeline: 3 weeks**
+### Phase 5: Advanced Reference Processing System
+**Timeline: 4-5 weeks** (New Phase)
+
+- [ ] **Semantic Pinpointing System**
+  - [ ] Implement vector embeddings for all reference content
+  - [ ] Develop query-based semantic search to locate specific topics
+  - [ ] Create highlighting mechanism for matched sections
+  - [ ] Design advanced prompt templates for directing LLM attention
+  
+- [ ] **Style Matching Enhancements**
+  - [ ] Build comprehensive style analysis system
+  - [ ] Implement direct style extraction commands
+  - [ ] Add "Style Match Only" toggle
+  - [ ] Create style strength controls
+  
+- [ ] **Comprehensive Content Conversion**
+  - [ ] Design chunking system for large documents
+  - [ ] Implement processing pipeline to maintain context
+  - [ ] Create templates for full document conversion
+  
+- [ ] **UI Enhancements for Reference Control**
+  - [ ] Add reference section highlighting and preview
+  - [ ] Create "Focus Area" selection mechanism
+  - [ ] Source attribution and citation features
+
+**Milestone:** Advanced reference processing capabilities allowing precise information extraction and style matching
+
+### Phase 6: Media Enhancement & Output Management
+**Timeline: 3-4 weeks**
 
 - [ ] File System MCP integration
 - [ ] Document Conversion MCP implementation
@@ -135,11 +178,11 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 
 **Milestone:** Media enhancement and output management functional
 
-### Phase 6: Analytics, UI Enhancement & Deployment
+### Phase 7: Analytics, UI Enhancement & Deployment
 **Timeline: 3-4 weeks**
 
-- [ ] Token usage dashboard creation
-- [ ] API cost monitoring across services
+- [✓] Token usage dashboard creation
+- [✓] API cost monitoring across services
 - [ ] Premium feature usage tracking
 - [ ] Audio preview for generated music
 - [ ] Visual content gallery
@@ -150,7 +193,7 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] Comprehensive testing
 - [ ] Production deployment
 
-**Milestone:** Enhanced system fully deployed with Translation Feature
+**Milestone:** Enhanced system fully deployed with all features
 
 ## Technical Specifications
 
@@ -193,6 +236,21 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Response format: JSON
 - Rate limits: [TBD]
 - Generation parameters: mood, style, duration
+
+### Style Reference Processing Details
+- **Analysis Model:** Claude 3.7 Sonnet
+- **Style Attributes:**
+  - Tone (formal/casual/technical/conversational)
+  - Structure (organization patterns, section transitions)
+  - Pacing (sentence length, paragraph structure)
+  - Vocabulary (complexity level, domain-specific terminology)
+  - Voice (authority level, personal engagement)
+- **Style Application Controls:**
+  - Toggle to enable/disable style matching
+  - Multi-selector for specific elements to extract
+  - Strength slider (1-10) determining influence level
+  - Template-specific suggestions based on content type
+- **Storage Format:** JSON with style attribute weights and examples
 
 ### Translation Service Details (New Section)
 - **Primary LLM:** Claude 3.7 Sonnet
@@ -272,17 +330,20 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 | API rate limiting | High | Medium | Intelligent caching, queue management, premium tier controls |
 | **Translation Quality/Accuracy** | Medium | High | Contextual prompts, glossary system, quality review cycles, potential fallback (manual edit) |
 | **Glossary Maintenance Overhead** | Medium | Medium | Start with core templates, community contribution model?, automated suggestions? |
+| **Style Matching Effectiveness** | Medium | Medium | Fine-tuned prompts, style attribute weighting, user feedback loop for improvement |
+| **Reference Pinpointing Accuracy** | Medium | High | LLM validation steps, confidence scoring, human verification option |
 
 ## Progress Tracking
 
 | Phase | Status | Start Date | Target End Date | Actual End Date | Notes |
 |-------|--------|------------|----------------|----------------|-------|
 | 1     | Completed | March 25, 2025 | April 15, 2025 | April 12, 2025 | Foundation - Cross-template testing suite enhanced with formatted UI and authentication. Additional UI/UX improvements for batch output and status messages completed ahead of schedule. |
-| 2     | Not Started | April 16, 2025 | May 14, 2025 |  | Content Processing Core |
-| 3     | Not Started | May 15, 2025 | June 19, 2025 |  | **Translation Feature** (New) |
-| 4     | Not Started | June 20, 2025 | July 18, 2025 |  | Multi-Source Data (Shifted) |
-| 5     | Not Started | July 19, 2025 | August 8, 2025 |  | Media/Output (Shifted) |
-| 6     | Not Started | August 9, 2025 | Sept 6, 2025 |  | UI/Deployment (Shifted) |
+| 2     | Completed | April 16, 2025 | May 14, 2025 | May 10, 2025 | Content Processing Core - Completed Context Reference Input implementation. Humanize Feature implemented with markup for pauses, emphasis, and emotions. |
+| 3     | Not Started | May 15, 2025 | June 19, 2025 |  | Translation Feature |
+| 4     | Not Started | June 20, 2025 | July 25, 2025 |  | Multi-Source Data & Initial Reference Enhancement |
+| 5     | Not Started | July 26, 2025 | August 30, 2025 |  | Advanced Reference Processing System (New Phase) |
+| 6     | Not Started | August 31, 2025 | September 30, 2025 |  | Media Enhancement & Output Management (Shifted) |
+| 7     | In Progress | October 1, 2025 | October 31, 2025 |  | Analytics & Deployment - Token usage dashboard completed with API cost monitoring. |
 
 ## Cost Projections
 
@@ -293,16 +354,18 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Perplexity: ~$0.15-0.20 per query (deep research)
 - YouTube API: Free tier with 10,000 units/day
 - Suno AI: ~$0.10-0.30 per music generation (depends on length)
-- **Claude 3.7 Translation (Est.):** ~$0.045 per average translation (2.5k input + 2.5k output tokens) (New)
+- **Claude 3.7 Translation (Est.):** ~$0.045 per average translation (2.5k input + 2.5k output tokens)
+- **Claude 3.7 Humanize (Est.):** ~$0.03 per script (1.5k input + 1.5k output tokens)
 
-### Monthly Projections (1,000 scripts, **assuming 500 translations**)
+### Monthly Projections (1,000 scripts, 500 translations, 800 humanized scripts)
 - Content Processing: ~$50-100
 - Script Generation: ~$100-200
 - Web Search & Verification: ~$50-80
 - YouTube References: ~$0-20
 - Music Generation (Premium): ~$50-100
-- **Translation Feature:** ~$20-25 (500 * $0.045) (New)
-- **Updated Total:** ~$270-525/month (Adjusted)
+- **Translation Feature:** ~$20-25 (500 * $0.045)
+- **Humanize Feature:** ~$24 (800 * $0.03)
+- **Updated Total:** ~$294-549/month (Adjusted)
 
 ## Premium Feature Tiers
 
@@ -332,6 +395,8 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - [ ] **Translation Quality:** Manual review scores > 4.0/5.0 (New)
 - [ ] **Translation Performance:** <5s completion for average scripts (New)
 - [ ] **Translation User Satisfaction:** >85% positive feedback (New)
+- [ ] **Style Matching Accuracy:** >80% detection of intended stylistic elements
+- [ ] **Style Application Quality:** >75% user satisfaction with style matching
 
 ## Appendix
 
@@ -363,4 +428,4 @@ This implementation plan outlines the process of enhancing VoiceScribe Studio wi
 - Usage-based pricing tiers
 - Additional LLM options
 - Mobile application development
-- Enterprise deployment options 
+- Enterprise deployment options

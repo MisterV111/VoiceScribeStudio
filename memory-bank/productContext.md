@@ -1,0 +1,10 @@
+# Product Context
+
+*   **Problem Solved:** Addresses the time-consuming and potentially complex process of creating high-quality, engaging scripts (educational, marketing, etc.) and generating professional-sounding voiceovers. Aims to improve script quality, ensure factual accuracy (future), optimize voice delivery, and integrate multimedia elements efficiently using AI.
+*   **How it Works:** Users interact via a Gradio web interface. 
+    1.  **Generate Script:** Select a template (e.g., Music Lesson, Marketing), provide a subject/prompt, choose length/audience/tone. Optionally provide reference content (document, URL, YouTube URL - processing in development). The system uses DeepSeek R1 (or Claude 3.7 fallback) with template-specific guidance to generate a script.
+    2.  **Edit Script:** Refine the generated script in a dedicated editor tab. Optionally use the "Humanize" feature (powered by Claude 3.7) to automatically add optimized pauses, emphasis, and emotion markup for ElevenLabs TTS.
+    3.  **Generate Voiceover:** Select a preset or custom ElevenLabs voice ID, choose audio format(s) (MP3, OGG, WAV), adjust voice settings (stability, similarity, etc.), and generate the voiceover. Batch generation for all formats is available.
+    4.  **Admin:** Separate authenticated interface for viewing token usage analytics and running the cross-template testing suite.
+*   **User Experience Goals:** Provide a polished, intuitive UI (Gradio) with clear visual feedback (styled status messages, download cards). Offer customization through templates and parameters. Enhance output quality via advanced AI models and features like "Humanize". Streamline the workflow from script to audio.
+*   **Why it Exists:** To leverage state-of-the-art AI models (DeepSeek, Claude, ElevenLabs) and a structured workflow (MCPs, primary/fallback) to create a powerful, efficient content production tool that goes beyond simple generation towards an intelligent, agent-driven studio. 
