@@ -307,14 +307,14 @@ Reviewing the README.md provides additional context about the project:
 The README describes the specific markup techniques used in the Humanize feature:
 
 - **Enhanced Pause Markers**: 
-  - `<break time="0.5s" />` for minor phrase breaks
-  - `<break time="1s" />` for pauses between sentences
-  - `<break time="1.5s" />` for emphasis points
-  - `<break time="2s" />` for paragraph breaks
+  - `<break time="0.2s" />` for minor phrase breaks
+  - `<break time="0.5s" />` for pauses between sentences
+  - `<break time="0.8s" />` for emphasis points
+  - `<break time="1s" />` for paragraph breaks
 
 - **Artifact Prevention**:
-  - `. <break time="2s" /> [text starts here...]` at the beginning
-  - `[...text ends here] <break time="2s" /> .` at the end
+  - `. <break time="1s" /> [text starts here...]` at the beginning
+  - `[...text ends here] <break time="1s" /> .` at the end
 
 - **Emotional Expression**:
   - Book-style narration: `"Our options are limited", he said angrily.`

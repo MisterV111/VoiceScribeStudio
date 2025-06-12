@@ -11,11 +11,11 @@ All of these techniques have been integrated into the VoiceScribe Studio "Humani
 Break tags create natural-sounding pauses in speech, enhancing the natural flow of the dialogue:
 
 ```
-<break time="0.5s" />  - Short pauses for minor phrase breaks
-<break time="1s" />    - Medium pauses between sentences 
-<break time="1.5s" />  - Clear pauses for emphasis
-<break time="2s" />    - Long pauses between paragraphs
-<break time="3s" />    - Very long pauses for major transitions
+<break time="0.2s" />  - Short pauses for minor phrase breaks
+<break time="0.5s" />    - Medium pauses between sentences 
+<break time="0.8s" />  - Clear pauses for emphasis
+<break time="1s" />    - Long pauses between paragraphs
+<break time="2s" />    - Very long pauses for major transitions
 ```
 
 **Implementation benefit**: Properly timed pauses make speech sound more natural and provide better rhythm.
@@ -25,8 +25,8 @@ Break tags create natural-sounding pauses in speech, enhancing the natural flow 
 Sometimes ElevenLabs produces strange artifacts at the beginning or end of audio clips. We've implemented this solution:
 
 ```
-. <break time="2s" /> [Your actual text starts here...]
-[...your text ends here] <break time="2s" /> .
+. <break time="1s" /> [Your actual text starts here...]
+[...your text ends here] <break time="1s" /> .
 ```
 
 **Implementation benefit**: The period followed by a break creates a buffer that prevents artifacts from appearing in the actual content, making it easier to edit the resulting audio.

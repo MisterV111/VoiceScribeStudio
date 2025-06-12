@@ -6,7 +6,7 @@ All notable changes to the VoiceScribe Studio project will be documented in this
 
 ### Added
 - New ElevenLabs optimization techniques implemented in Humanize feature
-  - Break tags for precise pause control `<break time="1.5s" />`
+  - Break tags for precise pause control `<break time="0.8s" />`
   - Artifact prevention with strategic leading/trailing breaks
   - Book-style narration for emotional context
   - Emotion tags for varied tones `<cheerful>text</cheerful>`

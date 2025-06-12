@@ -12,11 +12,11 @@ from .llm_clients import anthropic_client, call_anthropic_with_retry
 from .token_counter import token_tracker
 
 # Standardized markup symbols for voiceover guidance
-PAUSE_SHORT = "<break time=\"0.5s\" />"  # Short pause (0.5s)
-PAUSE_MEDIUM = "<break time=\"1s\" />"  # Medium pause (1s)
-PAUSE_CLEAR = "<break time=\"1.5s\" />"  # Clear pause (1.5s)
-PAUSE_LONG = "<break time=\"2s\" />"  # Long pause (2s)
-PAUSE_VERY_LONG = "<break time=\"3s\" />"  # Very long pause (3s)
+PAUSE_SHORT = "<break time=\"0.2s\" />"  # Short pause (0.2s)
+PAUSE_MEDIUM = "<break time=\"0.5s\" />"  # Medium pause (0.5s)
+PAUSE_CLEAR = "<break time=\"0.8s\" />"  # Clear pause (0.8s)
+PAUSE_LONG = "<break time=\"1s\" />"  # Long pause (1s)
+PAUSE_VERY_LONG = "<break time=\"2s\" />"  # Very long pause (2s)
 EMPHASIS = "*"  # Emphasis marker (e.g., *important*)
 STRONG_EMPHASIS = "**"  # Strong emphasis (e.g., **critical**)
 RISING_INTONATION = "↗"  # Rising intonation for questions or continuing thoughts
@@ -25,8 +25,8 @@ FALLING_INTONATION = "↘"  # Falling intonation for statements or conclusions
 # Emotion markup patterns
 EMOTION_TAG_PATTERN = "<{emotion}>{text}</{emotion}>"  # Emotion tag format
 BOOK_NARRATION_PATTERN = "\"{text}\", {speaker} said {emotion}."  # Book-style narration format
-ARTIFACT_PREVENTION_START = ". <break time=\"2s\" />"  # Prevent artifacts at beginning
-ARTIFACT_PREVENTION_END = "<break time=\"2s\" /> ."  # Prevent artifacts at end
+ARTIFACT_PREVENTION_START = ". <break time=\"1s\" />"  # Prevent artifacts at beginning
+ARTIFACT_PREVENTION_END = "<break time=\"1s\" /> ."  # Prevent artifacts at end
 
 def humanize_script(script_text):
     """
@@ -69,15 +69,15 @@ def humanize_script(script_text):
     Use the following standardized markup that is supported by ElevenLabs text-to-speech:
     
     For pauses:
-    - "<break time=\"0.5s\" />" for short pauses (0.5 seconds) - Use at natural breathing points and minor phrase breaks
-    - "<break time=\"1s\" />" for medium pauses (1 second) - Use between sentences and for moderate breaks
-    - "<break time=\"1.5s\" />" for clear pauses (1.5 seconds) - Use for important breaks that need more emphasis
-    - "<break time=\"2s\" />" for long pauses (2 seconds) - Use between paragraphs and major topic shifts
-    - "<break time=\"3s\" />" for very long pauses (3 seconds) - Use sparingly for major transitions
+    - "<break time=\"0.2s\" />" for short pauses (0.2 seconds) - Use at natural breathing points and minor phrase breaks
+    - "<break time=\"0.5s\" />" for medium pauses (0.5 seconds) - Use between sentences and for moderate breaks
+    - "<break time=\"0.8s\" />" for clear pauses (0.8 seconds) - Use for important breaks that need more emphasis
+    - "<break time=\"1s\" />" for long pauses (1 second) - Use between paragraphs and major topic shifts
+    - "<break time=\"2s\" />" for very long pauses (2 seconds) - Use sparingly for major transitions
     
     IMPORTANT PAUSE OPTIMIZATION: Add period with breaks at the beginning and end to prevent artifacts:
-    - ". <break time=\"2s\" /> [Your text starts here...]" at the beginning of speeches
-    - "[...your text ends here] <break time=\"2s\" /> ." at the end of speeches
+    - ". <break time=\"1s\" /> [Your text starts here...]" at the beginning of speeches
+    - "[...your text ends here] <break time=\"1s\" /> ." at the end of speeches
     
     Alternative pause options:
     - "..." (ellipsis) for natural hesitations
@@ -115,9 +115,9 @@ def humanize_script(script_text):
     9. Delete any text in brackets or parentheses that contains production instructions
     10. If there are section headings that aren't meant to be spoken, remove them
     11. For pauses, prioritize using the <break> SSML tags as they are the most reliable for precise timing
-    12. IMPORTANT: Do not exceed 3 seconds for any pause duration, as ElevenLabs has a 3-second maximum
+    12. IMPORTANT: Do not exceed 2 seconds for any pause duration, as ElevenLabs has a 3-second maximum (but use 2s as the longest for naturalness)
     13. Use the book-style narration and emotion tags to add vocal variety and make speech sound more natural
-    14. Add period + break at the start and end of script (". <break time=\"2s\" /> [text] <break time=\"2s\" /> .") to prevent artifacts
+    14. Add period + break at the start and end of script (". <break time=\"1s\" /> [text] <break time=\"1s\" /> .") to prevent artifacts
     15. Prefer slower speech as it produces better quality output - add appropriate pauses rather than rushing
     16. NEVER include the special characters "↗" or "↘" anywhere in the output as they cause artifacts
     
@@ -145,7 +145,7 @@ def humanize_script(script_text):
     2. Emphasis (*word*) for important words - use asterisks only, not arrow symbols
     3. Book-style narration (""Text", he said angrily.") to add emotional context
     4. Emotion tags like <cheerful>text</cheerful> where appropriate for varying tone
-    5. Periods with breaks at the beginning and end (". <break time="2s" /> [text] <break time="2s" /> .") to prevent audio artifacts
+    5. Periods with breaks at the beginning and end (". <break time=\"1s\" /> [text] <break time=\"1s\" /> .") to prevent audio artifacts
     
     Remember to:
     - REMOVE ALL production markings, camera directions, technical notes, and anything not meant to be spoken

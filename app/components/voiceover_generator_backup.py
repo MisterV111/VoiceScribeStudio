@@ -191,11 +191,11 @@ def create_voiceover_tab():
                     ### 1. Pauses and Timing
                     Use these commands to control the timing and flow of your voiceover:
                     ```
-                    <break time="0.5s" />   - Add a half-second pause
-                    <break time="1s" />     - Add a 1-second pause
-                    <break time="1.5s" />   - Add a 1.5-second pause
-                    <break time="2s" />     - Add a 2-second pause
-                    <break time="3s" />     - Add a 3-second pause
+                    <break time="0.2s" />   - Add a short (0.2s) pause
+                    <break time="0.5s" />     - Add a medium (0.5s) pause
+                    <break time="0.8s" />   - Add a clear (0.8s) pause for emphasis
+                    <break time="1s" />     - Add a long (1s) pause for paragraphs
+                    <break time="2s" />     - Add a very long (2s) pause for major transitions
                     ...                     - Natural hesitation
                     —                       - Brief pause (em dash)
                     ```
@@ -212,15 +212,31 @@ def create_voiceover_tab():
                     ### Example Script:
                     ```
                     Welcome to today's music lesson!
+                    <break time="0.5s" />
+                    <break time="0.2s" />
                     <break time="1s" />
+                    <break time="2s" />
+                    <break time="0.8s" />
                     Today we'll learn about chord progressions...
                     <break time="0.5s" />
                     Let me demonstrate this IMPORTANT concept.
+                    <break time="0.5s" />
+                    <break time="0.2s" />
+                    <break time="1s" />
                     <break time="2s" />
+                    <break time="0.8s" />
                     Listen carefully to these chords...
-                    <break time="3s" />
+                    <break time="0.5s" />
+                    <break time="0.2s" />
+                    <break time="1s" />
+                    <break time="2s" />
+                    <break time="0.8s" />
                     Isn't that beautiful?
-                    <break time="1.5s" />
+                    <break time="0.5s" />
+                    <break time="0.2s" />
+                    <break time="1s" />
+                    <break time="2s" />
+                    <break time="0.8s" />
                     Let's continue with the next example.
                     ```
                     
