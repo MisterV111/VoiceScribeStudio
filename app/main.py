@@ -159,6 +159,24 @@ def get_css():
         .admin-button:hover {
             background-color: #f8f4ff !important;
         }
+        .prominent-login-button {
+            background: linear-gradient(135deg, #6F42C1 0%, #8B5CF6 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 16px 32px !important;
+            font-weight: 700 !important;
+            font-size: 1.2rem !important;
+            box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4) !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important;
+            margin: 20px 0 !important;
+        }
+        .prominent-login-button:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 10px 30px rgba(111, 66, 193, 0.5) !important;
+            background: linear-gradient(135deg, #5B2C94 0%, #7C3AED 100%) !important;
+        }
         .link-button {
             border: none !important;
             background: none !important;
@@ -233,17 +251,22 @@ def create_gradio_app():
             # Create the banner
             create_banner(banner_base64)
             
-            # Authentication status and login link
-            with gr.Row():
-                with gr.Column(scale=10):
-                    auth_status = gr.Markdown("Please login to access VoiceScribe Studio features.", visible=True)
-                with gr.Column(scale=1):
-                    login_link = gr.Button(
-                        "🔒 Login", 
-                        elem_classes=["admin-button"],
-                        scale=0,
-                        size="sm"
-                    )
+            # Authentication status and login section
+            with gr.Column():
+                auth_status = gr.Markdown("## Please login to access VoiceScribe Studio features", visible=True)
+                gr.Markdown("*Get started by clicking the login button below to access all AI-powered script generation and voiceover tools.*")
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        gr.Markdown("")  # Spacer
+                    with gr.Column(scale=4):
+                        login_link = gr.Button(
+                            "🔒 Login to VoiceScribe Studio", 
+                            elem_classes=["prominent-login-button"],
+                            variant="primary",
+                            size="lg"
+                        )
+                    with gr.Column(scale=3):
+                        gr.Markdown("")  # Spacer
             
             # Main application content (hidden until authenticated)
             main_content = gr.Column(visible=False)
