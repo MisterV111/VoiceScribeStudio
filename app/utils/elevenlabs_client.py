@@ -94,10 +94,8 @@ def load_all_voices():
     """
     # 1. Hardcoded preset voices (always available for reliability)
     preset_voice_names = [
-        # Dan Teacher voices at the top (as requested)
-        "Dan Teacher - Hybrid",
-        "Dan Teacher - Neutral", 
-        "Dan Teacher - Upbeat",
+        # Featured voice at the top
+        "Jarnathan - warm, confident, versatile",
         # Current ElevenLabs voices with correct names and descriptions
         "Aria - Expressive & Versatile",
         "Roger - Deep & Thoughtful",
@@ -132,10 +130,8 @@ def load_all_voices():
     ]
     
     preset_voice_ids = [
-        # Dan Teacher voices at the top (as requested)
-        "jn5Dym9tbXQdxJRlyYzZ", # Dan Teacher - Hybrid
-        "CMtJJeUfoLE6mZYBmsFl", # Dan Teacher - Neutral
-        "W14NZHmEOKlltX7Dhrac", # Dan Teacher - Upbeat
+        # Featured voice at the top
+        "c6SfcYrb2t09NHXiT80T", # Jarnathan - warm, confident, versatile
         # Current ElevenLabs voices with correct IDs
         "9BWtsMINqrJLrRacOk9x", # Aria - Expressive & Versatile
         "CwhRBWXzGAHq8TQ4Fs17", # Roger - Deep & Thoughtful
