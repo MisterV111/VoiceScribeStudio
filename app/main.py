@@ -265,7 +265,7 @@ def create_gradio_app():
             create_banner(banner_base64)
             
             # Authentication status and login section
-            with gr.Column():
+            with gr.Column(visible=True) as login_prompt_ui:
                 auth_status = gr.Markdown("## Please login to access VoiceScribe Studio features", visible=True, elem_classes=["centered-text"])
                 gr.Markdown("*Get started by clicking the login button below to access all AI-powered script generation and voiceover tools.*", elem_classes=["centered-subtitle"])
                 with gr.Row():
@@ -357,7 +357,7 @@ def create_gradio_app():
                 public_interface: gr.update(visible=False),  
                 login_form: gr.update(visible=True),   
                 admin_dashboard: gr.update(visible=False),
-                auth_status: gr.update(visible=True),
+                login_prompt_ui: gr.update(visible=False),
                 main_content: gr.update(visible=False),
                 current_interface: "login",                   
                 is_authenticated: False                      
@@ -368,7 +368,7 @@ def create_gradio_app():
                 public_interface: gr.update(visible=True),   
                 login_form: gr.update(visible=False),  
                 admin_dashboard: gr.update(visible=False),
-                auth_status: gr.update(visible=True),
+                login_prompt_ui: gr.update(visible=True),
                 main_content: gr.update(visible=False),
                 current_interface: "public",                   
                 is_authenticated: False                      
@@ -385,7 +385,7 @@ def create_gradio_app():
                     login_form: gr.update(visible=False),  
                     admin_dashboard: gr.update(visible=True),   
                     error_message: gr.update(visible=False),
-                    auth_status: gr.update(visible=False),
+                    login_prompt_ui: gr.update(visible=False),
                     main_content: gr.update(visible=False),
                     current_interface: "admin",                   
                     is_authenticated: True                      
@@ -398,7 +398,7 @@ def create_gradio_app():
                     login_form: gr.update(visible=False),  
                     admin_dashboard: gr.update(visible=False),   
                     error_message: gr.update(visible=False),
-                    auth_status: gr.update(visible=False),
+                    login_prompt_ui: gr.update(visible=False),
                     main_content: gr.update(visible=True),
                     current_interface: "public",                   
                     is_authenticated: True                      
@@ -410,7 +410,7 @@ def create_gradio_app():
                     login_form: gr.update(visible=True),  
                     admin_dashboard: gr.update(visible=False),  
                     error_message: gr.update(visible=True),
-                    auth_status: gr.update(visible=True),
+                    login_prompt_ui: gr.update(visible=True),
                     main_content: gr.update(visible=False),
                     current_interface: "login",                   
                     is_authenticated: False                      
@@ -432,7 +432,7 @@ def create_gradio_app():
                 result[login_form],
                 result[admin_dashboard],
                 result[error_message],
-                result[auth_status],
+                result[login_prompt_ui],
                 result[main_content],
                 result[current_interface],
                 result[is_authenticated]
@@ -444,7 +444,7 @@ def create_gradio_app():
                 result[public_interface],
                 result[login_form],
                 result[admin_dashboard],
-                result[auth_status],
+                result[login_prompt_ui],
                 result[main_content],
                 result[current_interface],
                 result[is_authenticated]
@@ -456,7 +456,7 @@ def create_gradio_app():
                 result[public_interface],
                 result[login_form],
                 result[admin_dashboard],
-                result[auth_status],
+                result[login_prompt_ui],
                 result[main_content],
                 result[current_interface],
                 result[is_authenticated]
@@ -465,36 +465,36 @@ def create_gradio_app():
         login_button.click(
             fn=wrap_check_login,
             inputs=[username, password],
-            outputs=[public_interface, login_form, admin_dashboard, error_message, auth_status, main_content, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, error_message, login_prompt_ui, main_content, current_interface, is_authenticated]
         )
         
         back_button.click(
             fn=wrap_switch_to_public,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, login_prompt_ui, main_content, current_interface, is_authenticated]
         )
         
         return_btn.click(
             fn=wrap_switch_to_public,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, login_prompt_ui, main_content, current_interface, is_authenticated]
         )
         
         logout_btn.click(
             fn=wrap_switch_to_login,
             inputs=[],
-            outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated]
+            outputs=[public_interface, login_form, admin_dashboard, login_prompt_ui, main_content, current_interface, is_authenticated]
         )
         
         # Add load handler
-        @app.load(outputs=[public_interface, login_form, admin_dashboard, auth_status, main_content, current_interface, is_authenticated], api_name=False)
+        @app.load(outputs=[public_interface, login_form, admin_dashboard, login_prompt_ui, main_content, current_interface, is_authenticated], api_name=False)
         def on_load(request: gr.Request):
             if request and hasattr(request, "query_params") and (request.query_params.get("view") == "login" or request.query_params.get("view") == "admin"):
                 return [
                     gr.update(visible=False),  # public_interface
                     gr.update(visible=True),   # login_form
                     gr.update(visible=False),  # admin_dashboard
-                    gr.update(visible=True),   # auth_status (not used in login form)
+                    gr.update(visible=False),  # login_prompt_ui
                     gr.update(visible=False),  # main_content
                     "login",                   # current_interface
                     False                      # is_authenticated
@@ -503,7 +503,7 @@ def create_gradio_app():
                 gr.update(visible=True),    # public_interface
                 gr.update(visible=False),   # login_form
                 gr.update(visible=False),   # admin_dashboard
-                gr.update(visible=True),    # auth_status (show login message)
+                gr.update(visible=True),    # login_prompt_ui
                 gr.update(visible=False),   # main_content (hidden until login)
                 "public",                   # current_interface
                 False                       # is_authenticated
