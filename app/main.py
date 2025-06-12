@@ -177,6 +177,19 @@ def get_css():
             box-shadow: 0 10px 30px rgba(111, 66, 193, 0.5) !important;
             background: linear-gradient(135deg, #5B2C94 0%, #7C3AED 100%) !important;
         }
+        .centered-text {
+            text-align: center !important;
+            margin: 30px auto !important;
+            font-weight: 600 !important;
+            color: #2D3748 !important;
+        }
+        .centered-subtitle {
+            text-align: center !important;
+            margin: 10px auto 30px auto !important;
+            color: #718096 !important;
+            font-size: 1.1rem !important;
+            max-width: 600px !important;
+        }
         .link-button {
             border: none !important;
             background: none !important;
@@ -253,8 +266,8 @@ def create_gradio_app():
             
             # Authentication status and login section
             with gr.Column():
-                auth_status = gr.Markdown("## Please login to access VoiceScribe Studio features", visible=True)
-                gr.Markdown("*Get started by clicking the login button below to access all AI-powered script generation and voiceover tools.*")
+                auth_status = gr.Markdown("## Please login to access VoiceScribe Studio features", visible=True, elem_classes=["centered-text"])
+                gr.Markdown("*Get started by clicking the login button below to access all AI-powered script generation and voiceover tools.*", elem_classes=["centered-subtitle"])
                 with gr.Row():
                     with gr.Column(scale=3):
                         gr.Markdown("")  # Spacer
