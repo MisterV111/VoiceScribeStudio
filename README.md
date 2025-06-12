@@ -24,10 +24,11 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
   - **Format Preview**: See which formats will be generated when selecting "Generate All Formats".
   - **Professional Download Interface**: Clean, responsive cards with format-specific icons and file details.
   - **Styled Status Messages**: Clear visual feedback (e.g., colored success messages) for generation status.
-- 📄 **Reference Input Options** (In Development - Phase 2): Multiple ways to provide context:
+- 📄 **Reference Input Options**: Multiple ways to provide context for enhanced script generation:
   - **Document Upload**: Support for various file formats (.txt, .md, .pdf, .docx)
   - **Web URL Reference**: Extract context directly from web pages
   - **YouTube Reference**: Use YouTube videos as style or content references
+- 🎭 **Humanize Feature**: Intelligent script formatting that automatically adds natural pauses, emotional emphasis, and timing cues to optimize voiceover delivery.
 - 🔧 **Voice Customization**: Fine-tune voice parameters (stability, similarity, style, speed).
 - ✏️ **Script Editing**: Built-in editor to refine generated scripts.
 - 🔀 **Multiple Templates**: Specialized templates (General Education, Technical Tutorial, Marketing, Business Training, Music Lesson).
@@ -42,9 +43,10 @@ Our vision is to build VoiceScribe into an **Intelligent Agent-driven Content Pr
 
 The roadmap includes transforming VoiceScribe into a full AI content **production** partner through phased development:
 
-- **Phase 2: Smarter Context & Content Processing**: 
-  - AI learns to analyze documents, understand YouTube video styles, and remember user preferences (Memory MCP).
-  - **Humanize Feature**: Intelligent script formatting that automatically adds natural pauses, emotional emphasis, and timing cues to optimize voiceover delivery.
+- **Phase 2: Active Development Branch**: 
+  - Feature fixes and bug resolutions for enhanced stability
+  - Performance optimizations and user experience improvements
+  - Ongoing maintenance and quality assurance updates
 - **Phase 3: Multilingual Translation**: AI-powered translation to multiple languages using Claude 3.7 Sonnet and custom glossaries.
 - **Phase 4: AI Research Assistant**: Web browsing (FireCrawl) and fact-verification (Perplexity MCP) capabilities for accurate, informed scripts.
 - **Phase 5: Multimedia Production**: AI-generated background music (Suno AI), visual content (EverArt MCP), and professional document exports.
